@@ -11,10 +11,10 @@ import java.time.LocalDateTime;
  * 사용자가 남긴 댓글을 저장하기 위한 테이블.
  * Field: id, user, type, parentId, content, createdAt
  */
-
 @Getter
 @Setter
 @NoArgsConstructor
+@Entity
 @Table(name = "comments")
 public class Comment {
   @Id
@@ -32,7 +32,7 @@ public class Comment {
   @Column(name = "parent_id", nullable = false)
   private Long parentId;
 
-  @Column(name = "content", nullable = false)
+  @Column(name = "content", nullable = false, length = 255)
   private String content;
 
   @Column(name = "created_at", nullable = false)
