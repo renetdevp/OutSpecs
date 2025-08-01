@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
+@Entity
 @Table(name = "chat_room_user")
 public class ChatRoomUser {
   @ManyToOne(fetch = FetchType.LAZY)
