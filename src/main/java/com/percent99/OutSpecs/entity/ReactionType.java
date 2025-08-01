@@ -9,7 +9,7 @@ package com.percent99.OutSpecs.entity;
  * REPORT : 신고
  */
 public enum ReactionType {
-    Like,
+    LIKE,
     BOOKMARK,
     FOLLOW,
     REPORT
