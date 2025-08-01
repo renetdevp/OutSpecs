@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 
@@ -44,17 +45,17 @@ public class Reaction {
     private User user;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "target_type", nullable = false, columnDefinition = "ENUM('POST','USER')")
+    @Column(name = "target_type", nullable = false)
     private TargetType targetType;
 
     @Column(name = "target_id", nullable = false)
     private Long targetId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "reaction_type", nullable = false,
-            columnDefinition = "ENUM('LIKE','BOOKMARK','FOLLOW','REPORT')")
+    @Column(name = "reaction_type", nullable = false)
     private ReactionType reactionType;
 
     @Column(name = "created_at")
+    @CreatedDate
     private LocalDateTime createdAt;
 }
