@@ -6,26 +6,18 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 게시글 정보를 담는 엔티티
- *
- * <p>
- *     <ul> 팀 모집 게시판
- *         <li>status : 모집공고 상태</li>
- *         <li>capacity : 모집 인원 수</li>
- *     </ul>
- *     <ul> 나가서놀기 게시판
- *          <li>placeName : 장소명</li>
- *     </ul>
- *     <ul> 자유, Q&A 게시판
- *         <li>category : 태그 카테고리</li>
- *     </ul>
- *     <ul> 채용공고 게시판
- *         <li>techStack : 요구기술스택</li>
- *         <li>career : 요구 경력</li>
- *     </ul>
- * </p>
+ * <ul>연관관계
+ *      <li>Image와 1:N 관계</li>
+ *      <li>PostBase와 1:N 관계</li>
+ *      <li>PostTeamInformation와 1:1 관계</li>
+ *      <li>PostJob와 1:1 관계</li>
+ *      <li>postHangout와 1:1관계</li>
+ * </ul>
  */
 
 @Entity
@@ -44,7 +36,7 @@ public class Post {
     private User user;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "ENUM('QNA','TEAM','PLAY','AIPLAY','FREE', 'RECRUIT')")
     private PostType type;
 
     @Column(nullable = false)
@@ -62,22 +54,18 @@ public class Post {
     @Column(name = "view_count")
     private Integer viewCount;
 
-    @Column(length = 255)
-    private String Images;
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Image> images = new ArrayList<>();
 
-    @Enumerated(EnumType.STRING)
-    private PostStatus status;
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PostBase> postBases = new ArrayList<>();
 
-    private Integer capacity;
+    @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private PostTeamInformation teamInfo;
 
-    @Column(name = "place_name")
-    private String placeName;
+    @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private PostJob postJob;
 
-    @Column(length = 255)
-    private String category;
-
-    @Column(name = "tech_stack")
-    private String techStack;
-
-    private Integer career;
+    @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private PostHangout postHangout;
 }
