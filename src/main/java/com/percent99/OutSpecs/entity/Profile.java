@@ -5,11 +5,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 /**
  * 사용자 오픈프로필 Entity 클래스<br><br>
  *
  * userId : user_id 랑 매핑을 위해 @MapsId 사용 <br>
- * image : Json 형식으로 이미지 받을 예정임으로 jsonb 사용
+ * imageUrl : 이미지 URL <br>
+ * s3Key : AWS S3 키 저장
  */
 @Entity
 @Getter
@@ -39,9 +42,15 @@ public class Profile {
     @Column(name = "allow_company_access", nullable = false)
     private Boolean allowCompanyAccess;
 
-    @Column(name = "image", columnDefinition = "jsonb", nullable = false)
-    private String image;
-
     @Column(name = "nickname", unique = true, nullable = false)
     private String nickname;
+
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    @Column(name = "s3_key")
+    private String s3Key;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 }
