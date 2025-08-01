@@ -1,7 +1,7 @@
 package com.percent99.OutSpecs.entity;
 
 /**
- * Definition type of comment.
+ * Definition type of comment.<br>
  * Enum values: COMMENT, ANSWER, REPLY.
  */
 public enum CommentType {
