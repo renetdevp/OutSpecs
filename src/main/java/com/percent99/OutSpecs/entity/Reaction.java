@@ -45,14 +45,14 @@ public class Reaction {
     private User user;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "target_type", nullable = false)
+    @Column(name = "target_type", nullable = false, columnDefinition = "ENUM('POST', 'USER', 'COMMENT')")
     private TargetType targetType;
 
     @Column(name = "target_id", nullable = false)
     private Long targetId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "reaction_type", nullable = false)
+    @Column(name = "reaction_type", nullable = false , columnDefinition = "ENUM('LIKE','BOOKMARK','FOLLOW','REPORT')")
     private ReactionType reactionType;
 
     @Column(name = "created_at")
