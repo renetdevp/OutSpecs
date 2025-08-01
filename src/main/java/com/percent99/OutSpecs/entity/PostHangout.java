@@ -21,6 +21,7 @@ import lombok.Setter;
 public class PostHangout {
 
     @OneToOne(fetch = FetchType.LAZY)
+    @MapsId
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 

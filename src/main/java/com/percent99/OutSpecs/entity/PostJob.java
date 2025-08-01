@@ -22,6 +22,7 @@ import lombok.Setter;
 public class PostJob {
 
     @OneToOne(fetch = FetchType.LAZY)
+    @MapsId
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
