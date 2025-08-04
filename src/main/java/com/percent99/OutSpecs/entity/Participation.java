@@ -30,7 +30,7 @@ public class Participation {
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
-    @Column(name = "applied_at")
+    @Column(name = "applied_at", nullable = false)
     private LocalDateTime appliedAt;
 
     @Enumerated(EnumType.STRING)
