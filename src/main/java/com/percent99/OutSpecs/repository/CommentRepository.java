@@ -15,8 +15,8 @@ import java.util.List;
 public interface CommentRepository extends JpaRepository<Comment,Long> {
     /**
      * 특정 게시글에 등록된 모든 댓글을 조회한다.
-     * @param postId 조회할 게시글의 ID
+     * @param parentId 조회할 게시글의 ID
      * @return 해당 게시글에 달린 댓글 목록 (댓글이 없으면 빈 리스트 반환)
      */
-    List<Comment> findByPostId(Long postId);
+    List<Comment> findByParentId(Long parentId);
 }
