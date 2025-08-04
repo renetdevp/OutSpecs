@@ -10,7 +10,6 @@ package com.percent99.OutSpecs.entity;
  *     <li>RECRUIT : 채용공고 게시판</li>
  * </ul>
  */
-
 public enum PostType {
     QNA,
     TEAM,
