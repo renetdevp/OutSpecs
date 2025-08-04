@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -37,17 +38,18 @@ public class ParticipationServiceImpl implements ParticipationService {
      */
     @Override
     @Transactional
-    public Participation createParticipation(Long userId, Long postId) {
-        User user  = userRepository.findById(userId)
+    public Participation createParticipation(ParticipationDTO dto) {
+        User user  = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저 정보가 발견되지않았습니다."));
 
-        Post post = postRepository.findById(postId)
+        Post post = postRepository.findById(dto.getPostId())
                 .orElseThrow(() -> new EntityNotFoundException("해당 게시글 정보가 발견되지않았습니다."));
 
         Participation participation = new Participation();
         participation.setUser(user);
         participation.setPost(post);
         participation.setStatus(ParticipationStatus.PENDING);
+        participation.setAppliedAt(LocalDateTime.now());
 
         return participationRepository.save(participation);
     }
