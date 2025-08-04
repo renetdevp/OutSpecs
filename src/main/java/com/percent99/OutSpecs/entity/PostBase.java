@@ -12,13 +12,16 @@ import lombok.Setter;
  *      <li>tags : 태그 카테고리</li>
  * </ul>
  */
-
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @Table(name = "posts_base")
 public class PostBase {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "post_id")

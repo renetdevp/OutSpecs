@@ -18,6 +18,10 @@ import java.time.LocalDateTime;
 @Table(name = "participations")
 public class Participation {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
