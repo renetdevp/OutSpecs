@@ -3,6 +3,7 @@ package com.percent99.OutSpecs.repository;
 import com.percent99.OutSpecs.entity.Post;
 import com.percent99.OutSpecs.entity.PostType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -13,6 +14,7 @@ import java.util.List;
  *  추가로 유저별, 게시물 타입별로 게시물을 조회한다.
  * </p>
  */
+@Repository
 public interface PostRepository extends JpaRepository<Post,Long> {
 
     /**

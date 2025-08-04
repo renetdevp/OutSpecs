@@ -2,6 +2,7 @@ package com.percent99.OutSpecs.repository;
 
 import com.percent99.OutSpecs.entity.Comment;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -12,6 +13,7 @@ import java.util.List;
  *  추가로 게시글별 댓글 조회 메서드를 정의한다.
  * </p>
  */
+@Repository
 public interface CommentRepository extends JpaRepository<Comment,Long> {
     /**
      * 특정 게시글에 등록된 모든 댓글을 조회한다.

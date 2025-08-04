@@ -2,6 +2,7 @@ package com.percent99.OutSpecs.repository;
 
 import com.percent99.OutSpecs.entity.Participation;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -12,6 +13,7 @@ import java.util.List;
  *  추가로 게시글별, 유저별로 신청현황을 조회한다.
  * </p>
  */
+@Repository
 public interface ParticipationRepository extends JpaRepository<Participation, Long> {
     /**
      * 특정 게시글에 등록된 모든 신청현황을 조회한다.
