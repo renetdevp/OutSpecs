@@ -1,4 +1,4 @@
-package com.percent99.OutSpecs.entity;
+package com.percent99.OutSpecs.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
