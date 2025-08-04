@@ -3,6 +3,7 @@ package com.percent99.OutSpecs.service.impl;
 import com.percent99.OutSpecs.dto.PostDTO;
 import com.percent99.OutSpecs.entity.Post;
 import com.percent99.OutSpecs.entity.PostType;
+import com.percent99.OutSpecs.entity.User;
 import com.percent99.OutSpecs.handler.PostDetailHandler;
 import com.percent99.OutSpecs.repository.PostRepository;
 import com.percent99.OutSpecs.service.PostService;
@@ -28,6 +29,7 @@ import java.util.List;
 public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
+    private final UserRepository userRepository;
     private final List<PostDetailHandler> detailHandlers;
 
     /**
@@ -36,10 +38,14 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public Post createPost(PostDTO dto) {
+
+        User user = userRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new EntityNotFoundException("해당 유저는 존재하지 않습니다."));
+
         Post post = new Post();
         post.setTitle(dto.getTitle());
         post.setContent(dto.getContent());
-        post.setUser(dto.getUser());
+        post.setUser(user);
         post.setType(dto.getType());
         post.setCreatedAt(LocalDateTime.now());
         post.setUpdatedAt(LocalDateTime.now());
@@ -73,6 +79,12 @@ public class PostServiceImpl implements PostService {
         post.setType(dto.getType());
         post.setTitle(dto.getTitle());
         post.setContent(dto.getContent());
+        post.setUpdatedAt(LocalDateTime.now());
+
+        post.getPostBases().clear();
+        post.setTeamInfo(null);
+        post.setPostJob(null);
+        post.setPostHangout(null);
 
         detailHandlers.stream()
                 .filter(h -> h.supports(dto.getType()))
