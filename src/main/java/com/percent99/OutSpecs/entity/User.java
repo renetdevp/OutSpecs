@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 
-import javax.management.relation.Role;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -36,7 +35,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false , columnDefinition = "ENUM('ENTUSER','USER','ADMIN')")
-    private Role role;
+    private UserRoleType role;
 
     @Column(name = "provider_id")
     private String providerId;
