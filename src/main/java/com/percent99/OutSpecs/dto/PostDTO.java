@@ -1,7 +1,6 @@
 package com.percent99.OutSpecs.dto;
 
 import com.percent99.OutSpecs.entity.PostType;
-import com.percent99.OutSpecs.entity.User;
 import lombok.Getter;
 import lombok.Setter;
 
