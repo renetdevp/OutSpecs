@@ -64,15 +64,15 @@ public class ReactionServiceImpl implements ReactionService {
     }
 
     /**
-     *
+     * 해당 타겟에 해당 리액션의 수
      * @param targetType
      * @param targetId
      * @param reactionType
-     * @return
+     * @return 반응수
      */
     @Override
     public int countReactions(TargetType targetType, Long targetId, ReactionType reactionType) {
-
+        return (int)reactionRepository.countByTargetTypeAndTargetIdAndReactionType(targetType, targetId, reactionType);
     }
 
     @Override

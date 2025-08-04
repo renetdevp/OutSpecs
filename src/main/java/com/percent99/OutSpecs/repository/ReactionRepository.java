@@ -20,5 +20,9 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
      */
     void deleteByUserAndTargetTypeAndTargetIdAndReactionType(User user, TargetType targetType, Long targetId, ReactionType reactionType);
 
+    /**
+     * 해당 target에 대한 어떠한 반응의 수
+     */
+    long countByTargetTypeAndTargetIdAndReactionType(TargetType targetType, Long targetId, ReactionType reactionType);
 
 }
