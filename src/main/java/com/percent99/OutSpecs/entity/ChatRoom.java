@@ -21,9 +21,9 @@ public class ChatRoom {
     private Long id;
 
     @Column(name = "is_chatbot", nullable = false)
-    private Boolean IsChatbot;
+    private Boolean isChatbot;
 
-    @Column(name = "last_message_id", nullable = false)
-    private String lastMessageId;
+    @Column(name = "last_message_id")
+    private Long lastMessageId;
 
 }
