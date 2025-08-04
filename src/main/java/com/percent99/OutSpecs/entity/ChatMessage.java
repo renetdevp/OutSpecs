@@ -8,7 +8,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /**
- * 사용자가 보내는 채팅 메시지를 저장하기 위한 테이블.
+ * 사용자가 보내는 채팅 메시지를 저장하기 위한 테이블.<br>
  * Field: id, chatRoom, sender, content, createdAt
  */
 @Getter
