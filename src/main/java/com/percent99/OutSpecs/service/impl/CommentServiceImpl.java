@@ -41,7 +41,7 @@ public class CommentServiceImpl implements CommentService {
         User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저 정보가 발견되지않았습니다."));
 
-        if(dto.getType() == CommentType.COMMENT){
+        if(dto.getType() == CommentType.COMMENT || dto.getType() == CommentType.ANSWER){
             postRepository.findById(dto.getParentId())
                     .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
         }else{
@@ -86,7 +86,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(readOnly = true)
     public List<Comment> getCommentsByPostId(Long postId) {
-        return commentRepository.findByPostId(postId);
+        return commentRepository.findByParentId(postId);
     }
 
     /**
