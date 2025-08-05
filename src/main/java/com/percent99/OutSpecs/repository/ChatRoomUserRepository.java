@@ -11,13 +11,14 @@ import java.util.List;
 
 @Repository
 public interface ChatRoomUserRepository extends JpaRepository<ChatRoomUser, Long> {
-  @Query("SELECT 1 FROM chat_room_user WHERE chat_room_id = :chatRoomId AND user_id = :userId LIMIT 1")
+  @Query("SELECT 1 FROM ChatRoomUser crt " +
+          "WHERE cru.chatRoom.id = :chatRoomId AND cru.user.id = :userId LIMIT 1")
   boolean existsByChatRoomIdAndUserId(@Param("chatRoomId") Long chatRoomId, @Param("userId") Long userId);
 
   List<ChatRoomUser> findAllByChatRoomId(Long chatRoomId);
   List<ChatRoomUser> findAllByUserId(Long userId);
 
-  @Query("DELETE FROM chat_room_user WHERE chat_room_id=:chatRoomId AND user_id=:userId")
+  @Query("DELETE FROM ChatRoomUser cru WHERE cru.chatRoom.id = :chatRoomId AND cru.user.id = :userId")
   void deleteByChatRoomIdAndUserId(@Param("chatRoomId") Long chatRoomId, @Param("userId") Long userId);
 
   @Query("SELECT cru.chatRoom FROM ChatRoomUser cru WHERE cru.chatRoom IN " +
