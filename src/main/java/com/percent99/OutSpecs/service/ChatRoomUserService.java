@@ -4,6 +4,7 @@ import com.percent99.OutSpecs.entity.ChatRoom;
 import com.percent99.OutSpecs.entity.ChatRoomUser;
 import com.percent99.OutSpecs.entity.User;
 import com.percent99.OutSpecs.repository.ChatRoomUserRepository;
+import com.percent99.OutSpecs.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,11 +18,11 @@ import java.util.List;
 @Service
 public class ChatRoomUserService {
   private final ChatRoomUserRepository chatRoomUserRepository;
-  private final UserService userService;
+  private final UserRepository userRepository;
 
   public void createChatRoomUser(ChatRoom chatRoom, Long userId){
     ChatRoomUser chatRoomUser = new ChatRoomUser();
-    User user = userService.findById(userId).orElse(null);
+    User user = userRepository.findById(userId).orElse(null);
 
     if (user == null) return;
 

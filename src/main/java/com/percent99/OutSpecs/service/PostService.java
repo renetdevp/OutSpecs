@@ -6,6 +6,7 @@ import com.percent99.OutSpecs.entity.PostType;
 import com.percent99.OutSpecs.entity.User;
 import com.percent99.OutSpecs.handler.PostDetailHandler;
 import com.percent99.OutSpecs.repository.PostRepository;
+import com.percent99.OutSpecs.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

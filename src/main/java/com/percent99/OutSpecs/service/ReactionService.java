@@ -1,6 +1,7 @@
 package com.percent99.OutSpecs.service;
 
 import com.percent99.OutSpecs.entity.*;
+import com.percent99.OutSpecs.repository.PostRepository;
 import com.percent99.OutSpecs.repository.ReactionRepository;
 import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;

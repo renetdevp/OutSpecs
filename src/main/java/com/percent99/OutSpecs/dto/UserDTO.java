@@ -1,10 +1,9 @@
 package com.percent99.OutSpecs.dto;
 
+import com.percent99.OutSpecs.entity.UserRoleType;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
-
-import javax.management.relation.Role;
 
 @Getter
 @Setter
@@ -17,6 +16,6 @@ public class UserDTO {
     private String password;
 
     private String providerId;
-    private Role role;
+    private UserRoleType role;
     private Integer aiRateLimit;
 }

@@ -7,6 +7,7 @@ import com.percent99.OutSpecs.entity.Post;
 import com.percent99.OutSpecs.entity.User;
 import com.percent99.OutSpecs.repository.ParticipationRepository;
 import com.percent99.OutSpecs.repository.PostRepository;
+import com.percent99.OutSpecs.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 
 import lombok.RequiredArgsConstructor;
