@@ -20,6 +20,10 @@ import lombok.Setter;
 @Table(name = "posts_team_information")
 public class PostTeamInformation {
 
+    @Id
+    @Column(name = "post_id")
+    private Long postId;
+
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
     @JoinColumn(name = "post_id", nullable = false)

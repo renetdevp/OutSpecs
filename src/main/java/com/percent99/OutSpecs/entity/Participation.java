@@ -18,6 +18,10 @@ import java.time.LocalDateTime;
 @Table(name = "participations")
 public class Participation {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -26,7 +30,7 @@ public class Participation {
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
-    @Column(name = "applied_at")
+    @Column(name = "applied_at", nullable = false)
     private LocalDateTime appliedAt;
 
     @Enumerated(EnumType.STRING)
