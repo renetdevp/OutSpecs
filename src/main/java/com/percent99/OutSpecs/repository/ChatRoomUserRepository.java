@@ -11,9 +11,7 @@ import java.util.List;
 
 @Repository
 public interface ChatRoomUserRepository extends JpaRepository<ChatRoomUser, Long> {
-  @Query("SELECT 1 FROM ChatRoomUser crt " +
-          "WHERE cru.chatRoom.id = :chatRoomId AND cru.user.id = :userId LIMIT 1")
-  boolean existsByChatRoomIdAndUserId(@Param("chatRoomId") Long chatRoomId, @Param("userId") Long userId);
+  boolean existsByChatRoomIdAndUserId(Long chatRoomId, Long userId);
 
   List<ChatRoomUser> findAllByChatRoomId(Long chatRoomId);
   List<ChatRoomUser> findAllByUserId(Long userId);
@@ -26,11 +24,10 @@ public interface ChatRoomUserRepository extends JpaRepository<ChatRoomUser, Long
           "AND cru.user.id != :userId")
   List<ChatRoom> findChatRoomsByUserId(@Param("userId") Long userId);
 
-  @Query("SELECT 1 " +
-  "FROM ChatRoomUser cru1 " +
-  "JOIN ChatRoomUser cru2 ON cru1.chatRoom = cru2.chatRoom " +
-  "WHERE cru1.user.id = :userId " +
-  "AND cru2.user.id = :targetUserId " +
-  "LIMIT 1;")
+  @Query(value = "SELECT 1 " +
+  "FROM chat_room_user AS cru1 " +
+  "JOIN chat_room_user AS cru2 ON cru1.chat_room_id = cru2.chat_room_id " +
+  "WHERE cru1.user_id = :userId " +
+  "AND cru2.user_id = :targetUserId LIMIT 1", nativeQuery = true)
   boolean existsChatRoomByUserIdAndTargetUserId(@Param("userId") Long userId, @Param("targetUserId") Long targetUserId);
 }
