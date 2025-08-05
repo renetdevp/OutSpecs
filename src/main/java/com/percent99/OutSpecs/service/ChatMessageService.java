@@ -4,6 +4,7 @@ import com.percent99.OutSpecs.entity.ChatMessage;
 import com.percent99.OutSpecs.entity.ChatRoom;
 import com.percent99.OutSpecs.entity.User;
 import com.percent99.OutSpecs.repository.ChatMessageRepository;
+import com.percent99.OutSpecs.repository.ChatRoomRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,8 +18,8 @@ import java.util.List;
 @Service
 public class ChatMessageService {
   private final ChatMessageRepository chatMessageRepository;
-  private final ChatRoomUserService chatRoomUserService;
   private final ChatRoomService chatRoomService;
+  private final ChatRoomRepository chatRoomRepository;
   private final UserRepository userRepository;
 
   /**
@@ -42,9 +43,7 @@ public class ChatMessageService {
   }
 
   public List<ChatMessage> findAllByChatRoomId(Long chatRoomId, Long userId){
-    if (!chatRoomUserService.existsByChatRoomIdAndUserId(chatRoomId, userId)){
-      return null;
-    }
+    if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return null;
 
     return chatMessageRepository.findAllByChatRoomId(chatRoomId);
   }
@@ -56,9 +55,7 @@ public class ChatMessageService {
   }
 
   public void deleteAllChatMessages(Long chatRoomId, Long userId){
-    if (!chatRoomUserService.existsByChatRoomIdAndUserId(chatRoomId, userId)){
-      return;
-    }
+    if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return;
 
     chatMessageRepository.deleteAllByChatRoomIdAndUserId(chatRoomId, userId);
   }

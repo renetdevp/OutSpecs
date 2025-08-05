@@ -1,7 +1,9 @@
 package com.percent99.OutSpecs.service;
 
 import com.percent99.OutSpecs.entity.ChatRoom;
+import com.percent99.OutSpecs.entity.User;
 import com.percent99.OutSpecs.repository.ChatRoomRepository;
+import com.percent99.OutSpecs.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,23 +16,27 @@ import java.util.Optional;
 @Service
 public class ChatRoomService {
   private final ChatRoomRepository chatRoomRepository;
-  private final ChatRoomUserService chatRoomUserService;
+  private final UserRepository userRepository;
 
   public void createChatRoom(Long userId, Long targetId){
-    if (chatRoomUserService.existsByUserIdAndTargetUserId(userId, targetId)){
-      return;
-    }
+    User user1 = userRepository.findById(userId).orElse(null);
+    User user2 = userRepository.findById(targetId).orElse(null);
+
+    if (user1==null || user2==null) return;
+
+    if (chatRoomRepository.existsByUser1AndUser2(user1, user2)) return;
+    if (chatRoomRepository.existsByUser1AndUser2(user2, user1)) return;
 
     ChatRoom chatRoom = new ChatRoom();
 
 //    if (targetId.equals(CHATBOT_USER_ID)) chatRoom.setIsChatbot(true);
 //    else chatRoom.setIsChatbot(false);
+    chatRoom.setUser1(user1);
+    chatRoom.setUser2(user2);
     chatRoom.setIsChatbot(false);
     chatRoom.setLastMessageId(null);
 
-    chatRoom = chatRoomRepository.save(chatRoom);
-    chatRoomUserService.createChatRoomUser(chatRoom, userId);
-    chatRoomUserService.createChatRoomUser(chatRoom, targetId);
+    chatRoomRepository.save(chatRoom);
   }
 
   public Optional<ChatRoom> findChatRoomById(Long chatRoomId){
@@ -41,16 +47,14 @@ public class ChatRoomService {
 
   public ChatRoom updateChatRoomById(ChatRoom chatRoom, Long userId){
     if (chatRoom==null || userId==null) return null;
-    if (!chatRoomUserService.existsByChatRoomIdAndUserId(chatRoom.getId(), userId)) return null;
+    if (!chatRoomRepository.existsByIdAndUserId(chatRoom.getId(), userId)) return null;
 
     return chatRoomRepository.save(chatRoom);
   }
 
   public void deleteChatRoomById(Long chatRoomId, Long userId){
     if (chatRoomId==null || userId==null) return;
-    if (!chatRoomUserService.existsByChatRoomIdAndUserId(chatRoomId, userId)){
-      return;
-    }
+    if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return;
 
     chatRoomRepository.deleteById(chatRoomId);
   }
