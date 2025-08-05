@@ -12,6 +12,6 @@ import java.util.List;
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
   List<ChatMessage> findAllByChatRoomId(Long chatRoomId);
 
-  @Query("DELETE FROM chat_messages WHERE chat_room_id=:chatRoomId AND user_id=:userId")
+  @Query("DELETE FROM ChatMessage cm WHERE cm.chatRoom.id = :chatRoomId AND cm.sender.id = :userId")
   void deleteAllByChatRoomIdAndUserId(@Param("chatRoomId") Long chatRoomId, @Param("userId") Long userId);
 }
