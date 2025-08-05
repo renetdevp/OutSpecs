@@ -29,4 +29,10 @@ public class Image {
 
     @Column(name = "s3_key", nullable = false)
     private String s3Key;
+
+    public Image(Post post, String imageUrl, String s3Key) {
+        this.post = post;
+        this.imageUrl = imageUrl;
+        this.s3Key = s3Key;
+    }
 }
