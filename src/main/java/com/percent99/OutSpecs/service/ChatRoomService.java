@@ -2,6 +2,7 @@ package com.percent99.OutSpecs.service;
 
 import com.percent99.OutSpecs.entity.ChatRoom;
 import com.percent99.OutSpecs.repository.ChatRoomRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -9,16 +10,11 @@ import java.util.Optional;
 /**
  * 사용자들이 채팅을 주고받는 채팅방을 관리하는 service 객체.<br>
  */
+@RequiredArgsConstructor
 @Service
 public class ChatRoomService {
   private final ChatRoomRepository chatRoomRepository;
   private final ChatRoomUserService chatRoomUserService;
-
-  public ChatRoomService(ChatRoomRepository chatRoomRepository,
-                         ChatRoomUserService chatRoomUserService){
-    this.chatRoomRepository = chatRoomRepository;
-    this.chatRoomUserService = chatRoomUserService;
-  }
 
   public void createChatRoom(Long userId, Long targetId){
     if (chatRoomUserService.existsByUserIdAndTargetUserId(userId, targetId)){

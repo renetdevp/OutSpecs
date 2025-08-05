@@ -4,6 +4,7 @@ import com.percent99.OutSpecs.entity.ChatMessage;
 import com.percent99.OutSpecs.entity.ChatRoom;
 import com.percent99.OutSpecs.entity.User;
 import com.percent99.OutSpecs.repository.ChatMessageRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,19 +12,12 @@ import java.util.List;
 /**
  * 사용자들이 주고받는 채팅 메시지를 관리하기 위한 service 객체.<br>
  */
+@RequiredArgsConstructor
 @Service
 public class ChatMessageService {
   private final ChatMessageRepository chatMessageRepository;
   private final ChatRoomUserService chatRoomUserService;
   private final ChatRoomService chatRoomService;
-
-  public ChatMessageService(ChatMessageRepository chatMessageRepository,
-                            ChatRoomUserService chatRoomUserService,
-                            ChatRoomService chatRoomService){
-    this.chatMessageRepository = chatMessageRepository;
-    this.chatRoomUserService = chatRoomUserService;
-    this.chatRoomService = chatRoomService;
-  }
 
   /**
    *

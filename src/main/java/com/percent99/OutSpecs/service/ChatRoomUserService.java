@@ -4,6 +4,7 @@ import com.percent99.OutSpecs.entity.ChatRoom;
 import com.percent99.OutSpecs.entity.ChatRoomUser;
 import com.percent99.OutSpecs.entity.User;
 import com.percent99.OutSpecs.repository.ChatRoomUserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -12,16 +13,11 @@ import java.util.List;
 /**
  * 어느 사용자들이 어느 채팅방에 들어가 있는지에 대한 정보를 관리하기 위한 service 객체.<br>
  */
+@RequiredArgsConstructor
 @Service
 public class ChatRoomUserService {
   private final ChatRoomUserRepository chatRoomUserRepository;
   private final UserService userService;
-
-  public ChatRoomUserService(ChatRoomUserRepository chatRoomUserRepository,
-                             UserService userService){
-    this.chatRoomUserRepository = chatRoomUserRepository;
-    this.userService = userService;
-  }
 
   public void createChatRoomUser(ChatRoom chatRoom, Long userId){
     ChatRoomUser chatRoomUser = new ChatRoomUser();
