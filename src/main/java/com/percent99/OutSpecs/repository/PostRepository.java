@@ -30,11 +30,4 @@ public interface PostRepository extends JpaRepository<Post,Long> {
      * @return 해당 유형의 게시물 리스트
      */
     List<Post> findByType(PostType type);
-
-    /**
-     * 신고 횟수가 주어진 값 이상인 게시물을 조회한다.
-     * @param threshold 신고 횟수 기준
-     * @return 신고 많은 게시물 리스트
-     */
-    List<Post> findByReportCountGreaterThanEqual(int threshold);
 }
