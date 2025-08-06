@@ -1,9 +1,7 @@
 package com.percent99.OutSpecs.service;
 
 import com.percent99.OutSpecs.dto.PostDTO;
-import com.percent99.OutSpecs.entity.Post;
-import com.percent99.OutSpecs.entity.PostType;
-import com.percent99.OutSpecs.entity.User;
+import com.percent99.OutSpecs.entity.*;
 import com.percent99.OutSpecs.handler.PostDetailHandler;
 import com.percent99.OutSpecs.repository.PostRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
@@ -23,7 +21,7 @@ import java.util.List;
  *     <li>@Service으로 등록되어 DI 대상이된다</li>
  *     <li>모든 쓰기 메세드에 @Transactional 적용하고, 읽기 메서드에 @Transactional를 사용하지않는다.</li>
  *     <li>외부 API를 사용할경우 외부 API 부분을 제외한 부분에서 @Transactional를 사용한다.</li>
- *     <li>존재하지 않는 댓글 조회시 EntityNotFoundException를 던진다.</li>
+ *     <li>존재하지 않는 글 조회시 EntityNotFoundException를 던진다.</li>
  * </ul>
  */
 @Service
@@ -166,14 +164,58 @@ public class PostService {
     }
 
     /**
-     * ID로 게시글을 삭제한다.
-     * @param id 삭제할 게시글의 ID
+     * ID로 게시글을 삭제한다. <br>
+     * 관리자는 게시물 전체 삭제 가능 <br>
+     * 질문 게시글은 관리자만 삭제 가능 <br>
+     * 게시물 쓴 유저만 삭제 가능 <br>
+     * @param postId 삭제할 게시글의 ID
+     * @param userId 로그인 유저 ID
      */
     @Transactional
-    public void deletedPost(Long id) {
-        if(!postRepository.existsById(id)){
-            throw new EntityNotFoundException("해당 게시물은 존재하지 않습니다.");
+    public void deletedPost(Long userId, Long postId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(()-> new EntityNotFoundException("해당 유저는 존재하지 않습니다."));
+        Post post = postRepository.findById(postId)
+                .orElseThrow(()-> new EntityNotFoundException("해당 게시물은 존재하지 않습니다."));
+
+        if (user.getRole().equals(UserRoleType.ADMIN)) {
+            postRepository.deleteById(postId);
+        } else if(post.getType().equals(PostType.QNA)) {
+            throw new IllegalArgumentException("QnA 게시글은 관리자만 삭제할 수 있습니다.");
+        } else if(!userId.equals(post.getUser().getId())) {
+            throw new IllegalArgumentException("게시글 작성자가 아닙니다.");
+        } else { postRepository.deleteById(postId); }
+    }
+
+    /**
+     * 질문 게시글의 답변상태가 true일 시 false로 false일 시 true로 업데이트한다.
+     * @param userId 로그인 유저 ID
+     * @param postId 질문게시글 ID
+     */
+    public void updateAnswerComplete(Long userId, Long postId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(()-> new EntityNotFoundException("해당 유저는 존재하지 않습니다."));
+        Post post = postRepository.findById(postId)
+                .orElseThrow(()-> new EntityNotFoundException("해당 게시물은 존재하지 않습니다."));
+
+        if (!post.getType().equals(PostType.QNA)) {
+            throw new IllegalArgumentException("QnA 게시글이 아닙니다.");
+        } else if(!userId.equals(post.getUser().getId())) {
+            throw new IllegalArgumentException("게시글 작성자가 아닙니다.");
+        } else {
+            PostQnA postQnA = new PostQnA();
+            postQnA.setPost(post);
+
+            if(post.getPostQnA().isAnswerComplete()) {
+                post.setPostQnA(null);
+                postQnA.setAnswerComplete(false);
+            } else {
+                post.setPostQnA(null);
+                postQnA.setAnswerComplete(true);
+            }
+            post.setPostQnA(postQnA);
         }
-        postRepository.deleteById(id);
     }
 }

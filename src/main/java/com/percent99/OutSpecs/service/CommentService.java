@@ -1,9 +1,7 @@
 package com.percent99.OutSpecs.service;
 
 import com.percent99.OutSpecs.dto.CommentDTO;
-import com.percent99.OutSpecs.entity.Comment;
-import com.percent99.OutSpecs.entity.CommentType;
-import com.percent99.OutSpecs.entity.User;
+import com.percent99.OutSpecs.entity.*;
 import com.percent99.OutSpecs.repository.CommentRepository;
 import com.percent99.OutSpecs.repository.PostRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
@@ -104,14 +102,24 @@ public class CommentService {
     }
 
     /**
-     * 지정한 ID의 댓글을 삭제한다.
-     * @param id 삭제할 댓글의 ID
+     * 지정한 ID의 댓글을 삭제한다.<br>
+     * 답변은 관리자만 삭제 가능하다.
+     * @param userId 로그인 유저 ID
+     * @param commentId 삭제할 댓글의 ID
      */
     @Transactional
-    public void deletedComment(Long id) {
-        if(!commentRepository.existsById(id)){
-            throw new EntityNotFoundException("해당 댓글 내용이 발견되지않았습니다.");
-        }
-        commentRepository.deleteById(id);
+    public void deletedComment(Long userId,Long commentId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 유저는 존재하지 않습니다."));
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 댓글 내용이 발견되지않았습니다."));
+
+        if (user.getRole().equals(UserRoleType.ADMIN)) {
+            commentRepository.deleteById(commentId);
+        } else if(comment.getType().equals(CommentType.ANSWER)) {
+            throw new IllegalArgumentException("질문의 답변은 관리자만 삭제할 수 있습니다.");
+        } else if(!userId.equals(comment.getUser().getId())) {
+            throw new IllegalArgumentException("댓글 작성자가 아닙니다.");
+        } else { commentRepository.deleteById(commentId); }
     }
 }
