@@ -199,6 +199,16 @@ public class PostService {
     }
 
     /**
+     * 팀모집 게시판의 모집상태별 게시글을 조회한다.
+     * @param postStatus 팀모집 상태(open, closed)
+     * @return 해당 장소의 게시글 리스트
+     */
+    @Transactional(readOnly = true)
+    public List<Post> getteamPosts(PostStatus postStatus) {
+        return postRepository.findHangoutPostsByPlace(postStatus.name());
+    }
+
+    /**
      * ID로 게시글을 삭제한다. <br>
      * 질문 게시글은 관리자만 삭제 가능하며 관리자는 모든 게시글 삭제 가능하다. <br>
      * @param postId 삭제할 게시글의 ID

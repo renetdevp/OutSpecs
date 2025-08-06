@@ -28,4 +28,11 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
      * @return 해당 유저의 신청현황 리스트
      */
     List<Participation> findByUserId(Long userId);
+
+    /**
+     * 특정 게시글에 등록된 모든 신청현황 수
+     * @param postId 조회할 게시글의 ID
+     * @return 해당 게시글의 신청현황 수
+     */
+    long countByPostId(Long postId);
 }

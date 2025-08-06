@@ -1,6 +1,7 @@
 package com.percent99.OutSpecs.repository;
 
 import com.percent99.OutSpecs.entity.Post;
+import com.percent99.OutSpecs.entity.PostStatus;
 import com.percent99.OutSpecs.entity.PostType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -89,4 +90,12 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     @Query("SELECT p FROM Post p JOIN p.postHangout ph "
             + "WHERE p.type = 'PLAY' AND ph.placeName = :place")
     List<Post> findHangoutPostsByPlace(@Param("place") String place);
+
+    /**
+     * 팀모집 상태에 따른 게시글 조회
+     * @param status 팀모집 상태
+     * @return 팀모집 상태별 게시글
+     */
+    @Query("SELECT p FROM Post p JOIN p.teamInfo pt WHERE pt.status = :status")
+    List<Post> findTeamPostsByStatus(@Param("status") PostStatus status);
 }

@@ -1,10 +1,7 @@
 package com.percent99.OutSpecs.service;
 
 import com.percent99.OutSpecs.dto.ParticipationDTO;
-import com.percent99.OutSpecs.entity.Participation;
-import com.percent99.OutSpecs.entity.ParticipationStatus;
-import com.percent99.OutSpecs.entity.Post;
-import com.percent99.OutSpecs.entity.User;
+import com.percent99.OutSpecs.entity.*;
 import com.percent99.OutSpecs.repository.ParticipationRepository;
 import com.percent99.OutSpecs.repository.PostRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
@@ -47,6 +44,10 @@ public class ParticipationService {
         Post post = postRepository.findById(dto.getPostId())
                 .orElseThrow(() -> new EntityNotFoundException("해당 게시글 정보가 발견되지않았습니다."));
 
+        if(countParticipation(post.getId()) >= post.getTeamInfo().getCapacity() + 5) {
+            throw new IllegalStateException("모집신청인원이 많아 신청이 불가합니다.");
+        }
+
         Participation participation = new Participation();
         participation.setUser(user);
         participation.setPost(post);
@@ -68,7 +69,8 @@ public class ParticipationService {
     }
 
     /**
-     * ID로 Participation 정보를 수정한다.
+     * ID로 Participation 정보를 수정한다. <br>
+     * 팀 신청 수락 시, 모집인원 다 차면 모집완료로 상태 변경한다. <br>
      * @param id 수정할 Participation의 ID
      * @param dto 수정할 내용이 담긴 DTO
      * @return 수정된 Participation 엔티티
@@ -76,7 +78,14 @@ public class ParticipationService {
     @Transactional
     public Participation updateParticipation(Long id, ParticipationDTO dto) {
         Participation participation = getParticipationById(id);
+        Post post = postRepository.findById(participation.getPost().getId())
+                .orElseThrow(() -> new EntityNotFoundException("해당 게시글 정보가 발견되지않았습니다."));
         participation.setStatus(dto.getStatus());
+
+        if(dto.getStatus().equals(ParticipationStatus.ACCEPTED)
+                && (countAcceptedParticipation(post.getId()) + 1 == post.getTeamInfo().getCapacity())) {
+            post.getTeamInfo().setStatus(PostStatus.CLOSED);
+        }
 
         return participationRepository.save(participation);
     }
@@ -92,11 +101,35 @@ public class ParticipationService {
     }
 
     /**
+     * 해당 팀 공고의 팀 허락된 인원 수
+     * @param postId 해당 팀 공고
+     * @return 현재 모집된 인원 수
+     */
+    public int countAcceptedParticipation(Long postId) {
+        List<Participation> participations = getParticipationByPostId(postId);
+        int count = 0;
+
+        for(Participation partic : participations) {
+            if(partic.getStatus().equals(ParticipationStatus.ACCEPTED)) count++;
+        }
+        return count;
+    }
+
+    /**
+     * 해당 팀에서 허락 인원 상관 없이 모집신청한 인원 수
+     * @param postId 해당 팀 공고
+     * @return 모집신청 현황
+     */
+    public int countParticipation(Long postId) {
+        return (int)participationRepository.countByPostId(postId);
+    }
+
+
+    /**
      * 특정 사용자가 참여한 모든 Participation 정보를 조회한다.
      * @param userId 조회할 사용자의 ID
      * @return 해당 사용자의 Participation 리스트
      */
-
     @Transactional(readOnly = true)
     public List<Participation> getParticipationByUserId(Long userId) {
         return participationRepository.findByUserId(userId);
