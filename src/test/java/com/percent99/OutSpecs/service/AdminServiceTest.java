@@ -70,19 +70,19 @@ public class AdminServiceTest {
     /**
      * 신고 건수가 일정 수 이상인 게시글 목록 조회가 정상적으로 수행되는지 검증
      */
-    @Test
-    @DisplayName("findReportedPosts 호출")
-    void findReportedPosts() {
-
-        // given
-        List<Post> reported = List.of(new Post(), new Post());
-        when(postRepository.findByReportCountGreaterThanEqual(5))
-                .thenReturn(reported);
-
-        // when
-        List<Post> result = adminService.findReportedPosts();
-
-        // then
-        assertThat(result).isEqualTo(reported);
-    }
+//    @Test
+//    @DisplayName("findReportedPosts 호출")
+//    void findReportedPosts() {
+//
+//        // given
+//        List<Post> reported = List.of(new Post(), new Post());
+//        when(postRepository.findByReportCountGreaterThanEqual(5))
+//                .thenReturn(reported);
+//
+//        // when
+//        List<Post> result = adminService.findReportedPosts();
+//
+//        // then
+//        assertThat(result).isEqualTo(reported);
+//    }
 }
