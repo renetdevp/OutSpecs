@@ -14,7 +14,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -26,11 +28,9 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ProfileServiceTest {
 
-    @Mock
-    private ProfileRepository profileRepository;
-
-    @Mock
-    private UserRepository userRepository;
+    @Mock private ProfileRepository profileRepository;
+    @Mock private UserRepository userRepository;
+    @Mock private S3Service s3Service;
 
     @InjectMocks
     private ProfileService profileService;
@@ -59,7 +59,7 @@ class ProfileServiceTest {
      */
     @Test
     @DisplayName("프로필 등록 성공")
-    void registerProfile_success() {
+    void registerProfile_success() throws IOException {
 
         // given
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -71,8 +71,10 @@ class ProfileServiceTest {
         savedProfile.setNickname(profileDTO.getNickname());
         when(profileRepository.save(any(Profile.class))).thenReturn(savedProfile);
 
+        MultipartFile mockFile = mock(MultipartFile.class);
+        when(mockFile.isEmpty()).thenReturn(true);
         // when
-        Profile result = profileService.registerProfile(1L, profileDTO);
+        Profile result = profileService.registerProfile(1L, profileDTO, mockFile);
 
         // then
         assertThat(result).isSameAs(savedProfile);
@@ -87,13 +89,15 @@ class ProfileServiceTest {
      */
     @Test
     @DisplayName("프로필 등록 - 유저 없음 예외")
-    void registerProfile_userNotFound() {
+    void registerProfile_userNotFound() throws  IOException{
 
         // when
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
+        MultipartFile mockFile = mock(MultipartFile.class);
+
         // then
-        assertThatThrownBy(() -> profileService.registerProfile(1L, profileDTO))
+        assertThatThrownBy(() -> profileService.registerProfile(1L, profileDTO, mockFile))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("해당 유저는 존재하지 않습니다.");
     }
@@ -103,14 +107,16 @@ class ProfileServiceTest {
      */
     @Test
     @DisplayName("프로필 등록 - 이미 프로필 존재 예외")
-    void registerProfile_alreadyExists() {
+    void registerProfile_alreadyExists() throws IOException {
 
         // when
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(profileRepository.existsByUserId(1L)).thenReturn(true);
 
+        MultipartFile mockFile = mock(MultipartFile.class);
+
         // then
-        assertThatThrownBy(() -> profileService.registerProfile(1L, profileDTO))
+        assertThatThrownBy(() -> profileService.registerProfile(1L, profileDTO, mockFile))
                 .isInstanceOf(EntityExistsException.class)
                 .hasMessage("이미 존재하는 프로필입니다.");
     }
@@ -127,10 +133,12 @@ class ProfileServiceTest {
         when(profileRepository.existsByUserId(1L)).thenReturn(false);
         when(profileRepository.existsByNickname(profileDTO.getNickname())).thenReturn(true);
 
+        MultipartFile mockFile = mock(MultipartFile.class);
+
         // then
-        assertThatThrownBy(() -> profileService.registerProfile(1L, profileDTO))
+        assertThatThrownBy(() -> profileService.registerProfile(1L, profileDTO, mockFile))
                 .isInstanceOf(EntityExistsException.class)
-                .hasMessage("이미 존재하는 닉네임입니다.");
+                .hasMessage("이미 사용 중인 닉네임입니다.");
     }
 
     /**
@@ -139,23 +147,30 @@ class ProfileServiceTest {
      */
     @Test
     @DisplayName("프로필 이미지 업데이트 성공")
-    void updateImage_success() {
+    void updateImage_success() throws IOException {
 
         // given
         Profile existingProfile = new Profile();
         existingProfile.setUser(user);
         existingProfile.setImageUrl("http://old-image.com/old.png");
+        existingProfile.setS3Key("oldKey");
+
+        MultipartFile mockFile = mock(MultipartFile.class);
+        String newImageUrl = "http://new-image.com/new.png";
+        String newS3Key = "new.png";
 
         when(profileRepository.findByUserId(1L)).thenReturn(Optional.of(existingProfile));
+        when(s3Service.uploadFile(mockFile)).thenReturn(newImageUrl);
+        doNothing().when(s3Service).deleteFile("oldKey");
         when(profileRepository.save(any(Profile.class))).thenReturn(existingProfile);
 
-        // when
-        profileService.updateImage(1L, "http://new-image.com/new.png","newKey");
+        profileService.updateProfileImage(1L, mockFile);
 
         // then
         assertThat(existingProfile.getImageUrl()).isEqualTo("http://new-image.com/new.png");
-        assertThat(existingProfile.getS3Key()).isEqualTo("newKey");
-        verify(profileRepository).save(any(Profile.class));
+        assertThat(existingProfile.getS3Key()).isEqualTo(newS3Key);
+        verify(profileRepository).save(existingProfile);
+        verify(s3Service).deleteFile("oldKey");
     }
 
     /**
@@ -168,8 +183,10 @@ class ProfileServiceTest {
         // when
         when(profileRepository.findByUserId(1L)).thenReturn(Optional.empty());
 
+        MultipartFile mockFile = mock(MultipartFile.class);
+
         // then
-        assertThatThrownBy(() -> profileService.updateImage(1L, "http://new-image.com/new.png" ,"newKey"))
+        assertThatThrownBy(() -> profileService.updateProfileImage(1L, mockFile))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("해당 프로필은 존재하지 않습니다.");
     }
