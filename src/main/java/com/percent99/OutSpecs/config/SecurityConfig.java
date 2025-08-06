@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -40,12 +39,24 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomUserDetailService customUserDetailService;
 
-
+    /**
+     * password 암호화를 위해 bean으로 등록
+     * @return password를 BCryptPasswordEncoder로 암호화
+     */
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * DAO 기반 인증 처리를 위한 AuthenticationProvider 빈을 생성한다.
+     * <p>
+     *     커스텀 UserDetailsService와 PasswordEncoder를 사용하여 <br>
+     *     폼 로그인 시 전달된 아이디·비밀번호를 검증한다.
+     * </p>
+     *
+     * @return userDetailsService 및 passwordEncoder를 설정된 DaoAuthenticationProvider 객체
+     */
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider p = new DaoAuthenticationProvider();
@@ -98,7 +109,6 @@ public class SecurityConfig {
                             response.sendRedirect("/users/login?error=" + errorMsg);
                         })
                 );
-
         return http.build();
     }
 }
