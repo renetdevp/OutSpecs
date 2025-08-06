@@ -26,7 +26,6 @@ import java.util.UUID;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
 
     /**
      * OAuth2 인증 요청을 처리하고 사용자 정보를 로드한뒤 process 를 통해 CustomUserPrincipal로 반환한다.
@@ -88,7 +87,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             user.setUsername(generateUniqueUsername(email));
             user.setProviderId(socialId);
             user.setRole(UserRoleType.USER);
-            user.setPassword(passwordEncoder.encode(randomPassword));
+            user.setPassword(randomPassword);
 
             userRepository.save(user);
             log.info("신규 OAuth2 사용자 생성 : {}",email);
