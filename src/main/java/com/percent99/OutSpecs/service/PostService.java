@@ -87,10 +87,11 @@ public class PostService {
         post.setContent(dto.getContent());
         post.setUpdatedAt(LocalDateTime.now());
 
-        post.getPostBases().clear();
+        post.getPostTags().clear();
         post.setTeamInfo(null);
         post.setPostJob(null);
         post.setPostHangout(null);
+        post.setPostQnA(null);
 
         detailHandlers.stream()
                 .filter(h -> h.supports(dto.getType()))
