@@ -30,6 +30,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final UserService userService;
     private final List<PostDetailHandler> detailHandlers;
 
     /**
@@ -55,7 +56,11 @@ public class PostService {
         detailHandlers.stream()
                 .filter(h -> h.supports(dto.getType()))
                 .forEach(h -> h.handle(post,dto));
-        
+
+        if(post.getType().equals(PostType.AIPLAY)) {
+            userService.decrementAiRateLimit(user.getId());
+        }
+
         return postRepository.save(post);
     }
 
