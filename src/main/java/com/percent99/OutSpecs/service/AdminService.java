@@ -3,7 +3,6 @@ package com.percent99.OutSpecs.service;
 import com.percent99.OutSpecs.entity.Post;
 import com.percent99.OutSpecs.entity.User;
 import com.percent99.OutSpecs.entity.UserRoleType;
-import com.percent99.OutSpecs.repository.PostRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 
@@ -21,8 +20,7 @@ import java.util.List;
 public class AdminService {
 
     private final UserRepository userRepository;
-    private final PostRepository postRepository;
-
+    private final ReactionService reactionService;
 
     /**
      * 특정 사용자 역할을 변경합니다.
@@ -41,9 +39,11 @@ public class AdminService {
      * 신고횟수가 기본값(5) 이상인 게시물을 조회합니다.
      * @return 신고 많은 게시물 리스트
      */
+    /*
     @Transactional(readOnly = true)
     public List<Post> findReportedPosts(){
         final int DEFAULT_THRESHOLD = 5;
-        return postRepository.findByReportCountGreaterThanEqual(DEFAULT_THRESHOLD);
+        return "";
     }
+     */
 }
