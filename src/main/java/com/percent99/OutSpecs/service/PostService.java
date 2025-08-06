@@ -164,10 +164,38 @@ public class PostService {
     }
 
     /**
+     * 채용공고 게시판의 기술스택 필터 조건에 맞는(하나라도 포함) 게시글을 모두 조회한다.
+     * @param techs 기술스택 리스트
+     * @return 스택 요구조건 별 게시글 목록
+     */
+    @Transactional(readOnly = true)
+    public List<Post> getTechPosts(List<String> techs) {
+        return postRepository.findRecruitPostsByTechs(techs);
+    }
+
+    /**
+     * QNA나 자유게시판에서 선택한 태그가 모두 들어있는 게시글을 조회한다.
+     * @param tags 원하는 태그
+     * @return 태그별 게시글 목록
+     */
+    @Transactional(readOnly = true)
+    public List<Post> getTagPosts(List<String> tags) {
+        return postRepository.findBasePostsByTags(tags, tags.size());
+    }
+
+    /**
+     * 나가서놀기 게시판에서 선택한 장소가 포함된 게시글을 조회한다.
+     * @param place 원하는 장소
+     * @return 해당 장소의 게시글 리스트
+     */
+    @Transactional(readOnly = true)
+    public List<Post> getPlacePosts(String place) {
+        return postRepository.findHangoutPostsByPlace(place);
+    }
+
+    /**
      * ID로 게시글을 삭제한다. <br>
-     * 관리자는 게시물 전체 삭제 가능 <br>
-     * 질문 게시글은 관리자만 삭제 가능 <br>
-     * 게시물 쓴 유저만 삭제 가능 <br>
+     * 질문 게시글은 관리자만 삭제 가능하며 관리자는 모든 게시글 삭제 가능하다. <br>
      * @param postId 삭제할 게시글의 ID
      * @param userId 로그인 유저 ID
      */

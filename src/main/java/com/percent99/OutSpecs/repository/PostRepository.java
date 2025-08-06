@@ -56,8 +56,37 @@ public interface PostRepository extends JpaRepository<Post,Long> {
      * @param pageable 조회할 게시글 개수
      * @return 해당 유형의 좋아요 높은 게시글 리스트
      */
-    @Query(value = "SELECT p FROM Post p, Reaction r "
+    @Query("SELECT p FROM Post p, Reaction r "
             + "WHERE r.targetType = 'POST' AND r.reactionType = 'LIKE' AND r.targetId = p.id AND p.type = :type "
             + "GROUP BY p.id ORDER BY COUNT(r.id) DESC")
     List<Post> findByTypeOrderByLike(@Param("type") PostType type, Pageable pageable);
+
+    /**
+     * 채용공고 게시판에서 기술 스택을 선택하여 하나라도 포함되어 있는 게시글을 모두 조회한다.
+     * @param techs 원하는 기술스택
+     * @return 기술스택을 하나라도 포함한 게시글 리스트
+     */
+    @Query("SELECT p FROM Post p JOIN p.postJob pj JOIN pj.techniques t "
+            + "WHERE p.type = 'RECRUIT' AND t.tech IN :techs ")
+    List<Post> findRecruitPostsByTechs(@Param("techs") List<String> techs);
+
+    /**
+     * QNA나 자유게시판에서 선택한 태그가 모두 들어있는 게시글을 조회한다.
+     * @param tags 원하는 태그
+     * @param tagCount 태그 개수
+     * @return 원하는 태그가 모두 들어가 있는 게시글 리스트
+     */
+    @Query("SELECT p FROM Post p JOIN p.postTags pt "
+            + "WHERE p.type IN ('QNA', 'FREE') AND pt.tags IN :tags "
+            + "GROUP BY p.id HAVING COUNT(DISTINCT pt.tags) = :tagCount")
+    List<Post> findBasePostsByTags(@Param("tags") List<String> tags, @Param("tagCount") long tagCount);
+
+    /**
+     * 나가서놀기 게시판에서 선택한 장소가 포함된 게시글을 조회한다.
+     * @param place 원하는 장소
+     * @return 해당 장소의 게시글 리스트
+     */
+    @Query("SELECT p FROM Post p JOIN p.postHangout ph "
+            + "WHERE p.type = 'PLAY' AND ph.placeName = :place")
+    List<Post> findHangoutPostsByPlace(@Param("place") String place);
 }
