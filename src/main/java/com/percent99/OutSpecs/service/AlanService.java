@@ -1,7 +1,11 @@
 package com.percent99.OutSpecs.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.percent99.OutSpecs.exception.HttpResponseProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -10,6 +14,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Service
 public class AlanService {
   private final RestTemplate restTemplate;
+  private final ObjectMapper objectMapper;
 
   @Value("${alan.BASE_URL}")
   private String baseUrl;
@@ -17,14 +22,20 @@ public class AlanService {
   @Value("${alan.CLIENT_ID}")
   private String alanClientId;
 
-  private String sendRequest(String content){
+  private String sendRequest(String content) {
     String url = UriComponentsBuilder.fromUriString(baseUrl)
             .queryParam("content", content)
             .queryParam("client_id", alanClientId)
             .build()
             .toUriString();
 
-    return restTemplate.getForObject(url, String.class);
+    ResponseEntity<String> res = restTemplate.getForEntity(url, String.class);
+
+    try {
+      return objectMapper.readTree(res.getBody()).get("content").asText();
+    } catch (JsonProcessingException e) {
+      throw new HttpResponseProcessingException(e);
+    }
   }
 
   public String getRecommend(String placeName){
