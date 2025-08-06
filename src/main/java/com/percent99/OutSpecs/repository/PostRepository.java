@@ -35,22 +35,25 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     List<Post> findByType(PostType type);
 
     /**
-     * 게시판 타입에 따라 최신글 20개를 조회한다.
+     * 게시판 타입에 따라 최신글을 조회한다.
      * @param type 조회할 게시글의 타입
-     * @return 해당 유형의 게시글 리스트 20개
+     * @param pageable 조회할 게시글 개수
+     * @return 해당 유형의 게시글 리스트
      */
-    List<Post> findTop20ByTypeOrderByCreatedAtDesc(PostType type);
+    List<Post> findByTypeOrderByCreatedAtDesc(PostType type, Pageable pageable);
 
     /**
-     * 게시판 타입에 따라 조회수 높은 순 10개 조회한다.
+     * 게시판 타입에 따라 조회수 높은 순 조회한다.
      * @param type 조회할 게시글의 타입
-     * @return 해당 유형의 게시글 리스트 10개
+     * @param pageable 조회할 게시글 개수
+     * @return 해당 유형의 게시글 리스트
      */
-    List<Post> findTop10ByTypeOrderByViewCountDesc(PostType type);
+    List<Post> findByTypeOrderByViewCountDesc(PostType type, Pageable pageable);
 
     /**
      * 게시판 타입에 따라 좋아요 수 높은 순으로 조회한다.
      * @param type 조회할 게시글의 타입
+     * @param pageable 조회할 게시글 개수
      * @return 해당 유형의 좋아요 높은 게시글 리스트
      */
     @Query(value = "SELECT p FROM Post p, Reaction r "

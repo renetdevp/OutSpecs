@@ -9,7 +9,6 @@ import com.percent99.OutSpecs.repository.PostRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -130,23 +129,27 @@ public class PostService {
     }
 
     /**
-     * 게시판 타입에 따라 최신글 20개를 조회한다
+     * 게시판 타입에 따라 최신글 limit개를 조회한다.
      * @param type 게시판 타입
+     * @param limit 좋아요 가져올 개수
      * @return 최신글 목록
      */
     @Transactional(readOnly = true)
-    public List<Post> getRecentPosts(PostType type) {
-        return postRepository.findTop20ByTypeOrderByCreatedAtDesc(type);
+    public List<Post> getRecentPosts(PostType type, int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        return postRepository.findByTypeOrderByCreatedAtDesc(type, pageable);
     }
 
     /**
-     * 게시판 타입에 따라 조회수 높은 순 게시글 10개를 조회한다.
+     * 게시판 타입에 따라 조회수 높은 순 게시글 limit개를 조회한다.
      * @param type 게시판 타입
-     * @return 조회수 순 10개 게시글 목록
+     * @param limit 좋아요 가져올 개수
+     * @return 조회수 순 게시글 목록
      */
     @Transactional(readOnly = true)
-    public List<Post> getViewCountPosts(PostType type) {
-        return postRepository.findTop10ByTypeOrderByViewCountDesc(type);
+    public List<Post> getViewCountPosts(PostType type, int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        return postRepository.findByTypeOrderByViewCountDesc(type, pageable);
     }
 
     /**
