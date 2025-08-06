@@ -3,7 +3,9 @@ package com.percent99.OutSpecs.service;
 import com.percent99.OutSpecs.entity.*;
 import com.percent99.OutSpecs.repository.PostRepository;
 import com.percent99.OutSpecs.repository.ReactionRepository;
+import com.percent99.OutSpecs.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +17,7 @@ public class ReactionService {
 
     private final ReactionRepository reactionRepository;
     private final PostRepository postRepository;
+    private final UserRepository userRepository;
 
     /**
      * 반응 추가 (좋아요, 북마크, 팔로우, 신고)
@@ -24,6 +27,9 @@ public class ReactionService {
      * @param reactionType
      */
     public void addReaction(User user, TargetType targetType, Long targetId, ReactionType reactionType) {
+        if(!userRepository.existsById(user.getId())) {
+            throw new EntityNotFoundException("해당 유저는 존재하지 않습니다.");
+        }
         if(reactionRepository.existsByUserAndTargetTypeAndTargetIdAndReactionType(user, targetType, targetId, reactionType)) {
             throw new EntityExistsException("이미 반응이 존재합니다.");
         }
@@ -44,7 +50,10 @@ public class ReactionService {
      * @param reactionType
      */
     public void deleteReaction(User user, TargetType targetType, Long targetId, ReactionType reactionType) {
-         reactionRepository.deleteByUserAndTargetTypeAndTargetIdAndReactionType(user, targetType, targetId, reactionType);
+        if(!userRepository.existsById(user.getId())) {
+            throw new EntityNotFoundException("해당 유저는 존재하지 않습니다.");
+        }
+        reactionRepository.deleteByUserAndTargetTypeAndTargetIdAndReactionType(user, targetType, targetId, reactionType);
     }
 
     /**
@@ -56,6 +65,9 @@ public class ReactionService {
      * @return 반응했는지 true, false
      */
     public boolean isReactionExists(User user, TargetType targetType, Long targetId, ReactionType reactionType) {
+        if(!userRepository.existsById(user.getId())) {
+            throw new EntityNotFoundException("해당 유저는 존재하지 않습니다.");
+        }
         return reactionRepository.existsByUserAndTargetTypeAndTargetIdAndReactionType(user, targetType, targetId, reactionType);
     }
 
@@ -76,6 +88,9 @@ public class ReactionService {
      * @return User가 follow한 userId 목록
      */
     public List<Long> getFollowedUserIds(User user) {
+        if(!userRepository.existsById(user.getId())) {
+            throw new EntityNotFoundException("해당 유저는 존재하지 않습니다.");
+        }
         return reactionRepository.findFollowedUserIds(user);
     }
 
@@ -85,6 +100,9 @@ public class ReactionService {
      * @return User가 북마크한 Post 목록
      */
     public List<Post> getBookMarkPosts(User user) {
+        if(!userRepository.existsById(user.getId())) {
+            throw new EntityNotFoundException("해당 유저는 존재하지 않습니다.");
+        }
         List<Long> postIds = reactionRepository.findBookmarkedPostIdsByUser(user);
         return postRepository.findAllById(postIds);
     }
