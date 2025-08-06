@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Optional;
@@ -30,6 +31,7 @@ public class UserService {
      * @param userDTO 검증은 컨트롤러 단계(@ValidUsername, @ValidPassword)에서 이미 수행됨
      * @return 저장된 user
      */
+    @Transactional
     public User registerUser(UserDTO userDTO) {
 
         if(userDTO.getProviderId() != null && !userDTO.getProviderId().isBlank()) {
@@ -54,6 +56,7 @@ public class UserService {
      * @param username
      * @return username으로 찾은 유저정보
      */
+    @Transactional(readOnly = true)
     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
     }
@@ -63,6 +66,7 @@ public class UserService {
      * @param userDTO
      * @return 수정된 유저정보
      */
+    @Transactional
     public User updateUser(UserDTO userDTO) {
         User exiting = userRepository.findByUsername(userDTO.getUsername())
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저는 존재하지 않습니다."));
@@ -85,6 +89,7 @@ public class UserService {
      * AI 사용횟수 감소
      * @param userId
      */
+    @Transactional
     public void decrementAiRateLimit(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저는 존재하지 않습니다."));
@@ -96,6 +101,7 @@ public class UserService {
      * 유저정보 삭제
      * @param userId
      */
+    @Transactional
     public void deleteUserAndProfile(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저는 존재하지 않습니다."));
