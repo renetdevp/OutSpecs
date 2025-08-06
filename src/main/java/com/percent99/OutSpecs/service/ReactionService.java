@@ -106,4 +106,13 @@ public class ReactionService {
         List<Long> postIds = reactionRepository.findBookmarkedPostIdsByUser(user);
         return postRepository.findAllById(postIds);
     }
+
+    /**
+     * 신고 당한 모든 게시글 찾기
+     * @return 신고당한 모든 게시글
+     */
+    public List<Post> getReportPosts() {
+        List<Long> postIds = reactionRepository.findReportPostId();
+        return postRepository.findAllById(postIds);
+    }
 }
