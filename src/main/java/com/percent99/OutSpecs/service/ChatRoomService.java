@@ -18,14 +18,14 @@ public class ChatRoomService {
   private final ChatRoomRepository chatRoomRepository;
   private final UserRepository userRepository;
 
-  public void createChatRoom(Long userId, Long targetId){
+  public ChatRoom createChatRoom(Long userId, Long targetId){
     User user1 = userRepository.findById(userId).orElse(null);
     User user2 = userRepository.findById(targetId).orElse(null);
 
-    if (user1==null || user2==null) return;
+    if (user1==null || user2==null) return null;
 
-    if (chatRoomRepository.existsByUser1AndUser2(user1, user2)) return;
-    if (chatRoomRepository.existsByUser1AndUser2(user2, user1)) return;
+    if (chatRoomRepository.existsByUser1AndUser2(user1, user2)) return null;
+    if (chatRoomRepository.existsByUser1AndUser2(user2, user1)) return null;
 
     ChatRoom chatRoom = new ChatRoom();
 
@@ -36,7 +36,7 @@ public class ChatRoomService {
     chatRoom.setIsChatbot(false);
     chatRoom.setLastMessageId(null);
 
-    chatRoomRepository.save(chatRoom);
+    return chatRoomRepository.save(chatRoom);
   }
 
   public Optional<ChatRoom> findChatRoomById(Long chatRoomId){
