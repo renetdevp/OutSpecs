@@ -20,8 +20,8 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class NotificationService {
 
-    private NotificationRepository notificationRepository;
-    private UserRepository userRepository;
+    private final NotificationRepository notificationRepository;
+    private final UserRepository userRepository;
     private final ProfileRepository profileRepository;
 
     /**
