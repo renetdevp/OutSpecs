@@ -10,6 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+/**
+ * 이스트소프트의 Alan AI에게 질의하기 위한 서비스.<br>
+ * '놀러 나가기' 기능을 위한 getRecommend() 메소드와 챗봇 기능을 위한 getAnswer() 메소드가 존재.
+ */
 @RequiredArgsConstructor
 @Service
 public class AlanService {
