@@ -7,12 +7,10 @@ import com.percent99.OutSpecs.repository.ProfileRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
 
 import java.util.Optional;
 
@@ -26,6 +24,23 @@ public class UserService {
     private final UserRepository userRepository;
     private final ProfileRepository profileRepository;
     private final PasswordEncoder passwordEncoder;
+
+    /**
+     * 유저정보 조회
+     * @param username
+     * @return username으로 찾은 유저정보
+     */
+    @Transactional(readOnly = true)
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    @Transactional(readOnly = true)
+    public User getUserById(Long userId){
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 유저는 존재하지 않습니다."));
+    }
+
     /**
      * 회원가입 정보 저장
      * @param userDTO 검증은 컨트롤러 단계(@ValidUsername, @ValidPassword)에서 이미 수행됨
@@ -52,37 +67,23 @@ public class UserService {
     }
 
     /**
-     * 유저정보 조회
-     * @param username
-     * @return username으로 찾은 유저정보
-     */
-    @Transactional(readOnly = true)
-    public Optional<User> findByUsername(String username) {
-        return userRepository.findByUsername(username);
-    }
-
-    /**
      * 유저정보 수정
      * @param userDTO
      * @return 수정된 유저정보
      */
     @Transactional
     public User updateUser(UserDTO userDTO) {
-        User exiting = userRepository.findByUsername(userDTO.getUsername())
+
+        if(userDTO.getProviderId() != null && !userDTO.getProviderId().isBlank()){
+            throw new IllegalArgumentException("소셜 로그인 사용자는 비밀번호를 변경할 수 없습니다.");
+        }
+
+        User user = userRepository.findByUsername(userDTO.getUsername())
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저는 존재하지 않습니다."));
 
-        exiting.setRole(userDTO.getRole());
-        /* 해당 부분은 할지 / 안할지 잘모르겠다.
-        if(exiting.getProviderId() == null &&
-                userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
-            if(userDTO.getPassword().length() <= 2) {
-                throw new IllegalArgumentException("비밀번호는 3자리 이상이어야 합니다.");
-            }
-            exiting.setPassword(userDTO.getPassword());
-        }
-         */
-
-        return userRepository.save(exiting);
+        user.setRole(userDTO.getRole());
+        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        return userRepository.save(user);
     }
 
     /**
@@ -91,9 +92,11 @@ public class UserService {
      */
     @Transactional
     public void decrementAiRateLimit(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 유저는 존재하지 않습니다."));
-        user.setAiRateLimit(user.getAiRateLimit() - 1);
+
+        User user = getUserById(userId);
+
+        int remaining = user.getAiRateLimit() - 1;
+        user.setAiRateLimit(Math.max(remaining,0));
         userRepository.save(user);
     }
 
@@ -103,8 +106,8 @@ public class UserService {
      */
     @Transactional
     public void deleteUserAndProfile(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 유저는 존재하지 않습니다."));
+
+        User user = getUserById(userId);
 
         profileRepository.deleteByUserId(userId);
         userRepository.delete(user);
