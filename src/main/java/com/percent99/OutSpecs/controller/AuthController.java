@@ -27,12 +27,13 @@ public class AuthController {
         if(principal!= null){
             return "redirect:/";
         }
-
-        return "";
+        model.addAttribute("userDTO", new UserDTO());
+        return "auth/signup";
     }
 
     @PostMapping("/signup")
-    public String postRegister(@ModelAttribute("user") @Valid UserDTO userDTO, Model model, BindingResult bindingResult){
+    public String postRegister(@ModelAttribute("userDTO") @Valid UserDTO userDTO,
+                               Model model, BindingResult bindingResult){
 
         if(bindingResult.hasErrors()){
             return "";
@@ -40,11 +41,11 @@ public class AuthController {
 
         if(userService.findByUsername(userDTO.getUsername()).isPresent()){
             model.addAttribute("", "이미 존재하는 회원입니다.");
-            return "";
+            return "auth/signup";
         }
 
         userService.registerUser(userDTO);
-        return "";
+        return "auth/login";
     }
 
     @GetMapping("/login")
@@ -52,6 +53,6 @@ public class AuthController {
         if(principal != null){
             return "redirect:/";
         }
-        return "";
+        return "auth/login";
     }
 }
