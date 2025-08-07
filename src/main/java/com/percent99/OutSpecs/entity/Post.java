@@ -13,10 +13,11 @@ import java.util.List;
  * 게시글 정보를 담는 엔티티
  * <ul>연관관계
  *      <li>Image와 1:N 관계</li>
- *      <li>PostBase와 1:N 관계</li>
+ *      <li>PostTags와 1:N 관계</li>
  *      <li>PostTeamInformation와 1:1 관계</li>
  *      <li>PostJob와 1:1 관계</li>
  *      <li>postHangout와 1:1관계</li>
+ *      <li>postQnA와 1:1관계</li>
  * </ul>
  */
 
@@ -61,7 +62,7 @@ public class Post {
     private List<Image> images = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PostBase> postBases = new ArrayList<>();
+    private List<PostTags> postTags = new ArrayList<>();
 
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private PostTeamInformation teamInfo;
@@ -71,4 +72,7 @@ public class Post {
 
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private PostHangout postHangout;
+
+    @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private PostQnA postQnA;
 }

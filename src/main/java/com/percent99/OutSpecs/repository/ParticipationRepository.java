@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Participation 엔티티에 대한 데이터 접근 기능을 제공하느 Repository 인터페이스
@@ -28,4 +29,19 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
      * @return 해당 유저의 신청현황 리스트
      */
     List<Participation> findByUserId(Long userId);
+
+    /**
+     * 특정 게시글에 등록된 모든 신청현황 수
+     * @param postId 조회할 게시글의 ID
+     * @return 해당 게시글의 신청현황 수
+     */
+    long countByPostId(Long postId);
+
+    /**
+     * 해당 유저가 해당 게시글에 신청했는지 현황
+     * @param userId 신청 유저
+     * @param postId 해당 게시글
+     * @return 해당 유저가 해당 게시글에 신청한 신청현황
+     */
+    Optional<Participation> findByUserIdAndPostId(Long userId, Long postId);
 }
