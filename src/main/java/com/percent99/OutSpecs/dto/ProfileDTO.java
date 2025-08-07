@@ -21,6 +21,8 @@ public class ProfileDTO {
     @NotBlank(message = "자기소개는 필수입니다.")
     private String selfInfo;
 
+    private String imageUrl;
+
     @NotNull(message = "기업 공개 여부는 필수입니다.")
     private Boolean allowCompanyAccess;
 }
