@@ -9,6 +9,8 @@ import com.percent99.OutSpecs.repository.ChatRoomRepository;
 import com.percent99.OutSpecs.repository.ProfileRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,6 +67,13 @@ public class ChatMessageService {
     if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return null;
 
     return chatMessageRepository.findAllByChatRoomId(chatRoomId);
+  }
+
+  @Transactional(readOnly = true)
+  public Page<ChatMessage> findByChatRoomId(Long chatRoomId, Long userId, Pageable pageable){
+    if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return null;
+
+    return chatMessageRepository.findByChatRoomId(chatRoomId, pageable);
   }
 
   @Transactional
