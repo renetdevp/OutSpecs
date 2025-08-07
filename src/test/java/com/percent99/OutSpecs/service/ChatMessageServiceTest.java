@@ -15,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -159,6 +160,38 @@ public class ChatMessageServiceTest {
 
     // then
     assertThat(result).isEqualTo(List.of(chatMessage));
+  }
+
+  @Test
+  @DisplayName("ChatMessageService.findByChatRoomId failed when user not in chatroom")
+  void findByChatRoomIdFailedWhenUserNotInChatRoom(){
+    // given
+    Pageable pageable = PageRequest.of(0, 5, Sort.by("createdAt").descending());
+
+    when(chatRoomRepository.existsByIdAndUserId(chatRoom.getId(), user.getId())).thenReturn(false);
+
+    // when
+    Page<ChatMessage> result = chatMessageService.findByChatRoomId(chatRoom.getId(), user.getId(), pageable);
+
+    // then
+    assertThat(result).isNull();
+  }
+
+  @Test
+  @DisplayName("ChatMessageService.findByChatRoomId success")
+  void findByChatRoomIdSuccess(){
+    // given
+    Pageable pageable = PageRequest.of(0, 5, Sort.by("createdAt").descending());
+    Page<ChatMessage> tmpPage = new PageImpl<>(List.of(chatMessage), pageable, 1);
+
+    when(chatRoomRepository.existsByIdAndUserId(chatRoom.getId(), user.getId())).thenReturn(true);
+    when(chatMessageRepository.findByChatRoomId(chatRoom.getId(), pageable)).thenReturn(tmpPage);
+
+    // when
+    Page<ChatMessage> result = chatMessageService.findByChatRoomId(chatRoom.getId(), user.getId(), pageable);
+
+    // then
+    assertThat(result).isEqualTo(tmpPage);
   }
 
   @Test
