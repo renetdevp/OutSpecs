@@ -6,6 +6,7 @@ import com.percent99.OutSpecs.repository.ParticipationRepository;
 import com.percent99.OutSpecs.repository.PostRepository;
 import com.percent99.OutSpecs.repository.ProfileRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 
 import lombok.RequiredArgsConstructor;
@@ -48,6 +49,9 @@ public class ParticipationService {
 
         if(countParticipation(post.getId()) >= post.getTeamInfo().getCapacity() + 5) {
             throw new IllegalStateException("모집신청인원이 많아 신청이 불가합니다.");
+        }
+        if (getParticipationByUserId(user.getId(), post.getId()) != null) {
+            throw new EntityExistsException("해당 게시글에 해당 유저가 이미 신청한 정보가 있습니다.");
         }
 
         Participation participation = new Participation();
@@ -145,8 +149,13 @@ public class ParticipationService {
      * @return 해당 사용자의 Participation 리스트
      */
     @Transactional(readOnly = true)
-    public List<Participation> getParticipationByUserId(Long userId) {
+    public List<Participation> getAllParticipationByUserId(Long userId) {
         return participationRepository.findByUserId(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public Participation getParticipationByUserId(Long userId, Long postId) {
+        return participationRepository.findByUserIdAndPostId(userId, postId).orElse(null);
     }
 
     /**
