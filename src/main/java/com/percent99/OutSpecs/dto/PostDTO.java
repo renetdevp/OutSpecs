@@ -22,6 +22,7 @@ public class PostDTO {
     private String content;
     private PostTeamInformationDTO teamInfo;
     private PostJobDTO jobInfo;
-    private PostBaseDTO baseInfo;
+    private PostTagsDTO tagsInfo;
     private PostHangoutDTO hangoutInfo;
+    private PostQnADTO qnaInfo;
 }

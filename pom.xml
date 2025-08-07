@@ -103,7 +103,14 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-messaging</artifactId>
 		</dependency>
-	</dependencies>
+    <!-- mockito 테스트를 위한 라이브러리 -->
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-inline</artifactId>
+      <version>5.2.0</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
 	<build>
 		<plugins>
@@ -131,6 +138,15 @@
 					</excludes>
 				</configuration>
 			</plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>
+                        -javaagent:${settings.localRepository}/net/bytebuddy/byte-buddy-agent/1.17.6/byte-buddy-agent-1.17.6.jar
+                        -Xshare:off
+                    </argLine>
+                </configuration>
+            </plugin>
 		</plugins>
 	</build>
 

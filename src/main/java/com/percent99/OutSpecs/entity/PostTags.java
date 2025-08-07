@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * 자유게시판, Q&A게시판 등 기본 게시판 정보를 담는 entity <br>
+ * 자유게시판, Q&A게시판 등 의 태그 정보를 담는 entity <br>
  *
  * <ul> 자유, Q&A 게시판
  *      <li>tags : 태그 카테고리</li>
@@ -16,8 +16,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "posts_base")
-public class PostBase {
+@Table(name = "posts_tags")
+public class PostTags {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

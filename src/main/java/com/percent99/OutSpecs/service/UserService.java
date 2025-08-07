@@ -2,12 +2,15 @@ package com.percent99.OutSpecs.service;
 
 import com.percent99.OutSpecs.entity.User;
 import com.percent99.OutSpecs.dto.UserDTO;
+import com.percent99.OutSpecs.entity.UserRoleType;
 import com.percent99.OutSpecs.repository.ProfileRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -20,41 +23,47 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final ProfileRepository profileRepository;
-
-    /**
-     * 회원가입 정보 저장
-     * @param userDTO
-     * @return 저장된 user
-     */
-    public User registerUser(UserDTO userDTO) {
-        if (userRepository.existsByUsername(userDTO.getUsername())) {
-            throw new EntityExistsException("이미 존재하는 회원입니다.");
-        }
-        if(userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
-           if(userDTO.getPassword().length() <= 2) {
-               throw new IllegalArgumentException("비밀번호는 3자리 이상이어야 합니다.");
-           }
-        }
-
-        User user = new User();
-        user.setUsername(userDTO.getUsername());
-        user.setPassword(userDTO.getPassword());
-        user.setRole(userDTO.getRole());
-        user.setAiRateLimit(userDTO.getAiRateLimit());
-
-        if(userDTO.getProviderId() != null) {
-            user.setProviderId(userDTO.getProviderId());
-        }
-        return userRepository.save(user);
-    }
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * 유저정보 조회
      * @param username
      * @return username으로 찾은 유저정보
      */
+    @Transactional(readOnly = true)
     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
+    }
+
+    @Transactional(readOnly = true)
+    public User getUserById(Long userId){
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 유저는 존재하지 않습니다."));
+    }
+
+    /**
+     * 회원가입 정보 저장
+     * @param userDTO 검증은 컨트롤러 단계(@ValidUsername, @ValidPassword)에서 이미 수행됨
+     * @return 저장된 user
+     */
+    @Transactional
+    public User registerUser(UserDTO userDTO) {
+
+        if(userDTO.getProviderId() != null && !userDTO.getProviderId().isBlank()) {
+           throw new IllegalArgumentException("폼 회원가입에서는 구글 로그인을 사용할 수 없습니다.");
+        }
+
+        if (userRepository.existsByUsername(userDTO.getUsername())) {
+            throw new EntityExistsException("이미 존재하는 회원입니다.");
+        }
+
+        User user = new User();
+        user.setUsername(userDTO.getUsername());
+        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        user.setRole(UserRoleType.USER);
+        user.setAiRateLimit(userDTO.getAiRateLimit());
+
+        return userRepository.save(user);
     }
 
     /**
@@ -62,30 +71,32 @@ public class UserService {
      * @param userDTO
      * @return 수정된 유저정보
      */
+    @Transactional
     public User updateUser(UserDTO userDTO) {
-        User exiting = userRepository.findByUsername(userDTO.getUsername())
-                .orElseThrow(() -> new EntityNotFoundException("해당 유저는 존재하지 않습니다."));
 
-        exiting.setRole(userDTO.getRole());
-        if(exiting.getProviderId() == null &&
-                userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
-            if(userDTO.getPassword().length() <= 2) {
-                throw new IllegalArgumentException("비밀번호는 3자리 이상이어야 합니다.");
-            }
-            exiting.setPassword(userDTO.getPassword());
+        if(userDTO.getProviderId() != null && !userDTO.getProviderId().isBlank()){
+            throw new IllegalArgumentException("소셜 로그인 사용자는 비밀번호를 변경할 수 없습니다.");
         }
 
-        return userRepository.save(exiting);
+        User user = userRepository.findByUsername(userDTO.getUsername())
+                .orElseThrow(() -> new EntityNotFoundException("해당 유저는 존재하지 않습니다."));
+
+        user.setRole(userDTO.getRole());
+        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        return userRepository.save(user);
     }
 
     /**
      * AI 사용횟수 감소
      * @param userId
      */
+    @Transactional
     public void decrementAiRateLimit(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 유저는 존재하지 않습니다."));
-        user.setAiRateLimit(user.getAiRateLimit() - 1);
+
+        User user = getUserById(userId);
+
+        int remaining = user.getAiRateLimit() - 1;
+        user.setAiRateLimit(Math.max(remaining,0));
         userRepository.save(user);
     }
 
@@ -93,9 +104,10 @@ public class UserService {
      * 유저정보 삭제
      * @param userId
      */
+    @Transactional
     public void deleteUserAndProfile(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 유저는 존재하지 않습니다."));
+
+        User user = getUserById(userId);
 
         profileRepository.deleteByUserId(userId);
         userRepository.delete(user);

@@ -45,4 +45,11 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
      */
     @Query("SELECT r.targetId FROM Reaction r WHERE r.user = :user AND r.reactionType = 'BOOKMARK' AND r.targetType = 'POST'")
     List<Long> findBookmarkedPostIdsByUser(@Param("user") User user);
+
+    /**
+     * 신고당한 Post targetId 목록 찾기
+     * @return 신고당한 게시글 id 목록
+     */
+    @Query("SELECT r.targetId FROM Reaction r WHERE r.reactionType = 'REPORT' AND r.targetType = 'POST'")
+    List<Long> findReportPostId();
 }

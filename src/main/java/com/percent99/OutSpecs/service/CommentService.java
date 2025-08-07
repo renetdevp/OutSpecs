@@ -1,9 +1,7 @@
 package com.percent99.OutSpecs.service;
 
 import com.percent99.OutSpecs.dto.CommentDTO;
-import com.percent99.OutSpecs.entity.Comment;
-import com.percent99.OutSpecs.entity.CommentType;
-import com.percent99.OutSpecs.entity.User;
+import com.percent99.OutSpecs.entity.*;
 import com.percent99.OutSpecs.repository.CommentRepository;
 import com.percent99.OutSpecs.repository.PostRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
@@ -33,7 +31,9 @@ public class CommentService {
     private final PostRepository postRepository;
 
     /**
-     * 새로운 댓글 생성합니다.
+     * 새로운 댓글 생성합니다.<br>
+     * CommentType이 'COMMENT'나 'ANSWER'은 부모가 무조건 Post 이어야 하며,
+     *  'REPLY'는 부모가 무조건 Comment이어야만 한다.
      * @param dto 댓글 생성에 필요한 데이터(dto)
      * @return 저장된 댓글 엔티티
      */
@@ -46,9 +46,15 @@ public class CommentService {
         if(dto.getType() == CommentType.COMMENT || dto.getType() == CommentType.ANSWER){
             postRepository.findById(dto.getParentId())
                     .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
-        }else{
-            commentRepository.findById(dto.getParentId())
+        } else if(dto.getType() == CommentType.REPLY){
+            Comment parent = commentRepository.findById(dto.getParentId())
                     .orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다."));
+
+            if (parent.getType() == CommentType.REPLY) {
+                throw new IllegalArgumentException("대댓글에 다시 대댓글을 달 수 없습니다.");
+            }
+        } else {
+            throw new IllegalArgumentException("알 수 없는 댓글 타입입니다.");
         }
 
         Comment comment = new Comment();
@@ -96,14 +102,24 @@ public class CommentService {
     }
 
     /**
-     * 지정한 ID의 댓글을 삭제한다.
-     * @param id 삭제할 댓글의 ID
+     * 지정한 ID의 댓글을 삭제한다.<br>
+     * 답변은 관리자만 삭제 가능하다.
+     * @param userId 로그인 유저 ID
+     * @param commentId 삭제할 댓글의 ID
      */
     @Transactional
-    public void deletedComment(Long id) {
-        if(!commentRepository.existsById(id)){
-            throw new EntityNotFoundException("해당 댓글 내용이 발견되지않았습니다.");
-        }
-        commentRepository.deleteById(id);
+    public void deletedComment(Long userId,Long commentId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 유저는 존재하지 않습니다."));
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 댓글 내용이 발견되지않았습니다."));
+
+        if (user.getRole().equals(UserRoleType.ADMIN)) {
+            commentRepository.deleteById(commentId);
+        } else if(comment.getType().equals(CommentType.ANSWER)) {
+            throw new IllegalArgumentException("질문의 답변은 관리자만 삭제할 수 있습니다.");
+        } else if(!userId.equals(comment.getUser().getId())) {
+            throw new IllegalArgumentException("댓글 작성자가 아닙니다.");
+        } else { commentRepository.deleteById(commentId); }
     }
 }

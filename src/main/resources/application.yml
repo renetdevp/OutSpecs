@@ -1,6 +1,21 @@
 spring:
   application:
     name: OutSpecs
+  security:
+    user:
+      name: sa
+      password: cc
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: YOUR_CLIENT_ID
+            client-secret: YOUR_CLIENT_SECRET
+            scope:
+              - openId
+              - profile
+              - email
+            redirect-uri: http://localhost:8080/login/oauth2/code/google
 
 aws:
   access-key-id: YOUR_ACCESS_KEY
@@ -8,3 +23,7 @@ aws:
   region: ap-northeast-2
   s3:
     bucket-name: my-java-app-files-2024
+
+alan:
+  BASE_URL: ${ALAN_BASE_URL}
+  CLIENT_ID: ${ALAN_CLIENT_ID}

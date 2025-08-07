@@ -1,11 +1,9 @@
 package com.percent99.OutSpecs.handler.impl;
 
 import com.percent99.OutSpecs.dto.PostDTO;
-import com.percent99.OutSpecs.entity.Post;
-import com.percent99.OutSpecs.entity.PostJob;
-import com.percent99.OutSpecs.entity.PostType;
-import com.percent99.OutSpecs.entity.Techniques;
+import com.percent99.OutSpecs.entity.*;
 import com.percent99.OutSpecs.handler.PostDetailHandler;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Component;
 
 /**
@@ -22,6 +20,8 @@ public class PostJobHandler implements PostDetailHandler {
     @Override
     public void handle(Post post, PostDTO dto) {
         if(dto.getJobInfo() == null) return;
+        if(!post.getUser().getRole().equals(UserRoleType.ENTUSER)) return;
+
         PostJob job = new PostJob();
         job.setPost(post);
         job.setCareer(dto.getJobInfo().getCareer());
