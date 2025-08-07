@@ -1,5 +1,6 @@
 package com.percent99.OutSpecs.service;
 
+import com.percent99.OutSpecs.dto.ChatMessageDTO;
 import com.percent99.OutSpecs.entity.ChatMessage;
 import com.percent99.OutSpecs.entity.ChatRoom;
 import com.percent99.OutSpecs.entity.User;
@@ -9,6 +10,7 @@ import com.percent99.OutSpecs.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -24,21 +26,29 @@ public class ChatMessageService {
 
   /**
    *
-   * @param chatMessage 사용자가 송신한 채팅 메시지 객체
+   * @param chatMessageDTO 사용자가 송신한 채팅 메시지 DTO 객체
    * @param userId 로그인한 사용자의 id 값
    * @return 생성한 chatMessage 객체
    */
-  public void createChatMessage(ChatMessage chatMessage, Long userId){
-    ChatRoom chatRoom = chatRoomService.findChatRoomById(chatMessage.getChatRoom().getId()).orElse(null);
+  public void createChatMessage(ChatMessageDTO chatMessageDTO, Long userId){
+    ChatRoom chatRoom = chatRoomService.findChatRoomById(chatMessageDTO.getChatRoomId()).orElse(null);
     User user = userRepository.findById(userId).orElse(null);
 
     if (chatRoom==null || user==null) return;
 
-    chatMessage.setSender(user);
+    ChatMessage chatMessage = new ChatMessage();
 
-    Long lastMessageId = chatMessageRepository.save(chatMessage).getId();
+    chatMessage.setChatRoom(chatRoom);
+    chatMessage.setContent(chatMessageDTO.getContent());
+    chatMessage.setSender(user);
+    chatMessage.setCreatedAt(LocalDateTime.now());
+
+    chatMessage = chatMessageRepository.save(chatMessage);
+
+    Long lastMessageId = chatMessage.getId();
 
     chatRoom.setLastMessageId(lastMessageId);
+
     chatRoomService.updateChatRoomById(chatRoom, userId);
   }
 
