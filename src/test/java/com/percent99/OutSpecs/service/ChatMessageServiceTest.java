@@ -6,6 +6,7 @@ import com.percent99.OutSpecs.entity.ChatRoom;
 import com.percent99.OutSpecs.entity.User;
 import com.percent99.OutSpecs.repository.ChatMessageRepository;
 import com.percent99.OutSpecs.repository.ChatRoomRepository;
+import com.percent99.OutSpecs.repository.ProfileRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -27,6 +28,7 @@ public class ChatMessageServiceTest {
   @Mock private ChatRoomService chatRoomService;
   @Mock private ChatRoomRepository chatRoomRepository;
   @Mock private UserRepository userRepository;
+  @Mock private ProfileRepository profileRepository;
   @InjectMocks private ChatMessageService chatMessageService;
 
   private ChatMessage chatMessage;
@@ -66,11 +68,27 @@ public class ChatMessageServiceTest {
   }
 
   @Test
-  @DisplayName("ChatMessageService.createChatMessage failed when chatroom not found")
+  @DisplayName("ChatMessageService.createChatMessage failed when user not found")
   void createChatMessageFailedWhenUserNotFound(){
     // give
     when(chatRoomService.findChatRoomById(chatMessageDTO.getChatRoomId())).thenReturn(Optional.of(chatRoom));
     when(userRepository.findById(user.getId())).thenReturn(Optional.empty());
+
+    // when
+    chatMessageService.createChatMessage(chatMessageDTO, user.getId());
+
+    // then
+    verify(chatMessageRepository, never()).save(chatMessage);
+    verify(chatRoomService, never()).updateChatRoomById(chatRoom, user.getId());
+  }
+
+  @Test
+  @DisplayName("ChatMessageService.createChatMessage failed when user has no profile")
+  void createChatMessageFailedWhenUserHasNoProfile(){
+    // give
+    when(chatRoomService.findChatRoomById(chatMessageDTO.getChatRoomId())).thenReturn(Optional.of(chatRoom));
+    when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+    when(profileRepository.existsByUserId(user.getId())).thenReturn(false);
 
     // when
     chatMessageService.createChatMessage(chatMessageDTO, user.getId());
@@ -86,6 +104,7 @@ public class ChatMessageServiceTest {
     // give
     when(chatRoomService.findChatRoomById(chatMessageDTO.getChatRoomId())).thenReturn(Optional.of(chatRoom));
     when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+    when(profileRepository.existsByUserId(user.getId())).thenReturn(true);
     when(chatRoomRepository.existsByIdAndUserId(chatRoom.getId(), user.getId())).thenReturn(false);
 
     // when
@@ -102,6 +121,7 @@ public class ChatMessageServiceTest {
     // give
     when(chatRoomService.findChatRoomById(chatMessageDTO.getChatRoomId())).thenReturn(Optional.of(chatRoom));
     when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+    when(profileRepository.existsByUserId(user.getId())).thenReturn(true);
     when(chatRoomRepository.existsByIdAndUserId(chatRoom.getId(), user.getId())).thenReturn(true);
     when(chatMessageRepository.save(any(ChatMessage.class))).thenReturn(chatMessage);
     when(chatRoomService.updateChatRoomById(chatRoom, user.getId())).thenReturn(chatRoom);

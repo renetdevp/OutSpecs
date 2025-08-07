@@ -3,6 +3,7 @@ package com.percent99.OutSpecs.service;
 import com.percent99.OutSpecs.entity.ChatRoom;
 import com.percent99.OutSpecs.entity.User;
 import com.percent99.OutSpecs.repository.ChatRoomRepository;
+import com.percent99.OutSpecs.repository.ProfileRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +22,7 @@ import static org.mockito.Mockito.*;
 public class ChatRoomServiceTest {
   @Mock private ChatRoomRepository chatRoomRepository;
   @Mock private UserRepository userRepository;
+  @Mock private ProfileRepository profileRepository;
   @InjectMocks private ChatRoomService chatRoomService;
 
   private User user1;
@@ -59,11 +61,33 @@ public class ChatRoomServiceTest {
   }
 
   @Test
+  @DisplayName("ChatRoomService.createChatRoom failed when user has no profile")
+  void createChatRoomFailedWhenUserHasNoProfile(){
+    // given
+    when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
+    when(userRepository.findById(user2.getId())).thenReturn(Optional.of(user2));
+
+    when(profileRepository.existsByUserId(user1.getId())).thenReturn(false);
+    when(profileRepository.existsByUserId(user2.getId())).thenReturn(false);
+
+    // when
+    Object result1 = chatRoomService.createChatRoom(user1.getId(), user2.getId());
+    Object result2 = chatRoomService.createChatRoom(user2.getId(), user1.getId());
+
+    // then
+    assertThat(result1).isEqualTo(null);
+    assertThat(result2).isEqualTo(null);
+  }
+
+  @Test
   @DisplayName("ChatRoomService.createChatRoom failed when chatroom already exists")
   void createChatRoomFailedWhenChatRoomAlreadyExists(){
     // given
     when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
     when(userRepository.findById(user2.getId())).thenReturn(Optional.of(user2));
+
+    when(profileRepository.existsByUserId(user1.getId())).thenReturn(true);
+    when(profileRepository.existsByUserId(user2.getId())).thenReturn(true);
 
     when(chatRoomRepository.existsByUser1AndUser2(user1, user2)).thenReturn(true);
     when(chatRoomRepository.existsByUser1AndUser2(user2, user1)).thenReturn(true);
@@ -83,6 +107,9 @@ public class ChatRoomServiceTest {
     // given
     when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
     when(userRepository.findById(user2.getId())).thenReturn(Optional.of(user2));
+
+    when(profileRepository.existsByUserId(user1.getId())).thenReturn(true);
+    when(profileRepository.existsByUserId(user2.getId())).thenReturn(true);
 
     when(chatRoomRepository.existsByUser1AndUser2(user1, user2)).thenReturn(false);
     when(chatRoomRepository.existsByUser1AndUser2(user2, user1)).thenReturn(false);
