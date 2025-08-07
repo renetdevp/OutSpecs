@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -77,10 +78,16 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/scripts/**").permitAll()
                         .requestMatchers("/error","/").permitAll()
-                        .requestMatchers("/login", "/logout").permitAll()
-                        .anyRequest().permitAll()
+                        .requestMatchers("/users/**").permitAll()
+                        .requestMatchers("/login", "/logout", "/oauth2/**", "/login/oauth2/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .headers(headers -> headers
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin    // H2 콘솔 내 <frame> 렌더링 허용
+                        )
                 )
                 .formLogin(form -> form
                         .loginPage("/users/login")
@@ -100,15 +107,17 @@ public class SecurityConfig {
                 )
                 .oauth2Login(oAuth2 -> oAuth2
                         .loginPage("/users/login")
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService)
-                        )
+                        .userInfoEndpoint(userInfo ->{
+                            System.out.println("=== OAuth2 userInfoEndpoint 설정됨 ===");
+                            userInfo.userService(customOAuth2UserService);
+                        })
                         .defaultSuccessUrl("/", true)
                         .failureHandler((request, response, exception) -> {
                             String errorMsg = URLEncoder.encode(exception.getMessage(), StandardCharsets.UTF_8);
                             response.sendRedirect("/users/login?error=" + errorMsg);
                         })
                 );
+
         return http.build();
     }
 }
