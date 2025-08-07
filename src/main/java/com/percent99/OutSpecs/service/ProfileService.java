@@ -63,7 +63,6 @@ public class ProfileService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 프로필이 존재하지 않습니다."));
     }
 
-
     /**
      * 사용자 프로필을 등록
      * <ol>
@@ -80,7 +79,7 @@ public class ProfileService {
      */
     public Profile registerProfile(Long userId, ProfileDTO dto, MultipartFile file) throws IOException{
 
-        getUserById(userId);
+        User user = getUserById(userId);
         ensureProfileNotExists(userId);
         validateNickname(dto.getNickname(),null);
 
@@ -96,7 +95,7 @@ public class ProfileService {
         }
 
         try{
-            return createProfileDB(userId,dto, imageUrl, s3Key);
+            return createProfileDB(user,dto, imageUrl, s3Key);
         } catch (Exception e){
             if(s3Key != null){
                 try{
@@ -113,20 +112,17 @@ public class ProfileService {
      * DB에 실제로 Profile 엔티티를 생성하고 저장 <br>
      * 쓰기 전용 트랜잭션이 적용
      *
-     * @param userId   프로필 소유자 사용자 ID
+     * @param user   프로필 소유자 사용자
      * @param dto      프로필 데이터 DTO
      * @param imageUrl 프로필 이미지 URL (없으면  null)
      * @param s3Key    S3에 저장된 이미지의 키 (없으면 null)
      * @return 저장된 Profile 엔티티
      */
     @Transactional
-    public Profile createProfileDB(Long userId,
+    public Profile createProfileDB(User user,
                                    ProfileDTO dto,
                                    String imageUrl,
                                    String s3Key){
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 유저는 존재하지 않습니다."));
-
         Profile profile = new Profile();
         profile.setUser(user);
         profile.setStacks(dto.getStacks());
@@ -170,7 +166,7 @@ public class ProfileService {
         }
 
         try{
-            updateProfileImageDB(profile.getUserId(),newUrl,newKey);
+            updateProfileImageDB(profile,newUrl,newKey);
         } catch (Exception e){
             try {
                 s3Service.deleteFile(newKey);
@@ -193,16 +189,12 @@ public class ProfileService {
      * DB에 프로필 이미지 URL과 S3 키를 반영 <br>
      * 쓰기 전용 트랜잭션이 적용됩니다.
      *
-     * @param profileId 프로필 엔티티 ID
+     * @param profile 프로필 엔티티 ID
      * @param imageUrl  새 이미지 URL
      * @param s3Key     새 이미지 S3 키
      */
     @Transactional
-    protected void updateProfileImageDB(Long profileId, String imageUrl, String s3Key){
-
-        Profile profile = profileRepository.findByUserId(profileId)
-                        .orElseThrow(() -> new EntityNotFoundException("해당 프로필이 존재하지 않습니다."));
-
+    public void updateProfileImageDB(Profile profile, String imageUrl, String s3Key){
         profile.setImageUrl(imageUrl);
         profile.setS3Key(s3Key);
         profileRepository.save(profile);
