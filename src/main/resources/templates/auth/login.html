@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>로그인 | OutSpecs</title>
+</head>
+<body class="">
+    <header id=""></header>
+    <div class="">
+        <div class="">
+            <img
+                alt="OutSpecs 로고"
+                class=""
+                id="" />
+        </div>
+
+        <div th:if="${param.error}"
+             class=""
+             id="">
+            로그인 정보가 올바르지 않습니다.
+        </div>
+
+        <form id=""
+              th:action="@{/login}"
+              method="post"
+              class=""
+              novalidate>
+            <!-- EMAIL -->
+            <div class=""
+                 id="">
+                <label for="username"
+                       class=""
+                       id="">
+                    이메일
+                </label>
+                <input type="text"
+                       id=""
+                       name="username"
+                       placeholder="이메일 입력"
+                       required
+                       class=""
+                />
+                <div id=""
+                     class=""></div>
+            </div>
+
+            <!-- PASSWORD -->
+            <div class=""
+                 id="">
+                <label for="password"
+                       class=""
+                       id="">
+                    비밀번호
+                </label>
+                <input type="password"
+                       id=""
+                       name="password"
+                       placeholder="비밀번호 입력"
+                       required
+                       class=""
+                />
+                <div id=""
+                     class=""></div>
+            </div>
+
+            <!-- PRIMARY LOGIN BUTTON -->
+            <button type="submit"
+                    class=""
+                    id="">
+                로그인
+            </button>
+
+            <!-- GOOGLE LOGIN BUTTON -->
+            <button type="button"
+                    class=""
+                    id=""
+                    onclick="location.href='/oauth2/authorization/google'">
+                <img
+                     alt="Google 로고"
+                     class=""
+                     id="" />
+                Google로 로그인
+            </button>
+
+            <!-- SIGNUP LINK -->
+            <p class=""
+               id="">
+                OutSpecs 회원이 아니신가요?
+                <a th:href="@{/users/signup}"
+                   class=""
+                   id="">
+                    회원가입
+                </a>
+            </p>
+        </form>
+    </div>
+</body>
+</html>
