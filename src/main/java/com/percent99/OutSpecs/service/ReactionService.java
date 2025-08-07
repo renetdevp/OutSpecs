@@ -1,6 +1,7 @@
 package com.percent99.OutSpecs.service;
 
 import com.percent99.OutSpecs.entity.*;
+import com.percent99.OutSpecs.repository.CommentRepository;
 import com.percent99.OutSpecs.repository.PostRepository;
 import com.percent99.OutSpecs.repository.ReactionRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +20,8 @@ public class ReactionService {
     private final ReactionRepository reactionRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final NotificationService notificationService;
 
     /**
      * 반응 추가 (좋아요, 북마크, 팔로우, 신고)
@@ -33,6 +37,14 @@ public class ReactionService {
         if(reactionRepository.existsByUserAndTargetTypeAndTargetIdAndReactionType(user, targetType, targetId, reactionType)) {
             throw new EntityExistsException("이미 반응이 존재합니다.");
         }
+        if(targetType.equals(TargetType.POST) && !postRepository.existsById(targetId)) {
+            throw new EntityNotFoundException("해당 게시물은 존재하지 않습니다.");
+        } else if (targetType.equals(TargetType.COMMENT) && !commentRepository.existsById(targetId)) {
+            throw new EntityNotFoundException("해당 댓글은 존재하지 않습니다.");
+        } else if(targetType.equals(TargetType.USER) && !userRepository.existsById(targetId)) {
+            throw new EntityNotFoundException("해당 유저는 존재하지 않습니다.");
+        }
+
         Reaction reaction = new Reaction();
         reaction.setUser(user);
         reaction.setTargetType(targetType);
@@ -40,6 +52,44 @@ public class ReactionService {
         reaction.setReactionType(reactionType);
 
         reactionRepository.save(reaction);
+
+        // 알림 발송
+        User receiver = findTargetUser(targetType, targetId);
+        if(reaction.getReactionType().equals(ReactionType.FOLLOW)) {
+            notificationService.sendNotification(user, receiver, NotificationType.FOLLOW, targetId);
+        } else if(reaction.getReactionType().equals(ReactionType.LIKE) && reaction.getTargetType().equals(TargetType.POST)) {
+            notificationService.sendNotification(user, receiver, NotificationType.LIKE_POST, targetId);
+        } else if(reaction.getReactionType().equals(ReactionType.LIKE) && reaction.getTargetType().equals(TargetType.COMMENT)) {
+            notificationService.sendNotification(user, receiver, NotificationType.LIKE_COMMENT, targetId);
+        }
+
+    }
+
+    /**
+     * target의 user를 찾는 메서드
+     * @param type target type(post, user, comment)
+     * @param targetId taregt id
+     * @return target user
+     */
+    public User findTargetUser(TargetType type, Long targetId) {
+        User user;
+
+        if (type.equals(TargetType.USER)) {
+            user = userRepository.findById(targetId)
+                    .orElseThrow(() -> new EntityNotFoundException("해당 유저가 존재하지 않습니다."));
+        } else if (type.equals(TargetType.POST)) {
+            Post post = postRepository.findById(targetId)
+                    .orElseThrow(() -> new EntityNotFoundException("해당 게시글이 존재하지 않습니다."));
+            user = Optional.ofNullable(post.getUser())
+                    .orElseThrow(() -> new IllegalStateException("해당 게시글에 작성자가 없습니다."));
+        } else {
+            Comment comment = commentRepository.findById(targetId)
+                    .orElseThrow(() -> new EntityNotFoundException("해당 댓글이 존재하지 않습니다."));
+            user = Optional.ofNullable(comment.getUser())
+                    .orElseThrow(() -> new IllegalStateException("해당 댓글의 작성자가 없습니다."));
+        }
+
+        return user;
     }
 
     /**

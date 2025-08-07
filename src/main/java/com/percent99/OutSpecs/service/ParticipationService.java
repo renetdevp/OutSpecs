@@ -4,6 +4,7 @@ import com.percent99.OutSpecs.dto.ParticipationDTO;
 import com.percent99.OutSpecs.entity.*;
 import com.percent99.OutSpecs.repository.ParticipationRepository;
 import com.percent99.OutSpecs.repository.PostRepository;
+import com.percent99.OutSpecs.repository.ProfileRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 
@@ -30,6 +31,7 @@ public class ParticipationService {
     private final ParticipationRepository participationRepository;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final NotificationService notificationService;
 
     /**
      * 새로운 팀 모집 신청을 생성한다.
@@ -53,8 +55,12 @@ public class ParticipationService {
         participation.setPost(post);
         participation.setStatus(ParticipationStatus.PENDING);
         participation.setAppliedAt(LocalDateTime.now());
+        Participation saved = participationRepository.save(participation);
 
-        return participationRepository.save(participation);
+        //알림 발송
+        notificationService.sendNotification(user, post.getUser(), NotificationType.APPLY, post.getId());
+
+        return saved;
     }
 
     /**
@@ -81,13 +87,21 @@ public class ParticipationService {
         Post post = postRepository.findById(participation.getPost().getId())
                 .orElseThrow(() -> new EntityNotFoundException("해당 게시글 정보가 발견되지않았습니다."));
         participation.setStatus(dto.getStatus());
+        Participation saved = participationRepository.save(participation);
 
-        if(dto.getStatus().equals(ParticipationStatus.ACCEPTED)
-                && (countAcceptedParticipation(post.getId()) + 1 == post.getTeamInfo().getCapacity())) {
+        if(saved.getStatus().equals(ParticipationStatus.ACCEPTED)
+                && (countAcceptedParticipation(post.getId()) == post.getTeamInfo().getCapacity())) {
             post.getTeamInfo().setStatus(PostStatus.CLOSED);
         }
 
-        return participationRepository.save(participation);
+        // 알림 발송
+        if(saved.getStatus().equals(ParticipationStatus.REJECTED)) {
+            notificationService.sendNotification(post.getUser(), participation.getUser(), NotificationType.REJECTED, participation.getId());
+        } else if(saved.getStatus().equals(ParticipationStatus.ACCEPTED)) {
+            notificationService.sendNotification(post.getUser(), participation.getUser(), NotificationType.ACCEPTED, participation.getId());
+        }
+
+        return saved;
     }
 
     /**
