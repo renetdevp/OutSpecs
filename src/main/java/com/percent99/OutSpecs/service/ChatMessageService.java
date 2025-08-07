@@ -36,6 +36,8 @@ public class ChatMessageService {
 
     if (chatRoom==null || user==null) return;
 
+    if (!chatRoomRepository.existsByIdAndUserId(chatRoom.getId(), userId)) return;
+
     ChatMessage chatMessage = new ChatMessage();
 
     chatMessage.setChatRoom(chatRoom);
