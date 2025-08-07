@@ -6,9 +6,11 @@ import com.percent99.OutSpecs.entity.ChatRoom;
 import com.percent99.OutSpecs.entity.User;
 import com.percent99.OutSpecs.repository.ChatMessageRepository;
 import com.percent99.OutSpecs.repository.ChatRoomRepository;
+import com.percent99.OutSpecs.repository.ProfileRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,6 +25,7 @@ public class ChatMessageService {
   private final ChatRoomService chatRoomService;
   private final ChatRoomRepository chatRoomRepository;
   private final UserRepository userRepository;
+  private final ProfileRepository profileRepository;
 
   /**
    *
@@ -30,11 +33,14 @@ public class ChatMessageService {
    * @param userId 로그인한 사용자의 id 값
    * @return 생성한 chatMessage 객체
    */
+  @Transactional
   public void createChatMessage(ChatMessageDTO chatMessageDTO, Long userId){
     ChatRoom chatRoom = chatRoomService.findChatRoomById(chatMessageDTO.getChatRoomId()).orElse(null);
     User user = userRepository.findById(userId).orElse(null);
 
     if (chatRoom==null || user==null) return;
+
+    if (!profileRepository.existsByUserId(userId)) return;
 
     if (!chatRoomRepository.existsByIdAndUserId(chatRoom.getId(), userId)) return;
 
@@ -54,24 +60,28 @@ public class ChatMessageService {
     chatRoomService.updateChatRoomById(chatRoom, userId);
   }
 
+  @Transactional(readOnly = true)
   public List<ChatMessage> findAllByChatRoomId(Long chatRoomId, Long userId){
     if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return null;
 
     return chatMessageRepository.findAllByChatRoomId(chatRoomId);
   }
 
+  @Transactional
   public ChatMessage updateChatMessage(ChatMessage chatMessage, Long userId){
     if (!isChatMessageSender(chatMessage, userId)) return null;
 
     return chatMessageRepository.save(chatMessage);
   }
 
+  @Transactional
   public void deleteAllChatMessages(Long chatRoomId, Long userId){
     if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return;
 
     chatMessageRepository.deleteAllByChatRoomIdAndUserId(chatRoomId, userId);
   }
 
+  @Transactional
   public void deleteChatMessage(Long userId, Long chatMessageId){
     if (!isChatMessageSender(userId, chatMessageId)) return;
 
@@ -94,6 +104,7 @@ public class ChatMessageService {
    * @param userId 현재 로그인한 사용자의 id 값
    * @return userId 값이 chatMessage 송신자의 id 값과 일치하는지 여부를 반환
    */
+  @Transactional(readOnly = true)
   public boolean isChatMessageSender(Long chatMessageId, Long userId){
     ChatMessage chatMessage = chatMessageRepository.findById(chatMessageId).orElse(null);
 
