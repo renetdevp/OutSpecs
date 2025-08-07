@@ -8,3 +8,7 @@ aws:
   region: ap-northeast-2
   s3:
     bucket-name: my-java-app-files-2024
+
+alan:
+  BASE_URL: ${ALAN_BASE_URL}
+  CLIENT_ID: ${ALAN_CLIENT_ID}

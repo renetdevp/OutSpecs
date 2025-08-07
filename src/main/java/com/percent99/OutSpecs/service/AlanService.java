@@ -1,0 +1,54 @@
+package com.percent99.OutSpecs.service;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.percent99.OutSpecs.exception.HttpResponseProcessingException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
+/**
+ * 이스트소프트의 Alan AI에게 질의하기 위한 서비스.<br>
+ * '놀러 나가기' 기능을 위한 getRecommend() 메소드와 챗봇 기능을 위한 getAnswer() 메소드가 존재.
+ */
+@RequiredArgsConstructor
+@Service
+public class AlanService {
+  private final RestTemplate restTemplate;
+  private final ObjectMapper objectMapper;
+
+  @Value("${alan.BASE_URL}")
+  private String baseUrl;
+
+  @Value("${alan.CLIENT_ID}")
+  private String alanClientId;
+
+  private String sendRequest(String content) {
+    String url = UriComponentsBuilder.fromUriString(baseUrl)
+            .queryParam("content", content)
+            .queryParam("client_id", alanClientId)
+            .build()
+            .toUriString();
+
+    ResponseEntity<String> res = restTemplate.getForEntity(url, String.class);
+
+    try {
+      return objectMapper.readTree(res.getBody()).get("content").asText();
+    } catch (JsonProcessingException e) {
+      throw new HttpResponseProcessingException(e);
+    }
+  }
+
+  public String getRecommend(String placeName){
+    String content = String.format("%s 지역의 명소를 5곳, 맛집을 5곳 추천", placeName);
+
+    return this.sendRequest(content);
+  }
+
+  public String getAnswer(String question){
+    return this.sendRequest(question);
+  }
+}
