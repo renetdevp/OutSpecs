@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${post.title}">게시글 상세</title>
+</head>
+<body>
+<h1 th:text="${post.title}"></h1>
+
+<div>
+  <span>작성자: <span th:text="${post.user.username}"></span></span> |
+  <span>작성일: <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}"></span></span> |
+  <span>조회수: <span th:text="${post.viewCount}"></span></span>
+</div>
+
+<hr>
+
+<div th:utext="${post.content}"></div>
+
+<div th:if="${post.images}">
+  <div th:each="img : ${post.images}">
+    <img th:src="@{|/uploads/${img.fileName}|}" alt="첨부 이미지" style="max-width: 300px;">
+  </div>
+</div>
+
+<hr>
+
+<div>
+  <a th:href="@{|/free-board/${post.id}/edit|}">수정</a>
+  <form th:action="@{|/free-board/${post.id}/delete|}" method="post" style="display:inline;">
+    <button type="submit">삭제</button>
+  </form>
+  <a th:href="@{/free-board/latest}">목록</a>
+</div>
+
+</body>
+</html>

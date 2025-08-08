@@ -1,6 +1,6 @@
 package com.percent99.OutSpecs.service;
 
-import com.percent99.OutSpecs.dto.PostDTO;
+import com.percent99.OutSpecs.dto.*;
 import com.percent99.OutSpecs.entity.*;
 import com.percent99.OutSpecs.handler.PostDetailHandler;
 import com.percent99.OutSpecs.repository.PostRepository;
@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  ** 게시글(post) 관련 생성·조회·수정·삭제 기능을 제공하는 서비스
@@ -106,6 +107,55 @@ public class PostService {
                 .forEach(h -> h.handle(post,dto));
 
         return postRepository.save(post);
+    }
+
+    public PostDTO getPostDTOById(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("게시글이 없습니다."));
+
+        PostDTO dto = new PostDTO();
+        dto.setUserId(post.getUser().getId());
+        dto.setType(post.getType());
+        dto.setTitle(post.getTitle());
+        dto.setContent(post.getContent());
+        if(post.getPostTags() != null) {
+            PostTagsDTO postTagsDTO = new PostTagsDTO();
+            StringBuilder tagsBuilder = new StringBuilder();
+            for(PostTags tag : post.getPostTags()) {
+                if (!tagsBuilder.isEmpty()) {
+                    tagsBuilder.append(",");
+                }
+                tagsBuilder.append(tag);
+            }
+            postTagsDTO.setTags(tagsBuilder.toString());
+            dto.setTagsInfo(postTagsDTO);
+        }
+        if(post.getPostHangout() != null) {
+            PostHangoutDTO hangoutDTO = new PostHangoutDTO();
+            hangoutDTO.setPlaceName(post.getPostHangout().getPlaceName());
+            dto.setHangoutInfo(hangoutDTO);
+        }
+        if(post.getPostJob() != null) {
+            PostJobDTO postJobDTO = new PostJobDTO();
+            postJobDTO.setCareer(post.getPostJob().getCareer());
+            List<String> techniqueNames = post.getPostJob().getTechniques().stream()
+                    .map(Techniques::getTech)
+                    .collect(Collectors.toList());
+            postJobDTO.setTechniques(techniqueNames);
+            dto.setJobInfo(postJobDTO);
+        }
+        if(post.getTeamInfo() != null) {
+            PostTeamInformationDTO postTeamInfoDTO = new PostTeamInformationDTO();
+            postTeamInfoDTO.setCapacity(post.getTeamInfo().getCapacity());
+            postTeamInfoDTO.setStatus(post.getTeamInfo().getStatus());
+            dto.setTeamInfo(postTeamInfoDTO);
+        }
+        if(post.getPostQnA() != null) {
+            PostQnADTO postQnADTO = new PostQnADTO();
+            postQnADTO.setAnswerComplete(post.getPostQnA().isAnswerComplete());
+            dto.setQnaInfo(postQnADTO);
+        }
+        return dto;
     }
 
     /**
