@@ -1,5 +1,6 @@
 package com.percent99.OutSpecs.service;
 
+import com.percent99.OutSpecs.dto.ChatRoomResponseDTO;
 import com.percent99.OutSpecs.entity.ChatRoom;
 import com.percent99.OutSpecs.entity.User;
 import com.percent99.OutSpecs.repository.ChatRoomRepository;
@@ -13,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -35,6 +37,7 @@ public class ChatRoomServiceTest {
     user2 = new User();
 
     user1.setId(1L);
+    user1.setUsername("user1");
     user2.setId(2L);
 
     chatRoom = new ChatRoom();
@@ -121,6 +124,52 @@ public class ChatRoomServiceTest {
 
     // then
     assertThat(result).isEqualTo(chatRoom);
+  }
+
+  @Test
+  @DisplayName("ChatRoomService.findChatRoomByUsername failed")
+  void findChatRoomByUsernameFailed(){
+    // given & when
+    List<ChatRoom> result1 = chatRoomService.findChatRoomByUsername(null);
+    List<ChatRoom> result2 = chatRoomService.findChatRoomByUsername("");
+
+    // then
+    assertThat(result1).isEqualTo(List.of());
+    assertThat(result2).isEqualTo(List.of());
+  }
+
+  @Test
+  @DisplayName("ChatRoomService.findChatRoomByUsername success")
+  void findChatRoomByUsernameSuccess(){
+    // given
+    when(chatRoomRepository.findByUsername(user1.getUsername())).thenReturn(List.of(chatRoom));
+
+    // when
+    List<ChatRoom> result = chatRoomService.findChatRoomByUsername(user1.getUsername());
+
+    // then
+    assertThat(result).isEqualTo(List.of(chatRoom));
+  }
+
+  @Test
+  @DisplayName("ChatRoomService.getChatRoomResponseDTOListByUsername failed")
+  void getChatRoomResponseDTOListByUsernameFailed(){
+    // given
+    String nullUsername = null;
+    String blankUsername = "";
+
+    when(chatRoomRepository.findByUsername(user1.getUsername())).thenReturn(List.of());
+
+    // when
+    List<ChatRoomResponseDTO> result1 = chatRoomService.getChatRoomResponseDTOListByUsername(nullUsername);
+    List<ChatRoomResponseDTO> result2 = chatRoomService.getChatRoomResponseDTOListByUsername(blankUsername);
+    List<ChatRoomResponseDTO> result3 = chatRoomService.getChatRoomResponseDTOListByUsername(user1.getUsername());
+
+    // then
+    assertThat(result1).isEqualTo(List.of());
+    assertThat(result2).isEqualTo(List.of());
+    verify(chatRoomRepository, times(1)).findByUsername(user1.getUsername());
+    assertThat(result3).isEqualTo(List.of());
   }
 
   @Test
