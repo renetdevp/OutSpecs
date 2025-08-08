@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${post.title}">질문 상세</title>
+</head>
+<body>
+<article>
+    <h1 th:text="${post.title}">제목</h1>
+    <p>
+        작성자: <span th:text="${post.user.username}">작성자명</span> |
+        작성일: <span th:text="${#temporals.format(post.createdAt,'yyyy-MM-dd HH:mm')}">작성시간</span> |
+        조회수: <span th:text="${post.viewCount}">0</span>
+    </p>
+    <div th:utext="${post.content}">내용</div>
+    <div th:if="${#authentication.principal.user.id == post.user.id}">
+        <a th:href="@{|/qna/${post.id}/edit|}">수정</a>
+        <form th:action="@{|/qna/${post.id}/delete|}" method="post" style="display:inline">
+            <button type="submit">삭제</button>
+        </form>
+        <a th:href="@{/qna}">목록으로 돌아가기</a>
+    </div>
+</article>
+
+<!-- 답변 등록 폼 -->
+<section class="new-answer">
+    <h3>답변 등록</h3>
+    <form th:action="@{|/qna/${post.id}/answers|}" method="post">
+        <input type="hidden" name="userId" th:value="${#authentication.principal.user.id}" />
+        <textarea name="content" rows="4" placeholder="답변 작성" required></textarea>
+        <button type="submit">답변 달기</button>
+    </form>
+</section>
+
+<!-- 답변 & 댓글/대댓글 목록 -->
+<section class="answers">
+    <h2>답변 &amp; 댓글 목록</h2>
+
+    <!-- ➊ 답변이 있는 경우 -->
+    <div th:if="${!#lists.isEmpty(answers)}">
+        <div th:each="ans : ${answers}">
+            <div class="answer" style="margin-bottom:1em">
+                <p th:text="${ans.content}">답변 내용</p>
+                <p>작성자: <span th:text="${ans.user.username}"></span></p>
+                <div th:if="${#authentication.principal.user.id == ans.user.id}">
+                    <a th:href="@{|/qna/${post.id}/answers/${ans.id}/edit|}">수정</a>
+                    <form th:action="@{|/qna/answers/${ans.id}/delete|}" method="post" style="display:inline">
+                        <button type="submit">삭제</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 1단계 댓글 폼 -->
+            <form th:action="@{|/qna/${post.id}/answers/${ans.id}/comments|}"
+                  method="post" style="margin:0 0 1em 1em">
+                <input type="hidden" name="userId" th:value="${#authentication.principal.user.id}" />
+                <textarea name="content" rows="2" placeholder="댓글 작성" required></textarea>
+                <button type="submit">등록</button>
+            </form>
+
+            <!-- 댓글 & 대댓글 -->
+            <div class="comments" style="margin-left:1em"
+                 th:if="${commentMap[ans.id]}">
+                <h3>댓글</h3>
+                <div th:each="comment : ${commentMap[ans.id]}">
+                    <div class="comment" style="margin-bottom:0.5em">
+                        <p th:text="${comment.content}">댓글 내용</p>
+                        <p>
+                            작성자: <span th:text="${comment.user.username}"></span> |
+                            <span th:text="${#temporals.format(comment.createdAt,'yyyy-MM-dd HH:mm')}"></span>
+                        </p>
+                        <div th:if="${#authentication.principal.user.id == comment.user.id}">
+                            <a th:href="@{|/qna/${post.id}/answers/${ans.id}/comments/${comment.id}/edit|}">수정</a>
+                            <form th:action="@{|/qna/${post.id}/answers/${ans.id}/comments/${comment.id}/delete|}"
+                                  method="post" style="display:inline">
+                                <button type="submit">삭제</button>
+                            </form>
+                        </div>
+
+                        <!-- 2단계 대댓글 입력 폼 -->
+                        <form th:action="@{|/qna/${post.id}/answers/${ans.id}/comments/${comment.id}/replies|}"
+                              method="post" style="margin:0.5em 0 1em 2em">
+                            <input type="hidden" name="userId" th:value="${#authentication.principal.user.id}" />
+                            <textarea name="content" rows="1" placeholder="대댓글 작성" required></textarea>
+                            <button type="submit">답글</button>
+                        </form>
+
+                        <!-- 대댓글 목록 (th:each 만으로 렌더링 시도) -->
+                        <div class="replies" style="margin-left:2em">
+                            <h4 th:if="${replyMap[comment.id]?.size() > 0}">대댓글</h4>
+                            <div th:each="reply : ${replyMap[comment.id]}">
+                                <div class="reply" style="margin-bottom:0.5em">
+                                    <p th:text="${reply.content}">대댓글 내용</p>
+                                    <p>
+                                        작성자: <span th:text="${reply.user.username}"></span> |
+                                        <span th:text="${#temporals.format(reply.createdAt,'yyyy-MM-dd HH:mm')}"></span>
+                                    </p>
+                                    <div th:if="${#authentication.principal.user.id == reply.user.id}">
+                                        <a th:href="@{|/qna/${post.id}/answers/${ans.id}/comments/${comment.id}/replies/${reply.id}/edit|}">
+                                            수정
+                                        </a>
+                                        <form th:action="@{|/qna/${post.id}/answers/${ans.id}/comments/${comment.id}/replies/${reply.id}/delete|}"
+                                              method="post" style="display:inline">
+                                            <button type="submit">삭제</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ➋ 답변이 하나도 없지만 댓글만 남아 있는 경우 -->
+    <div th:if="${#lists.isEmpty(answers) and !#maps.isEmpty(commentMap)}" style="margin-top:1em">
+        <p>답변이 모두 삭제되었지만, 아래 댓글은 남아 있습니다.</p>
+        <div th:each="entry : ${commentMap.entrySet()}">
+            <h4>원래 답변 #<span th:text="${entry.key}"></span> (삭제됨) 아래 댓글</h4>
+            <div th:each="comment : ${entry.value}" style="margin-left:1em">
+                <p th:text="${comment.content}">댓글 내용</p>
+                <!-- 대댓글도 동일하게 렌더링 -->
+                <div class="replies" style="margin-left:2em">
+                    <h4 th:if="${replyMap[comment.id]?.size() > 0}">대댓글</h4>
+                    <div th:each="reply : ${replyMap[comment.id]}">
+                        <p th:text="${reply.content}">대댓글 내용</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+</body>
+</html>
