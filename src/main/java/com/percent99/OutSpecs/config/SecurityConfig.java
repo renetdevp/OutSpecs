@@ -80,9 +80,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/scripts/**").permitAll()
-                        .requestMatchers("/error","/").permitAll()
-                        .requestMatchers("/users/**").permitAll()
-                        .requestMatchers("/login", "/logout", "/oauth2/**", "/login/oauth2/**").permitAll()
+                        .requestMatchers("/error").permitAll()
+                        .requestMatchers("/","/login", "/users/signup").permitAll()
                         .anyRequest().authenticated()
                 )
                 .headers(headers -> headers
@@ -108,7 +107,6 @@ public class SecurityConfig {
                 .oauth2Login(oAuth2 -> oAuth2
                         .loginPage("/users/login")
                         .userInfoEndpoint(userInfo ->{
-                            System.out.println("=== OAuth2 userInfoEndpoint 설정됨 ===");
                             userInfo.userService(customOAuth2UserService);
                         })
                         .defaultSuccessUrl("/", true)
@@ -117,7 +115,6 @@ public class SecurityConfig {
                             response.sendRedirect("/users/login?error=" + errorMsg);
                         })
                 );
-
         return http.build();
     }
 }
