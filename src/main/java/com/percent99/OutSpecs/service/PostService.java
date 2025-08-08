@@ -9,6 +9,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +41,10 @@ public class PostService {
      */
     @Transactional
     public Post createPost(PostDTO dto) {
+
+        if (dto.getTitle() == null || dto.getContent() == null || dto.getType() == null) {
+            throw new IllegalArgumentException("필수 항목이 누락되었습니다.");
+        }
 
         User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저는 존재하지 않습니다."));
@@ -245,20 +250,14 @@ public class PostService {
 
         if (!post.getType().equals(PostType.QNA)) {
             throw new IllegalArgumentException("QnA 게시글이 아닙니다.");
-        } else if(!userId.equals(post.getUser().getId())) {
-            throw new IllegalArgumentException("게시글 작성자가 아닙니다.");
-        } else {
-            PostQnA postQnA = new PostQnA();
-            postQnA.setPost(post);
-
-            if(post.getPostQnA().isAnswerComplete()) {
-                post.setPostQnA(null);
-                postQnA.setAnswerComplete(false);
-            } else {
-                post.setPostQnA(null);
-                postQnA.setAnswerComplete(true);
-            }
-            post.setPostQnA(postQnA);
         }
+        if(!userId.equals(post.getUser().getId())) {
+            throw new IllegalArgumentException("게시글 작성자가 아닙니다.");
+        }
+
+        if (post.getPostQnA() == null) { return; }
+
+        boolean currentStatus = post.getPostQnA().isAnswerComplete();
+        post.getPostQnA().setAnswerComplete(!currentStatus);
     }
 }
