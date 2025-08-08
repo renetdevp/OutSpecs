@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OustSpecs</title>
+</head>
+<body class="">
+
+<main class="">
+    <section class="">
+        <div class="">
+            <!-- 로그인 여부 체크 -->
+            <div th:if="${user != null}">
+                <p>안녕하세요, <span th:text="${user.username}">사용자명</span>님</p>
+
+                <div th:if="${profile == null}">
+                    <a th:href="@{/users/profiles/new}" class="">오픈 프로필 만들기</a>
+                </div>
+
+                <div th:if="${profile != null}">
+                    <a th:href="@{/profiles/{id}/edit(id=${profile.id})}" class="">오픈 프로필 수정</a>
+                </div>
+
+                <a th:href="@{/logout}" class="">로그아웃</a>
+            </div>
+
+            <!-- 비로그인 상태 -->
+            <div th:if="${user == null}">
+                <a th:href="@{/users/login}" class="">로그인</a> |
+                <a th:href="@{/users/signup}" class="">회원가입</a>
+            </div>
+        </div>
+    </section>
+</main>
+
+</body>
+</html>

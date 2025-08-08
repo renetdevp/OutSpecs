@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${profile.userId} != null
+                  ? '${profile.nickname}님의 프로필}'
+                  : '새 프로필 만들기'">
+        프로필 상세 페이지
+    </title>
+</head>
+<body>
+    <h2 th:text="${profile.nickname} + '님의 프로필'">프로필</h2>
+    <p>스택: <span th:text="${profile.stacks}"></span></p>
+    <p>경력: <span th:text="${profile.experience}"></span></p>
+    <p>소개: <span th:text="${profile.selfInfo}"></span></p>
+    <p>이미지: <img th:if="${profile.imageUrl}" th:src="${profile.imageUrl}"/></p>
+    <p>기업 공개: <span th:text="${profile.allowCompanyAccess ? 'O' : 'X'}"></span></p>
+
+    <a th:href="@{/users/profiles/{userId}/edit(userId=${profile.userId})}">수정하기</a> |
+    <a th:href="@{/users/profiles}">목록으로</a>
+</body>
+</html>

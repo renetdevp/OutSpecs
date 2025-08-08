@@ -81,7 +81,7 @@ class ProfileServiceTest {
     void getProfileByUserId_success() {
         Profile p = new Profile();
         when(profileRepository.findByUserId(1L)).thenReturn(Optional.of(p));
-        Profile found = profileService.getProfileByUserId(1L);
+        Optional<Profile> found = profileService.getProfileByUserId(1L);
         assertThat(found).isSameAs(p);
     }
 
