@@ -5,15 +5,14 @@ import com.percent99.OutSpecs.entity.UserRoleType;
 import com.percent99.OutSpecs.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -57,18 +56,16 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
      * @return CustomUserPrincipal로 매핑된 OAuth2User
      */
     private OAuth2User process(OAuth2UserRequest req, OAuth2User ou){
+
         String regId = req.getClientRegistration().getRegistrationId();
         Map<String, Object> attributes = ou.getAttributes();
 
-        String email = Objects.toString(attributes.get("email"), "");
+        String socialId = (String) attributes.get("sub");
+        String email = (String) attributes.get("email");
 
         if(email == null || email.isEmpty()){
             throw new OAuth2AuthenticationException("해당 이메일이 존재하지 않습니다.");
         }
-
-        String socialId = regId.equals("google")
-                ? (String) attributes.get("sub")
-                : (String) attributes.get("id");
 
         Optional<User> userOptional = userRepository.findByUsername(email);
         if(userOptional.isPresent()){
@@ -88,6 +85,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             user.setProviderId(socialId);
             user.setRole(UserRoleType.USER);
             user.setPassword(randomPassword);
+            user.setAiRateLimit(0);
+            user.setCreatedAt(LocalDateTime.now());
 
             userRepository.save(user);
             log.info("신규 OAuth2 사용자 생성 : {}",email);

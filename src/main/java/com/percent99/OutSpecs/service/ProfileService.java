@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 /**
  * 사용자 오픈(profile) 관련 비지니스 로직을 처리하는 서비스 클래스
@@ -58,9 +60,8 @@ public class ProfileService {
      * @return 조회된 Profile 엔티티
      */
     @Transactional(readOnly = true)
-    public Profile getProfileByUserId(Long userId) {
-        return profileRepository.findByUserId(userId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 프로필이 존재하지 않습니다."));
+    public Optional<Profile> getProfileByUserId(Long userId) {
+        return profileRepository.findByUserId(userId);
     }
 
     /**
@@ -130,6 +131,7 @@ public class ProfileService {
         profile.setExperience(dto.getExperience());
         profile.setSelfInfo(dto.getSelfInfo());
         profile.setAllowCompanyAccess(dto.getAllowCompanyAccess());
+        profile.setCreatedAt(LocalDateTime.now());
         profile.setImageUrl(imageUrl);
         profile.setS3Key(s3Key);
 
@@ -152,7 +154,8 @@ public class ProfileService {
 
         if(file == null || file.isEmpty()){ return; }
 
-        Profile profile = getProfileByUserId(userId);
+        Optional<Profile> exiting = getProfileByUserId(userId);
+        Profile profile = exiting.get();
         String oldKey = profile.getS3Key();
 
         String newUrl;
@@ -209,7 +212,8 @@ public class ProfileService {
      */
     @Transactional
     public Profile updateProfile(Long userId, ProfileDTO dto) {
-        Profile exiting = getProfileByUserId(userId);
+        Optional<Profile> profile = getProfileByUserId(userId);
+        Profile exiting = profile.get();
 
         if(!exiting.getNickname().equals(dto.getNickname())){
             validateNickname(dto.getNickname(), userId);
@@ -235,7 +239,8 @@ public class ProfileService {
      */
     public void deleteProfileByUserId(Long userId) {
 
-        Profile profile = getProfileByUserId(userId);
+        Optional<Profile> exiting = getProfileByUserId(userId);
+        Profile profile = exiting.get();
         String s3Key = profile.getS3Key();
         deleteProfileDB(profile.getUserId());
 

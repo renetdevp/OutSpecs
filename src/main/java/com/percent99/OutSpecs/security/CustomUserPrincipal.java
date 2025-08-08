@@ -41,6 +41,8 @@ public class CustomUserPrincipal implements OAuth2User, UserDetails {
     @Override
     public Map<String, Object> getAttributes() { return attributes; }
 
+    public User getUser() {return user;}
+
     @Override
     public String getName() { return attributes.getOrDefault("sub", user.getProviderId()).toString(); }
 

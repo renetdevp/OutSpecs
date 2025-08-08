@@ -1,6 +1,8 @@
 package com.percent99.OutSpecs.dto;
 
 import com.percent99.OutSpecs.entity.PostType;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,9 +18,13 @@ import lombok.Setter;
 @Setter
 public class PostDTO {
 
+    @NotNull(message = "유저 ID는 필수입니다.")
     private Long userId;
+    @NotNull(message = "타입은 필수입니다.")
     private PostType type;
+    @NotBlank(message = "제목은 필수입니다.")
     private String title;
+    @NotBlank(message = "내용은 필수입니다.")
     private String content;
     private PostTeamInformationDTO teamInfo;
     private PostJobDTO jobInfo;

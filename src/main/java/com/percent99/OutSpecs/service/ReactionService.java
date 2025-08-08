@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -44,6 +45,10 @@ public class ReactionService {
         } else if(targetType.equals(TargetType.USER) && !userRepository.existsById(targetId)) {
             throw new EntityNotFoundException("해당 유저는 존재하지 않습니다.");
         }
+        User receiver = findTargetUser(targetType, targetId);
+        if(Objects.equals(receiver.getId(), user.getId())) {
+            throw new IllegalArgumentException("자신이나 자신의 글에 반응할 수 없습니다.");
+        }
 
         Reaction reaction = new Reaction();
         reaction.setUser(user);
@@ -54,7 +59,6 @@ public class ReactionService {
         reactionRepository.save(reaction);
 
         // 알림 발송
-        User receiver = findTargetUser(targetType, targetId);
         if(reaction.getReactionType().equals(ReactionType.FOLLOW)) {
             notificationService.sendNotification(user, receiver, NotificationType.FOLLOW, targetId);
         } else if(reaction.getReactionType().equals(ReactionType.LIKE) && reaction.getTargetType().equals(TargetType.POST)) {
@@ -102,6 +106,9 @@ public class ReactionService {
     public void deleteReaction(User user, TargetType targetType, Long targetId, ReactionType reactionType) {
         if(!userRepository.existsById(user.getId())) {
             throw new EntityNotFoundException("해당 유저는 존재하지 않습니다.");
+        }
+        if(!reactionRepository.existsByUserAndTargetTypeAndTargetIdAndReactionType(user, targetType, targetId, reactionType)) {
+            throw new EntityNotFoundException("삭제할 리액션이 존재하지 않습니다.");
         }
         reactionRepository.deleteByUserAndTargetTypeAndTargetIdAndReactionType(user, targetType, targetId, reactionType);
     }
