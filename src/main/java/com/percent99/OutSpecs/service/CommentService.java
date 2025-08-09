@@ -11,7 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  ** 댓글(comment) 생성·조회·수정·삭제 기능을 제공하는 서비스
@@ -98,7 +100,32 @@ public class CommentService {
      */
     @Transactional(readOnly = true)
     public List<Comment> getCommentsByPostId(Long postId) {
-        return commentRepository.findByParentId(postId);
+        List<Comment> topComments = commentRepository.findByTypeAndParentId(CommentType.COMMENT, postId);
+        List<Long> topCommentIds = topComments.stream()
+                .map(Comment::getId)
+                .collect(Collectors.toList());
+
+        List<Comment> replies = new ArrayList<>();
+        if (!topCommentIds.isEmpty()) {
+            for (Long commentId : topCommentIds) {
+                replies.addAll(commentRepository.findByTypeAndParentId(CommentType.REPLY, commentId));
+            }
+        }
+
+        List<Comment> allComments = new ArrayList<>();
+        allComments.addAll(topComments);
+        allComments.addAll(replies);
+        return allComments;
+    }
+
+    /**
+     * 특정 게시물(post) 의 모든 답변을 조회한다.
+     * @param postId 조회할 게시글의 ID
+     * @return 답변 목록
+     */
+    @Transactional(readOnly = true)
+    public List<Comment> getAnswerByPostId(Long postId) {
+        return commentRepository.findByTypeAndParentId(CommentType.ANSWER, postId);
     }
 
     /**
