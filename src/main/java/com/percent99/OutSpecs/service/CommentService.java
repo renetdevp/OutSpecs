@@ -141,12 +141,31 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 댓글 내용이 발견되지않았습니다."));
 
-        if (user.getRole().equals(UserRoleType.ADMIN)) {
-            commentRepository.deleteById(commentId);
-        } else if(comment.getType().equals(CommentType.ANSWER)) {
+        if(!user.getRole().equals(UserRoleType.ADMIN) && comment.getType().equals(CommentType.ANSWER)) {
             throw new IllegalArgumentException("질문의 답변은 관리자만 삭제할 수 있습니다.");
         } else if(!userId.equals(comment.getUser().getId())) {
             throw new IllegalArgumentException("댓글 작성자가 아닙니다.");
-        } else { commentRepository.deleteById(commentId); }
+        } else {
+            deleteCommentRecursively(commentId, comment.getType());
+        }
+    }
+
+    /**
+     * 재귀적으로 돌면서 자식 댓글이나 대댓글 다 삭제
+     * @param commentId
+     */
+    private void deleteCommentRecursively(Long commentId, CommentType commentType) {
+        CommentType childTypes;
+        if(commentType.equals(CommentType.ANSWER)) childTypes = CommentType.COMMENT;
+        else if(commentType.equals(CommentType.COMMENT)) childTypes = CommentType.REPLY;
+        else childTypes = null;
+
+        if (childTypes != null) {
+            List<Comment> children = commentRepository.findByTypeAndParentId(childTypes, commentId);
+            for (Comment child : children) {
+                deleteCommentRecursively(child.getId(), child.getType());
+            }
+        }
+        commentRepository.deleteById(commentId);
     }
 }
