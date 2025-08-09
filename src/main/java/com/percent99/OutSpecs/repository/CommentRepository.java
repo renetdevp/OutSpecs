@@ -1,6 +1,7 @@
 package com.percent99.OutSpecs.repository;
 
 import com.percent99.OutSpecs.entity.Comment;
+import com.percent99.OutSpecs.entity.CommentType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,9 +17,17 @@ import java.util.List;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment,Long> {
     /**
-     * 특정 게시글에 등록된 모든 댓글을 조회한다.
-     * @param parentId 조회할 게시글의 ID
-     * @return 해당 게시글에 달린 댓글 목록 (댓글이 없으면 빈 리스트 반환)
+     * 부모객체에 등록된 모든 댓글을 조회한다.
+     * @param parentId 조회할 부모의 ID
+     * @return 해당 부모에 달린 댓글 목록 (댓글이 없으면 빈 리스트 반환)
      */
     List<Comment> findByParentId(Long parentId);
+
+    /**
+     * 해당 타입의 부모 객체에 등록된 모든 댓글을 조회한다.
+     * @param type 해당 타입
+     * @param parentId 조회할 부모의 ID
+     * @return 해당 부모에 달린 댓글 목록
+     */
+    List<Comment> findByTypeAndParentId(CommentType type, Long parentId);
 }
