@@ -32,18 +32,15 @@ public class AdminService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
         user.setRole(newRole);
-        userRepository.save(user);
     }
 
     /**
-     * 신고횟수가 기본값(5) 이상인 게시물을 조회합니다.
+     * 신고횟수당한 게시물을 조회합니다.
      * @return 신고 많은 게시물 리스트
      */
-    /*
     @Transactional(readOnly = true)
     public List<Post> findReportedPosts(){
-        final int DEFAULT_THRESHOLD = 5;
-        return "";
+        List<Post> list = reactionService.getReportPosts();
+        return list;
     }
-     */
 }
