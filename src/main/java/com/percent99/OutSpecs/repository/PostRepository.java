@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Post 엔티티에 대한 데이터 접근 기능을 제공하느 Repository 인터페이스
@@ -96,6 +97,21 @@ public interface PostRepository extends JpaRepository<Post,Long> {
      * @param status 팀모집 상태
      * @return 팀모집 상태별 게시글
      */
-    @Query("SELECT p FROM Post p JOIN p.teamInfo pt WHERE pt.status = :status")
+    @Query("SELECT p FROM Post p JOIN p.teamInfo pt WHERE p.type = 'TEAM' AND pt.status = :status")
     List<Post> findTeamPostsByStatus(@Param("status") PostStatus status);
+
+    /**
+     * 게시물과 연관된 정보를 모두 조회합니다.
+     * @param postId 조회할 게시물의 ID
+     * @return 조회된 게시물
+     */
+    @Query("SELECT p FROM Post p " +
+            "LEFT JOIN FETCH p.user " +
+            "LEFT JOIN FETCH p.postHangout " +
+            "LEFT JOIN FETCH p.postJob " +
+            "LEFT JOIN FETCH p.postQnA " +
+            "LEFT JOIN FETCH p.teamInfo " +
+            "LEFT JOIN FETCH p.postTags " +
+            "WHERE p.id = :postId")
+    Optional<Post> findWithDetailsById(@Param("postId") Long postId);
 }
