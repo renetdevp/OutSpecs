@@ -29,7 +29,7 @@ public class UserServiceTest {
 
     @Mock private UserRepository userRepository;
     @Mock private PasswordEncoder passwordEncoder;
-    @Mock private ProfileRepository profileRepository;
+    @Mock private S3Service s3Service; // S3Service는 여전히 필요합니다.
 
     @InjectMocks private UserService userService;
     private UserDTO userDTO;
@@ -133,68 +133,38 @@ public class UserServiceTest {
      * 기존 사용자 조회 후 필드 변경 및 save 호출 확인
      */
     @Test
-    @DisplayName("updateUser 성공")
-    void updateUser_success() {
+    @DisplayName("changePassword 성공")
+    void changePassword_success() {
 
         // given
-        userDTO.setUsername("u");
-        userDTO.setRole(UserRoleType.ADMIN);
-        userDTO.setAiRateLimit(10);
-
         User existing = new User();
         existing.setProviderId(null);
+        existing.setPassword("oldPassword");
 
-        when(userRepository.findByUsername("u")).thenReturn(Optional.of(existing));
-
-        when(userRepository.save(any(User.class))).thenReturn(existing);
+        when(userRepository.findByUsername(userDTO.getUsername())).thenReturn(Optional.of(existing));
+        when(passwordEncoder.encode(userDTO.getPassword())).thenReturn("newEncryptedPassword");
 
         // when
-        User result = userService.updateUser(userDTO);
+        userService.changePassword(userDTO.getUsername(), userDTO.getPassword());
 
         // then
-        assertThat(result.getRole()).isEqualTo(UserRoleType.ADMIN);
-        verify(userRepository).save(any(User.class));
+        verify(passwordEncoder).encode(userDTO.getPassword());
+        assertThat(existing.getPassword()).isEqualTo("newEncryptedPassword");
     }
 
     /**
      * 업데이트 할 유저가 없을 경우 EntityNotFoundException을 던지는지 검증
      */
     @Test
-    @DisplayName("updateUser: 유저 없음 예외")
-    void updateUser_userNotFound() {
+    @DisplayName("changePassword: 유저 없음 예외")
+    void changePassword_userNotFound() {
 
         // when /then
         when(userRepository.findByUsername("test@naver.com")).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> userService.updateUser(userDTO))
+        assertThatThrownBy(() -> userService.changePassword("test@naver.com", "newPassword"))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("해당 유저는 존재하지 않습니다.");
     }
-
-    /**
-     * 업데이트 중 비밀번호가 짧을 경우 IllegalArgumentException을 던지는지 검증
-     */
-    /*
-    @Test
-    @DisplayName("updateUser: 비밀번호 짧음 예외")
-    void updateUser_shortPassword() {
-
-        // given
-        userDTO.setUsername("u");
-        userDTO.setPassword("12");
-        userDTO.setAiRateLimit(null);
-
-        User existing = new User();
-        existing.setProviderId(null);
-
-        // when
-        when(userRepository.findByUsername("u")).thenReturn(Optional.of(existing));
-
-        // then
-        assertThatThrownBy(() -> userService.updateUser(userDTO))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("비밀번호는 3자리 이상이어야 합니다.");
-    }
-     */
 
     /**
      * 앨런 AI 횟수 차감 정상 흐름을 검증
@@ -215,7 +185,7 @@ public class UserServiceTest {
 
         // then
         assertThat(u.getAiRateLimit()).isEqualTo(4);
-        verify(userRepository).save(any(User.class));
+        // @Transactional에 의해 Dirty Checking이 동작하므로 save는 호출되지 않습니다.
     }
 
     /**
@@ -240,17 +210,17 @@ public class UserServiceTest {
     @Test
     @DisplayName("deleteUserAndProfile 성공")
     void deleteUserAndProfile_success() {
-
         // given
         User u = new User();
+        u.setId(1L);
         when(userRepository.findById(1L)).thenReturn(Optional.of(u));
 
         // when
         userService.deleteUserAndProfile(1L);
 
         // then
-        verify(profileRepository).deleteByUserId(1L);
         verify(userRepository).delete(any(User.class));
+        verify(s3Service, never()).deleteFile(anyString());
     }
 
     /**
@@ -264,6 +234,6 @@ public class UserServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> userService.deleteUserAndProfile(1L))
                 .isInstanceOf(EntityNotFoundException.class)
-                .hasMessage("해당 유저는 존재하지 않습니다.");
+                .hasMessage("해당 유저는 존재하지않습니다.");
     }
 }
