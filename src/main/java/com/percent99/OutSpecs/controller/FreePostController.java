@@ -4,6 +4,7 @@ import com.percent99.OutSpecs.dto.PostDTO;
 import com.percent99.OutSpecs.entity.Post;
 import com.percent99.OutSpecs.entity.PostType;
 import com.percent99.OutSpecs.security.CustomUserPrincipal;
+import com.percent99.OutSpecs.service.PostQueryService;
 import com.percent99.OutSpecs.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class FreePostController {
 
     private final PostService postService;
+    private final PostQueryService postQueryService;
 
     @GetMapping
     public String freePostForm(Model model) {
@@ -36,19 +38,19 @@ public class FreePostController {
 
     @GetMapping("/latest")
     public String latestFreePost(Model model) {
-        model.addAttribute("posts", postService.getRecentPosts(PostType.FREE, 20));
+        model.addAttribute("posts", postQueryService.getRecentPosts(PostType.FREE, 20));
         return "post/free-board-list";
     }
 
     @GetMapping("/popular")
     public String popularFreePost(Model model) {
-        model.addAttribute("posts", postService.getViewCountPosts(PostType.FREE, 10));
+        model.addAttribute("posts", postQueryService.getViewCountPosts(PostType.FREE, 10));
         return "post/free-board-list";
     }
 
     @GetMapping("/{postId}/edit")
     public String editFreePostForm(@PathVariable Long postId, Model model) {
-        PostDTO postDTO = postService.getPostDTOById(postId);
+        PostDTO postDTO = postQueryService.getPostDTOById(postId);
         if (postDTO == null) {
             return "redirect:/free-board/latest";
         }
@@ -77,9 +79,8 @@ public class FreePostController {
 
     @GetMapping("/{postId}")
     public String detailFreePost(@PathVariable Long postId, Model model) {
-        Post post = postService.getPostById(postId);
+        Post post = postQueryService.getPostById(postId);
         model.addAttribute("post", post);
         return "post/free-board-detail";
     }
-
 }
