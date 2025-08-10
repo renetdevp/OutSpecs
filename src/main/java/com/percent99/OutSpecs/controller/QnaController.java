@@ -8,6 +8,7 @@ import com.percent99.OutSpecs.entity.Post;
 import com.percent99.OutSpecs.entity.PostType;
 import com.percent99.OutSpecs.security.CustomUserPrincipal;
 import com.percent99.OutSpecs.service.CommentService;
+import com.percent99.OutSpecs.service.PostQueryService;
 import com.percent99.OutSpecs.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,13 +30,14 @@ import java.util.Map;
 public class QnaController {
 
     private final PostService postService;
+    private final PostQueryService postQueryService;
     private final CommentService commentService;
 
     // 전체 Q&A 리스트
     @GetMapping
     public String list(@AuthenticationPrincipal CustomUserPrincipal principal,
                        Model model) {
-        List<Post> posts = postService.getPostsByType(PostType.QNA);
+        List<Post> posts = postQueryService.getPostsByType(PostType.QNA);
         model.addAttribute("posts", posts);
         return "qna/qna_list";
     }
@@ -75,7 +77,7 @@ public class QnaController {
             @PathVariable Long postId,
             Model model
     ) {
-        Post post = postService.getPostById(postId);
+        Post post = postQueryService.getPostById(postId);
 
         List<Comment> answers = commentService.getCommentsByPostId(postId)
                         .stream()
@@ -119,7 +121,7 @@ public class QnaController {
             @PathVariable Long postId,
             Model model
     ) {
-        Post post = postService.getPostById(postId);
+        Post post = postQueryService.getPostById(postId);
 
         model.addAttribute("post",post);
         // DTO에 기존 값 세팅
