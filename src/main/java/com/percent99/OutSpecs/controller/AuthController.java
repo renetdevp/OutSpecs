@@ -53,6 +53,6 @@ public class AuthController {
         if(principal != null){
             return "redirect:/";
         }
-        return "auth/login";
+        return "redirect:/auth/login";
     }
 }

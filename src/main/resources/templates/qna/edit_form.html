@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>수정하기</title>
+</head>
+<body>
+<h1 th:text="${pageTitle}">수정하기</h1>
+
+<form th:action="${actionUrl}" method="post">
+    <div>
+        <label for="content">내용</label><br/>
+        <textarea id="content" name="content" rows="6"
+                  th:text="${content}" required></textarea>
+    </div>
+
+    <div style="margin-top:1em">
+        <button type="submit">수정 완료</button>
+        <a th:href="@{|/qna/${postId}|}" style="margin-left:1em">취소</a>
+    </div>
+</form>
+</body>
+</html>
