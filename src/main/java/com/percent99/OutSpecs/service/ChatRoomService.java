@@ -75,6 +75,16 @@ public class ChatRoomService {
     return chatRoomRepository.findById(chatRoomId);
   }
 
+  public ChatRoomResponseDTO getChatRoomResponseDTOById(Long chatRoomId){
+    if (chatRoomId == null) return null;
+
+    ChatRoom chatRoom = this.findChatRoomById(chatRoomId).orElse(null);
+
+    if (chatRoom == null) return null;
+
+    return convertChatRoomToDTO(chatRoom);
+  }
+
   @Transactional
   public ChatRoom updateChatRoomById(ChatRoom chatRoom, Long userId){
     if (chatRoom==null || userId==null) return null;
@@ -150,5 +160,25 @@ public class ChatRoomService {
     }
 
     return result;
+  }
+
+  /**
+   * ChatRoom을 ChatRoomResponseDTO로 변환하는 메소드
+   * @param chatRoom 변환할 ChatRoom
+   * @return ChatRoom을 ChatRoomResponseDTO로 변환
+   */
+  private ChatRoomResponseDTO convertChatRoomToDTO(ChatRoom chatRoom){
+    if (chatRoom == null) return null;
+
+    Profile user1Profile = profileRepository.findByUserId(chatRoom.getUser1().getId()).orElse(null);
+    Profile user2Profile = profileRepository.findByUserId(chatRoom.getUser2().getId()).orElse(null);
+
+    if (user1Profile==null || user2Profile==null) return null;
+
+    return this.convertChatRoomToDTO(chatRoom, user1Profile, user2Profile);
+  }
+
+  public boolean isChatRoomParticipant(Long chatRoomId, Long userId){
+    return chatRoomRepository.existsByIdAndUserId(chatRoomId, userId);
   }
 }
