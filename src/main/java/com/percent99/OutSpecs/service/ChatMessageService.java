@@ -11,6 +11,7 @@ import com.percent99.OutSpecs.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,12 +29,12 @@ public class ChatMessageService {
   private final ChatRoomRepository chatRoomRepository;
   private final UserRepository userRepository;
   private final ProfileRepository profileRepository;
+  private final SimpMessageSendingOperations messagingTemplate;
 
   /**
-   *
+   * 채팅 메시지를 생성하는 메소드
    * @param chatMessageDTO 사용자가 송신한 채팅 메시지 DTO 객체
    * @param userId 로그인한 사용자의 id 값
-   * @return 생성한 chatMessage 객체
    */
   @Transactional
   public void createChatMessage(ChatMessageDTO chatMessageDTO, Long userId){
@@ -120,5 +121,17 @@ public class ChatMessageService {
     if (chatMessage == null) return false;
 
     return this.isChatMessageSender(chatMessage, userId);
+  }
+
+  /**
+   * /queue/rooms/${chatRoomId} 채널에 메시지를 전송하는 메소드
+   * @param chatRoomId 메시지를 전송할 채널
+   * @param userId 메시지를 전송하고자 하는 사용자의 id 값
+   * @param chatMessageDTO 전송하고자 하는 메시지
+   */
+  public void sendMessage(Long chatRoomId, Long userId, ChatMessageDTO chatMessageDTO){
+    if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return;
+
+    messagingTemplate.convertAndSend("/queue/rooms/"+chatRoomId, chatMessageDTO);
   }
 }
