@@ -91,6 +91,22 @@ public class ChatMessageService {
     chatMessageRepository.deleteAllByChatRoomIdAndUserId(chatRoomId, userId);
   }
 
+  /**
+   * Sender의 id 값과 userId 값이 일치하는 모든 chatMessage를 삭제하는 메소드
+   * @param userId 모든 메시지를 삭제할 sender의 id 값
+   */
+  @Transactional
+  public void deleteAllChatMessagesByUserId(Long userId){
+    if (userId == null) return;
+
+    chatMessageRepository.deleteAllByUserId(userId);
+  }
+
+  /**
+   * id 값이 chatMessageId 값과 일치하고, Sender의 id 값이 userId 값과 일치하는 chatMessage를 삭제하는 메소드
+   * @param userId 삭제하고자 하는 메시지의 Sender id 값
+   * @param chatMessageId 삭제하고자 하는 메시지의 id 값
+   */
   @Transactional
   public void deleteChatMessage(Long userId, Long chatMessageId){
     if (!isChatMessageSender(userId, chatMessageId)) return;
