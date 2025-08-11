@@ -15,18 +15,25 @@ public class PostTagsHandler implements PostDetailHandler {
 
     @Override
     public boolean supports(PostType type) {
-        return switch (type) {
-            case QNA, FREE -> true;
-            default -> false;
-        };
+        return type == PostType.FREE || type == PostType.QNA;
     }
 
     @Override
     public void handle(Post post, PostDTO dto) {
-        if(dto.getTagsInfo() == null) return;
-        PostTags postTags = new PostTags();
-        postTags.setPost(post);
-        postTags.setTags(dto.getTagsInfo().getTags());
-        post.getPostTags().add(postTags);
+        if(dto.getTagsInfo() == null || dto.getTagsInfo().getTags() == null||
+            dto.getTagsInfo().getTags().isBlank()) {
+            return;
+        }
+        post.getPostTags().clear();
+        String[] tags = dto.getTagsInfo().getTags().split(",");
+
+        for(String tagName : tags){
+            if(!tagName.trim().isEmpty()){
+                PostTags postTags = new PostTags();
+                postTags.setPost(post);
+                postTags.setTags(tagName.trim());
+                post.getPostTags().add(postTags);
+            }
+        }
     }
 }

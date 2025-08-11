@@ -43,6 +43,9 @@ public class ProfileController {
 
         Profile opt = profileService.getProfileByUserId(userId)
                 .orElse(null);
+        if(opt == null){
+            return "redirect:/users/profiles/new";
+        }
         model.addAttribute("profile", opt);
         return "profile/profile_list";
     }

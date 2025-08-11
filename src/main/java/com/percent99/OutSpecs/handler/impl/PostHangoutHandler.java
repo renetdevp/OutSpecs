@@ -21,9 +21,13 @@ public class PostHangoutHandler implements PostDetailHandler {
     @Override
     public void handle(Post post, PostDTO dto) {
         if(dto.getHangoutInfo() == null) return;
-        PostHangout postHangout = new PostHangout();
-        postHangout.setPost(post);
+
+        PostHangout postHangout = post.getPostHangout();
+        if(postHangout == null){
+            postHangout = new PostHangout();
+            postHangout.setPost(post);
+            post.setPostHangout(postHangout);
+        }
         postHangout.setPlaceName(dto.getHangoutInfo().getPlaceName());
-        post.setPostHangout(postHangout);
     }
 }
