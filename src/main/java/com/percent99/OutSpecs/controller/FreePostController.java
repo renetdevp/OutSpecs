@@ -2,13 +2,12 @@ package com.percent99.OutSpecs.controller;
 
 import com.percent99.OutSpecs.dto.CommentDTO;
 import com.percent99.OutSpecs.dto.PostDTO;
-import com.percent99.OutSpecs.entity.Comment;
-import com.percent99.OutSpecs.entity.Post;
-import com.percent99.OutSpecs.entity.PostType;
+import com.percent99.OutSpecs.entity.*;
 import com.percent99.OutSpecs.security.CustomUserPrincipal;
 import com.percent99.OutSpecs.service.CommentService;
 import com.percent99.OutSpecs.service.PostQueryService;
 import com.percent99.OutSpecs.service.PostService;
+import com.percent99.OutSpecs.service.ReactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -25,6 +24,7 @@ public class FreePostController {
     private final PostService postService;
     private final PostQueryService postQueryService;
     private final CommentService commentService;
+    private final ReactionService reactionService;
 
     @GetMapping
     public String freePostForm(Model model) {
@@ -87,8 +87,12 @@ public class FreePostController {
     public String detailFreePost(@PathVariable Long postId, Model model) {
         Post post = postQueryService.getPostById(postId);
         List<Comment> comments = commentService.getCommentsByPostId(postId);
+        int commentsCount = commentService.countByTypeAndPostId(CommentType.COMMENT, postId);
+        int likes = reactionService.countReactions(TargetType.POST, postId, ReactionType.LIKE);
         model.addAttribute("post", post);
         model.addAttribute("comments", comments);
+        model.addAttribute("commentsCount", commentsCount);
+        model.addAttribute("likes", likes);
         model.addAttribute("commentDTO", new CommentDTO());
         return "post/free-board-detail";
     }
