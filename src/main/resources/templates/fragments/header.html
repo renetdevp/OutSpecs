@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>헤더 페이지</title>
+</head>
+<body class="font--pretendard">
+    <header th:fragment="header" class="header__area">
+        <div class="header__left">
+            <a th:href="@{/}">
+                <img class="header__left-logo"  th:src="@{/css/images/logo.svg}" alt="메인으로 돌아가기">
+            </a>
+            <div class="header__left-menu">
+                <a class="header__btn--left" >자유게시판</a>
+                <a class="header__btn--left" >QNA</a>
+                <a class="header__btn--left" >채용공고</a>
+                <a class="header__btn--left" >팀모집</a>
+                <a class="header__btn--left" >나가서놀기</a>
+            </div>
+        </div>
+
+        <div class="header__right">
+            <a class="alert-btn" >
+                <img th:src="@{/css/images/alert_icon.svg}" th:if="${user != null}" alt="알림 아이콘">
+            </a>
+
+            <a class="header__btn--login" th:if="${user != null}" >채팅하기</a>
+            <form th:action="@{/logout}" method="post" th:if="${user != null}">
+                <button type="submit" class="header__btn--login">로그아웃</button>
+            </form>
+            <a class="header__btn--login" th:if="${user == null}" th:href="@{/users/login}">로그인</a>
+            <a class="header__btn--signup" th:if="${user == null}" th:href="@{/users/signup}">회원가입</a>
+        </div>
+    </header>
+</body>
+</html>

@@ -1,22 +1,64 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title th:text="${profile.userId} != null
-                  ? '${profile.nickname}님의 프로필}'
-                  : '새 프로필 만들기'">
-        프로필 상세 페이지
-    </title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title th:text="${profile != null} ? ${profile.nickname} + '님의 오픈프로필' : '오픈프로필'">오픈프로필</title>
+    <link rel="stylesheet" th:href="@{/css/pages/profile_detail.css}">
 </head>
 <body>
-    <h2 th:text="${profile.nickname} + '님의 프로필'">프로필</h2>
-    <p>스택: <span th:text="${profile.stacks}"></span></p>
-    <p>경력: <span th:text="${profile.experience}"></span></p>
-    <p>소개: <span th:text="${profile.selfInfo}"></span></p>
-    <p>이미지: <img th:if="${profile.imageUrl}" th:src="${profile.imageUrl}"/></p>
-    <p>기업 공개: <span th:text="${profile.allowCompanyAccess ? 'O' : 'X'}"></span></p>
+    <header th:replace="~{fragments/header :: header}"></header>
+    <main class="wrap">
+        <section class="card" th:if="${profile != null}">
 
-    <a th:href="@{/users/profiles/{userId}/edit(userId=${profile.userId})}">수정하기</a> |
-    <a th:href="@{/users/profiles}">목록으로</a>
+            <div class="top">
+                <div class="avatar">
+                    <img th:src="${profile.imageUrl != null
+                         ? profile.imageUrl
+                         :'/css/images/profile_icon.svg'}"
+                          alt="프로필 이미지" class="avatar-img">
+                </div>
+                <div class="name" th:text="${profile.nickname}">User1</div>
+            </div>
+
+            <div class="section">
+                <div class="block">
+                    <span class="label">자기소개</span>
+                    <div class="text pre" th:text="${profile.selfInfo}">자기소개 내용</div>
+                </div>
+                <div class="block">
+                    <span class="label">기술 스택</span>
+                    <div class="chips">
+                        <span class="chip" th:each="s : ${stacks}" th:text="${s}">Java</span>
+                    </div>
+                </div>
+                <div class="block">
+                    <span class="label">경력</span>
+                    <div class="text pre" th:text="${profile.experience}">경력 내용</div>
+                </div>
+                <div class="block row">
+                    <span>기업에 <strong>오픈프로필</strong> 허용 여부</span>
+                    <label class="switch">
+                        <input type="checkbox" th:checked="${profile.allowCompanyAccess}" disabled>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="actions">
+                <a class="btn btn-primary" th:href="@{/users/profiles/{userId}/edit(userId=${profile.userId})}">수정하기</a>
+                <form th:action="@{/users/profiles/{userId}/delete(userId=${profile.userId})}" method="post" >
+                    <button type="submit" class="btn">삭제</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="card" th:if="${profile == null}">
+            <div class="section">
+                <p style="margin:0 0 10px">아직 오픈 프로필이 없습니다.</p>
+                <a class="btn btn-primary" th:href="@{/users/profiles/new}">새 프로필 만들기</a>
+            </div>
+        </section>
+    </main>
 </body>
 </html>
