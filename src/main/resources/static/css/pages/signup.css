@@ -1,0 +1,141 @@
+@import url("/css/shared/header.css");
+
+:root{
+    --brand:#2f3096;        /* 메인 버튼 색 (보라/남색) */
+    --brand-strong:#232478; /* 버튼 hover */
+    --accent:#4c78ff;       /* 카드 외곽선 */
+    --bg:#3737a5;           /* 배경 */
+    --text:#111827;
+    --muted:#6b7280;
+    --error:#d32f2f;
+    --border:#e5e7eb;
+    --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body.auth-bg{
+    margin:0;
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "Apple SD Gothic Neo","Noto Sans KR", "Malgun Gothic", sans-serif;
+    color:var(--text);
+    background:var(--bg);
+}
+.auth-wrapper{
+    margin-top:100px;
+    width:100%;
+    padding:40px 16px;
+}
+.auth-card{
+    width:min(520px, 92vw);
+    background:#fff;
+    border-radius:var(--radius);
+    box-shadow:0 30px 60px rgba(0,0,0,.20);
+    border:2px solid var(--accent);
+    padding:40px 36px 28px;
+    margin-inline:auto;
+}
+.auth-logo{
+    display:block;
+    margin:6px auto 22px;
+    height:48px;
+    object-fit:contain;
+}
+.auth-title{
+    text-align:center;
+    margin:2px 0 18px;
+    font-size:22px;
+    font-weight:700;
+}
+
+.auth-form .field{margin-bottom:14px}
+.auth-form label{
+    display:block;
+    font-size:13px;
+    color:var(--muted);
+    margin-bottom:8px;
+}
+.auth-input{
+    width:100%;
+    height:44px;
+    padding:10px 12px;
+    border:1.8px solid var(--border);
+    border-radius:8px;
+    outline:none;
+    font-size:15px;
+    transition:border-color .15s, box-shadow .15s;
+}
+.auth-input:focus{
+    border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(76,120,255,.18);
+}
+.error-text{
+    margin-top:6px;
+    color:var(--error);
+    font-size:12px;
+}
+
+.auth-primary{
+    width:100%;
+    height:44px;
+    border:none;
+    border-radius:8px;
+    background:var(--brand);
+    color:#fff;
+    font-weight:700;
+    font-size:15px;
+    cursor:pointer;
+    transition:background .15s, transform .02s;
+}
+.auth-primary:hover{ background:var(--brand-strong); }
+.auth-primary:active{ transform:translateY(1px); }
+
+.or{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    color:var(--muted);
+    font-size:12px;
+    margin:14px 0;
+}
+.or::before,.or::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:var(--border);
+}
+
+.google-btn{
+    width:100%;
+    height:44px;
+    background:#fff;
+    border:1.5px solid var(--border);
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+}
+.google-icon{
+    width:18px;
+    height:18px;
+    display:inline-block;
+}
+
+.auth-footer{
+    margin-top:16px;
+    text-align:center;
+    font-size:13px;
+    color:var(--muted);
+}
+.auth-footer a{
+    color:var(--brand);
+    text-decoration:underline;
+    font-weight:700;
+}
+
+/* 작은 화면 보정 */
+@media (max-width:420px){
+    .auth-card{ padding:28px 20px 22px }
+}
