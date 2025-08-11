@@ -33,5 +33,90 @@
   <a th:href="@{/free-board/latest}">목록</a>
 </div>
 
+<hr>
+<h3>댓글 작성</h3>
+<form th:action="@{/free-board/{postId}/comment(postId=${post.id})}" method="post"
+      th:object="${commentDTO}">
+  <input type="hidden" name="type" value="COMMENT"/>
+  <input type="hidden" name="parentId" th:value="${post.id}"/>
+  <textarea th:field="*{content}" placeholder="댓글을 입력하세요" required></textarea><br>
+  <button type="submit">댓글 등록</button>
+</form>
+
+<h3>댓글 목록</h3>
+<div th:if="${#lists.isEmpty(comments)}">
+  <p>아직 댓글이 없습니다.</p>
+</div>
+
+<ul th:if="${!#lists.isEmpty(comments)}">
+  <li th:each="comment : ${comments}" th:if="${comment.type.name() == 'COMMENT'}"
+      th:attr="data-comment-id=${comment.id}">
+    <strong th:text="${comment.user.username}"></strong>
+    <span th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+
+    <p class="comment-content" th:text="${comment.content}"></p>
+
+    <form th:action="@{/free-board/{postId}/comment/{commentId}/edit(postId=${post.id}, commentId=${comment.id})}"
+          method="post" class="edit-form" style="display:none;">
+      <textarea name="content" th:text="${comment.content}"></textarea>
+      <button type="submit">수정 완료</button>
+      <button type="button" class="cancel-edit">취소</button>
+    </form>
+
+    <button type="button" class="edit-btn">수정</button>
+    <form th:action="@{/free-board/{postId}/comment/{commentId}(postId=${post.id}, commentId=${comment.id})}" method="post" style="display:inline;">
+      <button type="submit">삭제</button>
+    </form>
+
+    <ul>
+      <li th:each="reply : ${comments}"
+          th:if="${reply.type.name() == 'REPLY' and reply.parentId == comment.id}">
+        <strong th:text="${reply.user.username}">대댓글 작성자</strong>
+        <span th:text="${#temporals.format(reply.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+        <p th:text="${reply.content}"></p>
+      </li>
+    </ul>
+
+    <button type="button"
+            th:onclick="'document.getElementById(\'reply-form-' + ${comment.id} + '\').style.display=\'block\'; this.style.display=\'none\';'">
+      대댓글 작성
+    </button>
+
+    <form th:action="@{/free-board/{postId}/comment(postId=${post.id})}" th:object="${commentDTO}"
+          method="post" th:id="'reply-form-' + ${comment.id}" style="display:none;">
+      <input type="hidden" name="type" value="REPLY"/>
+      <input type="hidden" name="parentId" th:value="${comment.id}" />
+      <textarea name="content" placeholder="대댓글 내용을 입력하세요"></textarea>
+      <button type="submit">등록</button>
+      <button type="button" onclick="
+        document.getElementById('reply-form-' + [[${comment.id}]]).style.display='none';
+        this.parentElement.previousElementSibling.style.display='inline-block';
+      ">
+        취소
+      </button>
+    </form>
+  </li>
+</ul>
+
+<script>
+  document.querySelectorAll('.edit-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      const li = button.closest('li');
+      li.querySelector('.comment-content').style.display = 'none';
+      li.querySelector('.edit-form').style.display = 'block';
+      button.style.display = 'none';
+    });
+  });
+
+  document.querySelectorAll('.cancel-edit').forEach(button => {
+    button.addEventListener('click', () => {
+      const li = button.closest('li');
+      li.querySelector('.comment-content').style.display = 'block';
+      li.querySelector('.edit-form').style.display = 'none';
+      li.querySelector('.edit-btn').style.display = 'inline-block';
+    });
+  });
+</script>
+
 </body>
 </html>
