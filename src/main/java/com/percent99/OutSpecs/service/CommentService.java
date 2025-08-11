@@ -119,13 +119,14 @@ public class CommentService {
     }
 
     /**
-     * 특정 게시물(post) 의 모든 답변을 조회한다.
+     * 특정 게시물(post) 의 특정 타입의 comment를 모두 조회한다.
+     * @param type 조회할 타입(answer, comment, reply)
      * @param postId 조회할 게시글의 ID
-     * @return 답변 목록
+     * @return comment 목록
      */
     @Transactional(readOnly = true)
-    public List<Comment> getAnswerByPostId(Long postId) {
-        return commentRepository.findByTypeAndParentId(CommentType.ANSWER, postId);
+    public List<Comment> getByTypeAndPostId(CommentType type, Long postId) {
+        return commentRepository.findByTypeAndParentId(type, postId);
     }
 
     /**
