@@ -3,35 +3,133 @@
 <head>
   <meta charset="UTF-8">
   <title th:text="${post.title}">게시글 상세</title>
+  <link rel="stylesheet" th:href="@{/css/free-board-detail.css}">
 </head>
 <body>
-<h1 th:text="${post.title}"></h1>
+<div class="post">
+  <a class="postlist-back post-btn" th:href="@{/free-board/latest}">목록으로</a>
+  <div class="post-container">
+    <div class="post-header">
+      <img class="post-user-image" src="/images/profileImage.png" alt="프로필 이미지">
+      <div class="post-title-container">
+        <div class="post-title-info">
+          <div class="post-user-nickname" th:text="${post.user.username}"></div>
+          <div class="post-title" th:text="${post.title}"></div>
+        </div>
+        <div class="post-date" th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}"></div>
+      </div>
+      <img class="more-icon" src="/images/more-vertical.png" alt="더보기 아이콘">
+    </div>
+    <div class="post-content">
+      <div th:if="${post.images}">
+        <div th:each="img : ${post.images}">
+          <img th:src="@{|/uploads/${img.fileName}|}" alt="첨부 이미지" style="max-width: 300px;">
+        </div>
+      </div>
+      <div th:utext="${post.content}"></div>
+    </div>
+    <div class="post-reaction">
+      <div class="post-reaction-count">
+        <img class="post-icon" src="/images/like.png" alt="좋아요 아이콘">
+        <div th:text="${likes}"></div>
+        <img class="post-icon" src="/images/view.png" alt="조회수 아이콘">
+        <div th:text="${post.viewCount}"></div>
+        <img class="post-icon" src="/images/comment.png" alt="댓글 아이콘">
+        <div th:text="${commentsCount}"></div>
+      </div>
+      <img class="post-icon" src="/images/bookmark.png" alt="북마크 아이콘">
+    </div>
 
-<div>
-  <span>작성자: <span th:text="${post.user.username}"></span></span> |
-  <span>작성일: <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}"></span></span> |
-  <span>조회수: <span th:text="${post.viewCount}"></span></span>
-</div>
-
-<hr>
-
-<div th:utext="${post.content}"></div>
-
-<div th:if="${post.images}">
-  <div th:each="img : ${post.images}">
-    <img th:src="@{|/uploads/${img.fileName}|}" alt="첨부 이미지" style="max-width: 300px;">
+    <div th:if="${#lists.isEmpty(comments)}">
+      <p>아직 댓글이 없습니다.</p>
+    </div>
+    <div class="comment comment-item" th:if="${!#lists.isEmpty(comments) && comment.type.name() == 'COMMENT'}"
+         th:each="comment : ${comments}" th:attr="data-comment-id=${comment.id}">
+      <div class="comment-info">
+        <div class="comment-user-profile">
+          <img class="user-image" src="/images/profileImage.png" alt="댓글 작성자 이미지">
+          <div class="user-nickname" th:text="${comment.user.username}">유저 닉네임</div>
+        </div>
+        <div class="comment-content" th:text="${comment.content}"></div>
+        <div>
+          <img class="more-icon" src="/images/more-vertical.png" alt="더보기 아이콘">
+          <button class="comment-btn comment-edit-btn" type="button">수정</button>
+          <form th:action="@{/free-board/{postId}/comment/{commentId}(postId=${post.id}, commentId=${comment.id})}" method="post" style="display:inline;">
+            <button class="comment-btn" type="submit">삭제</button>
+          </form>
+        </div>
+        <form th:action="@{/free-board/{postId}/comment/{commentId}/edit(postId=${post.id}, commentId=${comment.id})}"
+              method="post" class="comment-edit-form" style="display:none;">
+          <textarea class="comment-input" name="content" th:text="${comment.content}"></textarea>
+          <button class="comment-btn comment-edit-btn" type="submit">수정 완료</button>
+          <button class="comment-btn comment-cancel-btn" type="button">취소</button>
+        </form>
+      </div>
+      <button class="comment-btn comment-btn-toggle" type="button"
+              th:onclick="'document.getElementById(\'reply-form-' + ${comment.id} + '\').style.display=\'block\'; this.style.display=\'none\';'">
+        답글달기
+      </button>
+      <div class="comment-reply">
+        <div class="comment-reply-list" th:each="reply : ${comments}"
+            th:if="${reply.type.name() == 'REPLY' and reply.parentId == comment.id}">
+          <strong th:text="${reply.user.username}">대댓글 작성자</strong>
+          <span th:text="${#temporals.format(reply.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+          <p th:text="${reply.content}"></p>
+        </div>
+        <form th:action="@{/free-board/{postId}/comment(postId=${post.id})}" th:object="${commentDTO}"
+              method="post" th:id="'reply-form-' + ${comment.id}" style="display:none;">
+          <input type="hidden" name="type" value="REPLY"/>
+          <input type="hidden" name="parentId" th:value="${comment.id}" />
+          <textarea class="comment-input" name="content" placeholder="대댓글 내용을 입력하세요"></textarea>
+          <button class="comment-btn" type="submit">등록</button>
+          <button type="button" class="comment-btn comment-cancel-btn" onclick="
+          document.getElementById('reply-form-' + [[${comment.id}]]).style.display='none';
+          this.parentElement.previousElementSibling.style.display='inline-block';">취소
+          </button>
+        </form>
+      </div>
+    </div>
+    <div class="comment">
+      <form class="comment-info" th:action="@{/free-board/{postId}/comment(postId=${post.id})}" method="post"
+            th:object="${commentDTO}">
+        <div class="comment-user-profile">
+          <img class="user-image" src="/images/profileImage.png" alt="작성자 이미지">
+          <div class="user-nickname">유저 닉네임</div>
+        </div>
+        <input type="hidden" name="type" value="COMMENT"/>
+        <input type="hidden" name="parentId" th:value="${post.id}"/>
+        <textarea class="comment-input" th:field="*{content}" placeholder="댓글을 입력하세요" required></textarea><br>
+        <button class="comment-btn" type="submit">등록하기</button>
+      </form>
+    </div>
+  </div>
+  <div class="post-actions">
+    <a class="post-btn" th:href="@{|/free-board/${post.id}/edit|}">수정하기</a>
+    <form th:action="@{|/free-board/${post.id}/delete|}" method="post" style="display:inline;">
+      <button class="post-btn" type="submit">삭제하기</button>
+    </form>
   </div>
 </div>
 
-<hr>
+<script>
+  document.querySelectorAll('.comment-edit-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      const li = button.closest('.comment-item');
+      li.querySelector('.comment-content').style.display = 'none';
+      li.querySelector('.comment-edit-form').style.display = 'block';
+      button.style.display = 'none';
+    });
+  });
 
-<div>
-  <a th:href="@{|/free-board/${post.id}/edit|}">수정</a>
-  <form th:action="@{|/free-board/${post.id}/delete|}" method="post" style="display:inline;">
-    <button type="submit">삭제</button>
-  </form>
-  <a th:href="@{/free-board/latest}">목록</a>
-</div>
+  document.querySelectorAll('.comment-cancel-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      const li = button.closest('.comment-item');
+      li.querySelector('.comment-content').style.display = 'block';
+      li.querySelector('.comment-edit-form').style.display = 'none';
+      li.querySelector('.comment-btn-toggle').style.display = 'inline-block';
+    });
+  });
+</script>
 
 </body>
 </html>

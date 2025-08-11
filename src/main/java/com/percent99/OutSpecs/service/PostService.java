@@ -31,6 +31,7 @@ public class PostService {
     private final PostQueryService postQueryService;
     private final UserService userService;
     private final List<PostDetailHandler> detailHandlers;
+    private final CommentService commentService;
 
     /**
      * 새로운 게시글을 생성한다.
@@ -115,7 +116,7 @@ public class PostService {
 
         // 관리자는 모든 게시글을 삭제할 수 있습니다.
         if (isAdmin) {
-            postRepository.deleteById(postId);
+            deleteAllCommentsById(userId, postId);
             return;
         }
 
@@ -129,6 +130,24 @@ public class PostService {
             throw new IllegalArgumentException("게시글 작성자가 아닙니다.");
         }
 
+        deleteAllCommentsById(userId, postId);
+    }
+
+    @Transactional
+    public void deleteAllCommentsById(Long userId, Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(()-> new EntityNotFoundException("해당 게시물은 존재하지 않습니다."));
+
+        List<Comment> comments;
+        if(post.getType().equals(PostType.QNA)) {
+            comments = commentService.getByTypeAndPostId(CommentType.ANSWER, postId);
+        } else comments = commentService.getByTypeAndPostId(CommentType.COMMENT, postId);
+
+        if(comments != null && !comments.isEmpty()) {
+            for(Comment comment : comments) {
+                commentService.deletedComment(userId, comment.getId());
+            }
+        }
         postRepository.deleteById(postId);
     }
 

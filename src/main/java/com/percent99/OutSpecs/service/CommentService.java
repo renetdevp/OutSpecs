@@ -7,12 +7,13 @@ import com.percent99.OutSpecs.repository.PostRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  ** 댓글(comment) 생성·조회·수정·삭제 기능을 제공하는 서비스
@@ -23,7 +24,6 @@ import java.util.List;
  *     <li>존재하지 않는 댓글 조회시 EntityNotFoundException를 던진다.</li>
  * </ul>
  */
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CommentService {
@@ -45,22 +45,15 @@ public class CommentService {
         User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저 정보가 발견되지않았습니다."));
 
-        if( dto.getType() == CommentType.ANSWER){
+        if(dto.getType() == CommentType.COMMENT || dto.getType() == CommentType.ANSWER){
             postRepository.findById(dto.getParentId())
                     .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
-        }
-        else if(dto.getType() == CommentType.COMMENT){
-            Comment parenAnswer = commentRepository.findById(dto.getParentId())
-                    .orElseThrow(() -> new EntityNotFoundException("답변을 찾을 수 없습니다."));
-            if(parenAnswer.getType() != CommentType.ANSWER){
-                throw new IllegalArgumentException("댓글의 부모는 ANSWER 타입잉어야 합니다.");
-            }
-        }
-        else if(dto.getType() == CommentType.REPLY){
-            Comment parentComment = commentRepository.findById(dto.getParentId())
+        } else if(dto.getType() == CommentType.REPLY){
+            Comment parent = commentRepository.findById(dto.getParentId())
                     .orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다."));
-            if (parentComment.getType() != CommentType.COMMENT) {
-                throw new IllegalArgumentException("대댓글의 부모는 COMMENT 타입이어야 합니다.");
+
+            if (parent.getType() == CommentType.REPLY) {
+                throw new IllegalArgumentException("대댓글에 다시 대댓글을 달 수 없습니다.");
             }
         } else {
             throw new IllegalArgumentException("알 수 없는 댓글 타입입니다.");
@@ -73,7 +66,6 @@ public class CommentService {
         comment.setContent(dto.getContent());
         comment.setCreatedAt(LocalDateTime.now());
 
-        log.info("=========== 댓글 생성완료 ============");
         return commentRepository.save(comment);
     }
 
@@ -108,7 +100,37 @@ public class CommentService {
      */
     @Transactional(readOnly = true)
     public List<Comment> getCommentsByPostId(Long postId) {
-        return commentRepository.findByParentId(postId);
+        List<Comment> topComments = commentRepository.findByTypeAndParentId(CommentType.COMMENT, postId);
+        List<Long> topCommentIds = topComments.stream()
+                .map(Comment::getId)
+                .collect(Collectors.toList());
+
+        List<Comment> replies = new ArrayList<>();
+        if (!topCommentIds.isEmpty()) {
+            for (Long commentId : topCommentIds) {
+                replies.addAll(commentRepository.findByTypeAndParentId(CommentType.REPLY, commentId));
+            }
+        }
+
+        List<Comment> allComments = new ArrayList<>();
+        allComments.addAll(topComments);
+        allComments.addAll(replies);
+        return allComments;
+    }
+
+    /**
+     * 특정 게시물(post) 의 특정 타입의 comment를 모두 조회한다.
+     * @param type 조회할 타입(answer, comment, reply)
+     * @param postId 조회할 게시글의 ID
+     * @return comment 목록
+     */
+    @Transactional(readOnly = true)
+    public List<Comment> getByTypeAndPostId(CommentType type, Long postId) {
+        return commentRepository.findByTypeAndParentId(type, postId);
+    }
+
+    public int countByTypeAndPostId(CommentType type, Long postId) {
+        return (int)commentRepository.countByTypeAndParentId(type, postId);
     }
 
     /**
@@ -124,13 +146,31 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 댓글 내용이 발견되지않았습니다."));
 
-        // if (user.getRole().equals(UserRoleType.ADMIN))
-        if (true) {
-            commentRepository.deleteById(commentId);
-        } else if(comment.getType().equals(CommentType.ANSWER)) {
+        if(!user.getRole().equals(UserRoleType.ADMIN) && comment.getType().equals(CommentType.ANSWER)) {
             throw new IllegalArgumentException("질문의 답변은 관리자만 삭제할 수 있습니다.");
         } else if(!userId.equals(comment.getUser().getId())) {
             throw new IllegalArgumentException("댓글 작성자가 아닙니다.");
-        } else { commentRepository.deleteById(commentId); }
+        } else {
+            deleteCommentRecursively(commentId, comment.getType());
+        }
+    }
+
+    /**
+     * 재귀적으로 돌면서 자식 댓글이나 대댓글 다 삭제
+     * @param commentId
+     */
+    private void deleteCommentRecursively(Long commentId, CommentType commentType) {
+        CommentType childTypes;
+        if(commentType.equals(CommentType.ANSWER)) childTypes = CommentType.COMMENT;
+        else if(commentType.equals(CommentType.COMMENT)) childTypes = CommentType.REPLY;
+        else childTypes = null;
+
+        if (childTypes != null) {
+            List<Comment> children = commentRepository.findByTypeAndParentId(childTypes, commentId);
+            for (Comment child : children) {
+                deleteCommentRecursively(child.getId(), child.getType());
+            }
+        }
+        commentRepository.deleteById(commentId);
     }
 }

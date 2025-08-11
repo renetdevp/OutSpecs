@@ -1,0 +1,97 @@
+.write-container {
+    max-width: 891px;
+    margin: 30px auto;
+    padding: 20px;
+    border: 1px solid #D9D9D9;
+    border-radius: 8px;
+}
+
+.form-top {
+    display: flex;
+    gap: 20px;
+}
+
+.image-upload {
+    flex: 0 0 200px;
+}
+
+.image-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 180px;
+    height: 180px;
+    background: #F6F5F5;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+    text-align: center;
+}
+
+.title-tag {
+    flex: 1;
+}
+
+.form-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    flex: 0 0 80px;
+    font-size: 14px;
+    color: #333;
+}
+
+.form-group input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #D9D9D9;
+    border-radius: 4px;
+}
+
+.form-content {
+    margin-top: 20px;
+}
+
+.form-content label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #333;
+}
+
+.form-content textarea {
+    width: 100%;
+    min-height: 300px;
+    padding: 10px;
+    border: 1px solid #D9D9D9;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 15px;
+}
+
+.form-actions button {
+    padding: 8px 20px;
+    background: #3B38A0;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.form-actions button:hover {
+    background: #2a1d8a;
+}
+
+textarea {
+    resize: none;
+}
