@@ -129,6 +129,10 @@ public class CommentService {
         return commentRepository.findByTypeAndParentId(type, postId);
     }
 
+    public int countByTypeAndPostId(CommentType type, Long postId) {
+        return (int)commentRepository.countByTypeAndParentId(type, postId);
+    }
+
     /**
      * 지정한 ID의 댓글을 삭제한다.<br>
      * 답변은 관리자만 삭제 가능하다.

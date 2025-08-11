@@ -30,4 +30,12 @@ public interface CommentRepository extends JpaRepository<Comment,Long> {
      * @return 해당 부모에 달린 댓글 목록
      */
     List<Comment> findByTypeAndParentId(CommentType type, Long parentId);
+
+    /**
+     * type에 따른 댓글의 갯수
+     * @param type 해당 타입
+     * @param parentId 조회할 부모의 ID
+     * @return 해당 부모에 달린 댓글 갯수
+     */
+    long countByTypeAndParentId(CommentType type, Long parentId);
 }
