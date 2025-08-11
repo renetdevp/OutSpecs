@@ -1,0 +1,168 @@
+* {
+    font-size: 14px;
+    font-weight: normal;
+}
+
+.post {
+    display: flex;
+    flex-direction: column;
+    max-width: 891px;
+    margin: 30px auto;
+    padding: 20px 35px;
+    gap: 10px;
+}
+
+.postlist-back {
+    flex-grow: 0;
+    width: auto;
+    align-self: flex-start;
+}
+
+.post-container {
+    border: 1px solid #D9D9D9;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    padding: 21px 30px;
+    gap: 23px;
+}
+
+.post-header {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.post-user-image {
+    width: 56px;
+    height: 56px;
+}
+
+.post-title-container {
+    flex-grow: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.post-title-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.post-tile {
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.post-date {
+    font-size: 12px;
+    font-weight: lighter;
+}
+
+.more-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.post-content {
+    border: 1px solid #D9D9D9;
+    border-radius: 5px;
+    padding: 20px 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.post-reaction {
+    display: flex;
+    justify-content: space-between;
+}
+
+.post-reaction-count {
+    display: flex;
+    gap: 5px;
+}
+
+.post-icon {
+    height: 20px;
+    object-fit: none;
+}
+
+.comment {
+    background : #F6F5F5;
+    border-radius: 5px;
+    padding: 10px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+.comment-info {
+    display: flex;
+    gap: 10px;
+}
+
+.comment-user-profile {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: center;
+}
+
+.user-image {
+    width: 40px;
+    height: 40px;
+}
+
+.comment-content {
+    flex-grow: 1;
+}
+
+.comment-btn {
+    background: #D9D9D9;
+    border: none;
+    border-radius: 5px;
+    font-size: 12px;
+}
+
+.comment-btn-toggle {
+    flex-grow: 0;
+    width: auto;
+    align-self: flex-end;
+}
+
+.comment-form {
+    display: flex;
+    flex-direction : column;
+    gap: 2px;
+}
+
+.comment-input {
+    flex-grow: 1;
+    font: inherit;
+    border: none;
+}
+
+.post-actions {
+    display: flex;
+    justify-content: right;
+    gap: 7px;
+}
+
+.post-btn {
+    background: #3B38A0;
+    color: white;
+    padding: 2px 7px;
+    border: none;
+    border-radius: 5px;
+    font-weight: 700;
+    font-size: 14px;
+    text-decoration: none;
+    width: auto;
+}
+
+textarea {
+    resize: none;
+}
