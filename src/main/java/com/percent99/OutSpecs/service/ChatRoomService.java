@@ -1,9 +1,11 @@
 package com.percent99.OutSpecs.service;
 
 import com.percent99.OutSpecs.dto.ChatRoomResponseDTO;
+import com.percent99.OutSpecs.entity.ChatMessage;
 import com.percent99.OutSpecs.entity.ChatRoom;
 import com.percent99.OutSpecs.entity.Profile;
 import com.percent99.OutSpecs.entity.User;
+import com.percent99.OutSpecs.repository.ChatMessageRepository;
 import com.percent99.OutSpecs.repository.ChatRoomRepository;
 import com.percent99.OutSpecs.repository.ProfileRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
@@ -22,6 +24,7 @@ public class ChatRoomService {
   private final ChatRoomRepository chatRoomRepository;
   private final UserRepository userRepository;
   private final ProfileRepository profileRepository;
+  private final ChatMessageRepository chatMessageRepository;
 
   @Transactional
   public ChatRoom createChatRoom(Long userId, Long targetId){
@@ -101,6 +104,13 @@ public class ChatRoomService {
     chatRoomRepository.deleteById(chatRoomId);
   }
 
+  @Transactional
+  public void deleteAllChatRoomsByUserId(Long userId){
+    if (userId == null) return;
+
+    chatRoomRepository.deleteAllByUserId(userId);
+  }
+
   /**
    * ChatRoom List를 ChatRoomResponseDTO List로 변환하는 메소드
    * @param chatRooms 변환할 ChatRoom List
@@ -145,7 +155,16 @@ public class ChatRoomService {
 
     result.setChatRoomId(chatRoom.getId());
     result.setChatRoomIsChatBot(chatRoom.isChatbot());
-    result.setChatRoomLastMessageId(chatRoom.getLastMessageId());
+
+    Long lastMessageId = chatRoom.getLastMessageId();
+    if (lastMessageId != null){
+      ChatMessage lastMessage = chatMessageRepository.findById(lastMessageId).orElse(null);
+
+      if (lastMessage == null) return null;
+
+      result.setChatRoomLastMessage(lastMessage.getContent());
+      result.setChatRoomLastMessageCreatedAt(lastMessage.getCreatedAt());
+    }
 
     if (user1Profile != null) {
       result.setUser1Id(user1Profile.getUserId());
