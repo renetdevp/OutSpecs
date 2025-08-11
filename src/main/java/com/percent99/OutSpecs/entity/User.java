@@ -50,4 +50,8 @@ public class User {
     /* === EDK 연관 관계 === */
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Reaction> reactions;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY, orphanRemoval = true)
+    private Profile profile;
 }

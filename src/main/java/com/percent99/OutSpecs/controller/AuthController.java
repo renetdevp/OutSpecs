@@ -36,11 +36,11 @@ public class AuthController {
                                Model model, BindingResult bindingResult){
 
         if(bindingResult.hasErrors()){
-            return "";
+            return "auth/signup";
         }
 
         if(userService.findByUsername(userDTO.getUsername()).isPresent()){
-            model.addAttribute("", "이미 존재하는 회원입니다.");
+            model.addAttribute("signupError", "이미 존재하는 회원입니다.");
             return "auth/signup";
         }
 
@@ -53,6 +53,6 @@ public class AuthController {
         if(principal != null){
             return "redirect:/";
         }
-        return "auth/login";
+        return "redirect:/auth/login";
     }
 }

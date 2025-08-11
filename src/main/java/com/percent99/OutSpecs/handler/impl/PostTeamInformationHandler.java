@@ -21,10 +21,13 @@ public class PostTeamInformationHandler implements PostDetailHandler{
     @Override
     public void handle(Post post, PostDTO dto) {
         if(dto.getTeamInfo() == null) return;
-        PostTeamInformation teamInfo = new PostTeamInformation();
-        teamInfo.setPost(post);
+        PostTeamInformation teamInfo = post.getTeamInfo();
+        if(teamInfo == null){
+            teamInfo = new PostTeamInformation();
+            teamInfo.setPost(post);
+            post.setTeamInfo(teamInfo);
+        }
         teamInfo.setStatus(dto.getTeamInfo().getStatus());
         teamInfo.setCapacity(dto.getTeamInfo().getCapacity());
-        post.setTeamInfo(teamInfo);
     }
 }

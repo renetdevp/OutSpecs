@@ -32,6 +32,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final PostQueryService postQueryService;
     private final UserService userService;
     private final List<PostDetailHandler> detailHandlers;
 
@@ -58,6 +59,10 @@ public class PostService {
         post.setCreatedAt(LocalDateTime.now());
         post.setUpdatedAt(LocalDateTime.now());
         post.setViewCount(0);
+
+        if(post.getType() == PostType.RECRUIT && !user.getRole().equals(UserRoleType.ENTUSER)){
+            throw new IllegalArgumentException("채용 공고는 기업 회원만 작성할 수 있습니다.");
+        }
         
         detailHandlers.stream()
                 .filter(h -> h.supports(dto.getType()))
@@ -71,17 +76,6 @@ public class PostService {
     }
 
     /**
-     * ID로 게시글을 조회한다.
-     * @param id 조회할 게시글의 ID
-     * @return 조회된 Post 엔티티
-     */
-    @Transactional(readOnly = true)
-    public Post getPostById(Long id) {
-        return postRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("해당 게시물은 존재하지않습니다."));
-    }
-
-    /**
      * ID로 게시글을 수정한다.
      * @param id 수정할 게시글의 ID
      * @param dto 수정할 필드가 담긴 DTO
@@ -90,177 +84,20 @@ public class PostService {
     @Transactional
     public Post updatePost(Long id, PostDTO dto) {
 
-        Post post = getPostById(id);
+        Post post = postQueryService.getPostById(id);
         post.setType(dto.getType());
         post.setTitle(dto.getTitle());
         post.setContent(dto.getContent());
         post.setUpdatedAt(LocalDateTime.now());
 
-        post.getPostTags().clear();
-        post.setTeamInfo(null);
-        post.setPostJob(null);
-        post.setPostHangout(null);
-        post.setPostQnA(null);
-
+        if(post.getType() == PostType.RECRUIT && !post.getUser().getRole().equals(UserRoleType.ENTUSER)){
+            throw new IllegalArgumentException("채용 공고는 기업 회원만 작성할 수 있습니다.");
+        }
         detailHandlers.stream()
                 .filter(h -> h.supports(dto.getType()))
                 .forEach(h -> h.handle(post,dto));
 
         return postRepository.save(post);
-    }
-
-    public PostDTO getPostDTOById(Long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("게시글이 없습니다."));
-
-        PostDTO dto = new PostDTO();
-        dto.setUserId(post.getUser().getId());
-        dto.setType(post.getType());
-        dto.setTitle(post.getTitle());
-        dto.setContent(post.getContent());
-        if(post.getPostTags() != null) {
-            PostTagsDTO postTagsDTO = new PostTagsDTO();
-            StringBuilder tagsBuilder = new StringBuilder();
-            for(PostTags tag : post.getPostTags()) {
-                if (!tagsBuilder.isEmpty()) {
-                    tagsBuilder.append(",");
-                }
-                tagsBuilder.append(tag);
-            }
-            postTagsDTO.setTags(tagsBuilder.toString());
-            dto.setTagsInfo(postTagsDTO);
-        }
-        if(post.getPostHangout() != null) {
-            PostHangoutDTO hangoutDTO = new PostHangoutDTO();
-            hangoutDTO.setPlaceName(post.getPostHangout().getPlaceName());
-            dto.setHangoutInfo(hangoutDTO);
-        }
-        if(post.getPostJob() != null) {
-            PostJobDTO postJobDTO = new PostJobDTO();
-            postJobDTO.setCareer(post.getPostJob().getCareer());
-            List<String> techniqueNames = post.getPostJob().getTechniques().stream()
-                    .map(Techniques::getTech)
-                    .collect(Collectors.toList());
-            postJobDTO.setTechniques(techniqueNames);
-            dto.setJobInfo(postJobDTO);
-        }
-        if(post.getTeamInfo() != null) {
-            PostTeamInformationDTO postTeamInfoDTO = new PostTeamInformationDTO();
-            postTeamInfoDTO.setCapacity(post.getTeamInfo().getCapacity());
-            postTeamInfoDTO.setStatus(post.getTeamInfo().getStatus());
-            dto.setTeamInfo(postTeamInfoDTO);
-        }
-        if(post.getPostQnA() != null) {
-            PostQnADTO postQnADTO = new PostQnADTO();
-            postQnADTO.setAnswerComplete(post.getPostQnA().isAnswerComplete());
-            dto.setQnaInfo(postQnADTO);
-        }
-        return dto;
-    }
-
-    /**
-     * 특정 사용자가 작성한 모든 게시글을 조회한다.
-     * @param userId 조회할 사용자의 ID
-     * @return 해당 사용자가 작성한 게시글 목록
-     */
-    @Transactional(readOnly = true)
-    public List<Post> getPostsByUserId(Long userId) {
-        return postRepository.findByUserId(userId);
-    }
-
-    /**
-     * 특정 유형(type)의 게시글을 조회한다.
-     * @param type 조회할 PostType
-     * @return 지정한 유형의 게시글 목록
-     */
-    @Transactional(readOnly = true)
-    public List<Post> getPostsByType(PostType type) {
-        return postRepository.findByType(type);
-    }
-
-    /**
-     * 전체 게시글을 조회한다.
-     * @return 전체 게시글 반환
-     */
-    @Transactional(readOnly = true)
-    public List<Post> getAllPosts() {
-        return postRepository.findAll();
-    }
-
-    /**
-     * 게시판 타입에 따라 최신글 limit개를 조회한다.
-     * @param type 게시판 타입
-     * @param limit 좋아요 가져올 개수
-     * @return 최신글 목록
-     */
-    @Transactional(readOnly = true)
-    public List<Post> getRecentPosts(PostType type, int limit) {
-        Pageable pageable = PageRequest.of(0, limit);
-        return postRepository.findByTypeOrderByCreatedAtDesc(type, pageable);
-    }
-
-    /**
-     * 게시판 타입에 따라 조회수 높은 순 게시글 limit개를 조회한다.
-     * @param type 게시판 타입
-     * @param limit 좋아요 가져올 개수
-     * @return 조회수 순 게시글 목록
-     */
-    @Transactional(readOnly = true)
-    public List<Post> getViewCountPosts(PostType type, int limit) {
-        Pageable pageable = PageRequest.of(0, limit);
-        return postRepository.findByTypeOrderByViewCountDesc(type, pageable);
-    }
-
-    /**
-     * 게시판 타입에 따라 좋아요 높은 순 게시글 limit개를 조회한다.
-     * @param type 게시판 타입
-     * @param limit 좋아요 가져올 개수
-     * @return 좋아요 순 게시글 목록
-     */
-    @Transactional(readOnly = true)
-    public List<Post> getLikePosts(PostType type, int limit) {
-        Pageable pageable = PageRequest.of(0, limit);
-        return postRepository.findByTypeOrderByLike(type, pageable);
-    }
-
-    /**
-     * 채용공고 게시판의 기술스택 필터 조건에 맞는(하나라도 포함) 게시글을 모두 조회한다.
-     * @param techs 기술스택 리스트
-     * @return 스택 요구조건 별 게시글 목록
-     */
-    @Transactional(readOnly = true)
-    public List<Post> getTechPosts(List<String> techs) {
-        return postRepository.findRecruitPostsByTechs(techs);
-    }
-
-    /**
-     * QNA나 자유게시판에서 선택한 태그가 모두 들어있는 게시글을 조회한다.
-     * @param tags 원하는 태그
-     * @return 태그별 게시글 목록
-     */
-    @Transactional(readOnly = true)
-    public List<Post> getTagPosts(List<String> tags) {
-        return postRepository.findBasePostsByTags(tags, tags.size());
-    }
-
-    /**
-     * 나가서놀기 게시판에서 선택한 장소가 포함된 게시글을 조회한다.
-     * @param place 원하는 장소
-     * @return 해당 장소의 게시글 리스트
-     */
-    @Transactional(readOnly = true)
-    public List<Post> getPlacePosts(String place) {
-        return postRepository.findHangoutPostsByPlace(place);
-    }
-
-    /**
-     * 팀모집 게시판의 모집상태별 게시글을 조회한다.
-     * @param postStatus 팀모집 상태(open, closed)
-     * @return 해당 장소의 게시글 리스트
-     */
-    @Transactional(readOnly = true)
-    public List<Post> getteamPosts(PostStatus postStatus) {
-        return postRepository.findHangoutPostsByPlace(postStatus.name());
     }
 
     /**
@@ -277,13 +114,26 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(()-> new EntityNotFoundException("해당 게시물은 존재하지 않습니다."));
 
-        if (user.getRole().equals(UserRoleType.ADMIN)) {
+        boolean isAdmin = user.getRole().equals(UserRoleType.ADMIN);
+        boolean isOwner = userId.equals(post.getUser().getId());
+
+        // 관리자는 모든 게시글을 삭제할 수 있습니다.
+        if (isAdmin) {
             postRepository.deleteById(postId);
-        } else if(post.getType().equals(PostType.QNA)) {
+            return;
+        }
+
+        // 관리자가 아닌 경우, Q&A 게시글은 삭제할 수 없습니다.
+        if (post.getType().equals(PostType.QNA)) {
             throw new IllegalArgumentException("QnA 게시글은 관리자만 삭제할 수 있습니다.");
-        } else if(!userId.equals(post.getUser().getId())) {
+        }
+
+        // 자신의 게시글이 아니면 삭제할 수 없습니다.
+        if (!isOwner) {
             throw new IllegalArgumentException("게시글 작성자가 아닙니다.");
-        } else { postRepository.deleteById(postId); }
+        }
+
+        postRepository.deleteById(postId);
     }
 
     /**
@@ -291,10 +141,12 @@ public class PostService {
      * @param userId 로그인 유저 ID
      * @param postId 질문게시글 ID
      */
+    @Transactional
     public void updateAnswerComplete(Long userId, Long postId) {
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(()-> new EntityNotFoundException("해당 유저는 존재하지 않습니다."));
+        if(!userRepository.existsById(userId)){
+            throw new EntityNotFoundException("해당 유저는 존재하지 않습니다.");
+        }
         Post post = postRepository.findById(postId)
                 .orElseThrow(()-> new EntityNotFoundException("해당 게시물은 존재하지 않습니다."));
 
