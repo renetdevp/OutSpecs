@@ -18,4 +18,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 
   @Query(value = "SELECT EXISTS (SELECT 1 FROM chat_rooms WHERE id = :chatRoomId AND (user1_id = :userId OR user2_id = :userId))", nativeQuery = true)
   boolean existsByIdAndUserId(@Param("chatRoomId") Long chatRoomId, @Param("userId") Long userId);
+
+  @Query("DELETE FROM ChatRoom cr WHERE cr.user1.id = :userId OR cr.user2.id = :userId")
+  void deleteAllByUserId(@Param("userId") Long userId);
 }
