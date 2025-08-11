@@ -7,15 +7,11 @@ import com.percent99.OutSpecs.repository.PostRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  ** 게시글(post) 관련 생성·조회·수정·삭제 기능을 제공하는 서비스
