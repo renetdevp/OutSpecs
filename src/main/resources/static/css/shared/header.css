@@ -9,6 +9,10 @@
   box-sizing: border-box;
 }
 
+.header__btn--left{
+  text-decoration-line:none;
+}
+
 .header__left {
   display: flex;
   align-items:center

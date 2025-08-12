@@ -1,10 +1,10 @@
 package com.percent99.OutSpecs.controller;
 
 import com.percent99.OutSpecs.dto.ProfileDTO;
-import com.percent99.OutSpecs.entity.Profile;
-import com.percent99.OutSpecs.entity.User;
+import com.percent99.OutSpecs.entity.*;
 import com.percent99.OutSpecs.security.CustomUserPrincipal;
 import com.percent99.OutSpecs.service.ProfileService;
+import com.percent99.OutSpecs.service.ReactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,29 +28,7 @@ import java.util.Optional;
 public class ProfileController {
 
     private final ProfileService profileService;
-
-    /**
-     * 현재 로그인한 사용자의 프로필을 조회합니다.<br>
-     * 프로필이 존재하면 화면에 표시하고, 없으면 null로 전달합니다.
-     *
-     * @param principal 인증된 사용자 정보가 담긴 CustomUserPrincipal 객체
-     * @param model     뷰에 전달할 속성을 저장할 Model 객체
-     * @return "profile/profile_list" 뷰 이름
-     */
-    @GetMapping
-    public String list(@AuthenticationPrincipal CustomUserPrincipal principal,
-                       Model model){
-
-        Long userId = principal.getUser().getId();
-
-        Profile opt = profileService.getProfileByUserId(userId)
-                .orElse(null);
-        if(opt == null){
-            return "redirect:/users/profiles/new";
-        }
-        model.addAttribute("profile", opt);
-        return "profile/profile_detail";
-    }
+    private final ReactionService reactionService;
 
     /**
      * 프로필 생성 폼을 보여줍니다.<br>
@@ -123,12 +101,19 @@ public class ProfileController {
         Optional<Profile> profile = profileService.getProfileByUserId(userId);
         User user = profileService.getUserById(userId);
 
+        List<ProfileDTO> followProfiles = profileService.getFollowedUserProfiles(user);
+        List<Post> likedPosts = reactionService.getLikedPosts(user);
+        List<Post> bookmarkedPosts = reactionService.getBookmarkedPosts(user);
+
         if(profile.isEmpty()){
             return "redirect:/users/profiles/new";
         }
         Profile p = profile.get();
         model.addAttribute("profile",p);
         model.addAttribute("user", user);
+        model.addAttribute("followProfiles", followProfiles);
+        model.addAttribute("likedPosts", likedPosts);
+        model.addAttribute("bookmarkedPosts", bookmarkedPosts);
 
         List<String> stacks = Optional.ofNullable(p.getStacks())
                         .map(s -> Arrays.stream(s.split(","))
@@ -222,6 +207,46 @@ public class ProfileController {
             return "redirect:/users/profiles/" + userId;
         }
         profileService.deleteProfileByUserId(userId);
-        return "redirect:/users/profiles";
+        return "redirect:/users/profiles/new";
+    }
+
+    /**
+     * 사용자가 좋아요한 게시물 목록 삭제합합니다
+     * @param principal 인증된 사용자 정보가 담긴 CustomUserPrincipal 객체
+     * @param userId
+     * @param postId
+     * @return
+     */
+    @PostMapping("/{userId}/like/{postId}/delete")
+    public String likeDelete(@AuthenticationPrincipal CustomUserPrincipal principal,
+                             @PathVariable Long userId,
+                             @PathVariable Long postId){
+        if(!principal.getUser().getId().equals(userId)){
+            return "redirect:/users/profiles/" + userId;
+        }
+        User user = profileService.getUserById(userId);
+        reactionService.deleteReaction(user, TargetType.POST, postId, ReactionType.LIKE);
+        return "redirect:/users/profiles/" + userId;
+    }
+
+    @PostMapping("/{userId}/bookmark/{postId}/delete")
+    public String bookmarkDelete(@AuthenticationPrincipal CustomUserPrincipal principal,
+                             @PathVariable Long userId,
+                             @PathVariable Long postId){
+        if(!principal.getUser().getId().equals(userId)){
+            return "redirect:/users/profiles/" + userId;
+        }
+        User user = profileService.getUserById(userId);
+        reactionService.deleteReaction(user, TargetType.POST, postId, ReactionType.BOOKMARK);
+        return "redirect:/users/profiles/" + userId;
+    }
+
+    @PostMapping("/{userId}/follow/delete")
+    public String FollowDelete(@AuthenticationPrincipal CustomUserPrincipal principal,
+                             @PathVariable Long userId){
+        Long meId = principal.getUser().getId();
+        User user = profileService.getUserById(meId);
+        reactionService.deleteReaction(user, TargetType.USER, userId,  ReactionType.FOLLOW);
+        return "redirect:/users/profiles/" + meId;
     }
 }

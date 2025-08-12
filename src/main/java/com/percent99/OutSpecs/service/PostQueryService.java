@@ -2,7 +2,9 @@ package com.percent99.OutSpecs.service;
 
 import com.percent99.OutSpecs.dto.*;
 import com.percent99.OutSpecs.entity.*;
+import com.percent99.OutSpecs.repository.CommentRepository;
 import com.percent99.OutSpecs.repository.PostRepository;
+import com.percent99.OutSpecs.repository.ReactionRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -23,6 +25,8 @@ import java.util.stream.Collectors;
 public class PostQueryService {
 
     private final PostRepository postRepository;
+    private final ReactionRepository reactionRepository;
+    private final CommentRepository commentRepository;
 
     /**
      * ID로 게시글을 조회한다.
@@ -134,6 +138,15 @@ public class PostQueryService {
      */
     public List<Post> getTeamPosts(PostStatus postStatus) {
         return postRepository.findTeamPostsByStatus(postStatus);
+    }
+
+    public PostResponseDTO getPostReactionDetail(Long postId, User user) {
+        int likesCount = (int)reactionRepository.countByTargetTypeAndTargetIdAndReactionType(TargetType.POST, postId, ReactionType.LIKE);
+        int commentsCount = (int)commentRepository.countByTypeAndParentId(CommentType.COMMENT, postId);
+        boolean isLiked = reactionRepository.existsByUserAndTargetTypeAndTargetIdAndReactionType(user, TargetType.POST, postId, ReactionType.LIKE);
+        boolean isBookmarked = reactionRepository.existsByUserAndTargetTypeAndTargetIdAndReactionType(user, TargetType.POST, postId, ReactionType.BOOKMARK);
+
+        return new PostResponseDTO(likesCount, commentsCount, isLiked, isBookmarked);
     }
 
     /**

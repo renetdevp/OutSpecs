@@ -11,10 +11,16 @@ package com.percent99.OutSpecs.entity;
  * </ul>
  */
 public enum PostType {
-    QNA,
-    TEAM,
-    PLAY,
-    AIPLAY,
-    FREE,
-    RECRUIT
+    QNA, TEAM, PLAY, AIPLAY, FREE, RECRUIT;
+
+    public String pathPrefix(){
+        return switch (this){
+            case QNA -> "qna";
+            case FREE -> "free-board";
+            case TEAM -> "team";
+            case AIPLAY -> "ai-play";
+            case PLAY -> "play";
+            case RECRUIT -> "recruit";
+        };
+    }
 }

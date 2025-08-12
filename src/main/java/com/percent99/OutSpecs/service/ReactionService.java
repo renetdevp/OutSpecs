@@ -9,7 +9,9 @@ import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -31,12 +33,14 @@ public class ReactionService {
      * @param targetId
      * @param reactionType
      */
+    @Transactional
     public void addReaction(User user, TargetType targetType, Long targetId, ReactionType reactionType) {
         if(!userRepository.existsById(user.getId())) {
             throw new EntityNotFoundException("해당 유저는 존재하지 않습니다.");
         }
         if(reactionRepository.existsByUserAndTargetTypeAndTargetIdAndReactionType(user, targetType, targetId, reactionType)) {
-            throw new EntityExistsException("이미 반응이 존재합니다.");
+            deleteReaction(user, targetType, targetId, reactionType);
+            return;
         }
         if(targetType.equals(TargetType.POST) && !postRepository.existsById(targetId)) {
             throw new EntityNotFoundException("해당 게시물은 존재하지 않습니다.");
@@ -55,6 +59,7 @@ public class ReactionService {
         reaction.setTargetType(targetType);
         reaction.setTargetId(targetId);
         reaction.setReactionType(reactionType);
+        reaction.setCreatedAt(LocalDateTime.now());
 
         reactionRepository.save(reaction);
 
@@ -103,6 +108,7 @@ public class ReactionService {
      * @param targetId
      * @param reactionType
      */
+    @Transactional
     public void deleteReaction(User user, TargetType targetType, Long targetId, ReactionType reactionType) {
         if(!userRepository.existsById(user.getId())) {
             throw new EntityNotFoundException("해당 유저는 존재하지 않습니다.");
@@ -140,15 +146,29 @@ public class ReactionService {
     }
 
     /**
-     * User가 follow한 targetId 목록 찾기
-     * @param user
-     * @return User가 follow한 userId 목록
+     * User가 좋아요한 Post 목록 찾기
+     * @param user 
+     * @return user가 좋아요한 Post 목록
      */
-    public List<Long> getFollowedUserIds(User user) {
+    public List<Post> getLikedPosts(User user) {
+        if(!userRepository.existsById(user.getId())){
+            throw new EntityNotFoundException("해당 유저는 존재하지않습니다.");
+        }
+        List<Long> postIds = reactionRepository.findLikedPostIdsByUser(user);
+        return postRepository.findAllById(postIds);
+    }
+
+    /**
+     * User가 follow한 User 목록 찾기
+     * @param user
+     * @return User가 follow한 User 목록
+     */
+    public List<User> getFollowedUsers(User user) {
         if(!userRepository.existsById(user.getId())) {
             throw new EntityNotFoundException("해당 유저는 존재하지 않습니다.");
         }
-        return reactionRepository.findFollowedUserIds(user);
+        List<Long> userIds = reactionRepository.findFollowedUserIds(user);
+        return userRepository.findAllById(userIds);
     }
 
     /**
@@ -156,7 +176,7 @@ public class ReactionService {
      * @param user
      * @return User가 북마크한 Post 목록
      */
-    public List<Post> getBookMarkPosts(User user) {
+    public List<Post> getBookmarkedPosts(User user) {
         if(!userRepository.existsById(user.getId())) {
             throw new EntityNotFoundException("해당 유저는 존재하지 않습니다.");
         }
@@ -166,10 +186,9 @@ public class ReactionService {
 
     /**
      * 신고 당한 모든 게시글 찾기
-     * @return 신고당한 모든 게시글
+     * @return 신고당한 모든 게시글 + user정보
      */
     public List<Post> getReportPosts() {
-        List<Long> postIds = reactionRepository.findReportPostId();
-        return postRepository.findAllById(postIds);
+        return reactionRepository.findReportedPostsWithUser(TargetType.POST, ReactionType.REPORT);
     }
 }
