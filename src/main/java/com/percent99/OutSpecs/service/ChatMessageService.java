@@ -33,6 +33,7 @@ public class ChatMessageService {
 
   /**
    * 채팅 메시지를 생성하는 메소드
+   * @param chatRoomId 사용자가 채팅 메시지를 송신한 채팅방의 id 값
    * @param chatMessageDTO 사용자가 송신한 채팅 메시지 DTO 객체
    * @param userId 로그인한 사용자의 id 값
    */
