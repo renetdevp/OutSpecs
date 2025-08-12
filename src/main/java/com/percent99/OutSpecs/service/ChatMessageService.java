@@ -37,8 +37,8 @@ public class ChatMessageService {
    * @param userId 로그인한 사용자의 id 값
    */
   @Transactional
-  public void createChatMessage(ChatMessageDTO chatMessageDTO, Long userId){
-    ChatRoom chatRoom = chatRoomService.findChatRoomById(chatMessageDTO.getChatRoomId()).orElse(null);
+  public void createChatMessage(Long chatRoomId, ChatMessageDTO chatMessageDTO, Long userId){
+    ChatRoom chatRoom = chatRoomService.findChatRoomById(chatRoomId).orElse(null);
     User user = userRepository.findById(userId).orElse(null);
 
     if (chatRoom==null || user==null) return;
@@ -63,6 +63,13 @@ public class ChatMessageService {
     chatRoomService.updateChatRoomById(chatRoom, userId);
   }
 
+  /**
+   * chatRoomId와 userId를 parameter로 받아 채팅방에 속한 모든 메시지를 가져오는 메소드.<br>
+   * 사용자가 해당 chatRoom에 참가하고 있지 않다면 null을 반환.
+   * @param chatRoomId 메시지를 가져오고자 하는 채팅방의 id 값
+   * @param userId 메시지를 가져오려는 사용자의 id 값
+   * @return 해당 채팅방의 모든 채팅 메시지를 반환
+   */
   @Transactional(readOnly = true)
   public List<ChatMessage> findAllByChatRoomId(Long chatRoomId, Long userId){
     if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return null;
@@ -70,6 +77,14 @@ public class ChatMessageService {
     return chatMessageRepository.findAllByChatRoomId(chatRoomId);
   }
 
+  /**
+   * chatRoomId와 userId, pageable을 parameter로 받아 채팅방에 속한 메시지의 일부를 가져오는 메소드.<br>
+   * 사용자가 해당 chatRoom에 참가하고 있지 않다면 null을 반환.
+   * @param chatRoomId 메시지를 가져오고자 하는 채팅방의 id 값
+   * @param userId 메시지를 가져오려는 사용자의 id 값
+   * @param pageable pagination을 위한 pageable 객체
+   * @return pagination을 적용한 해당 채팅방의 채팅 메시지를 반환
+   */
   @Transactional(readOnly = true)
   public Page<ChatMessage> findByChatRoomId(Long chatRoomId, Long userId, Pageable pageable){
     if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return null;
@@ -77,6 +92,12 @@ public class ChatMessageService {
     return chatMessageRepository.findByChatRoomId(chatRoomId, pageable);
   }
 
+  /**
+   * chatMessage와 userId를 parameter로 받아 해당 chatMessage를 업데이트하는 메소드. <br>
+   * @param chatMessage 덮어쓸 채팅 메시지
+   * @param userId 메시지를 업데이트하려는 사용자의 id 값
+   * @return 업데이트된 채팅 메시지
+   */
   @Transactional
   public ChatMessage updateChatMessage(ChatMessage chatMessage, Long userId){
     if (!isChatMessageSender(chatMessage, userId)) return null;
@@ -84,6 +105,11 @@ public class ChatMessageService {
     return chatMessageRepository.save(chatMessage);
   }
 
+  /**
+   * 해당 채팅방에서 사용자가 전송한 모든 메시지를 삭제하는 메소드.
+   * @param chatRoomId 사용자의 채팅 메시지를 삭제할 채팅방의 id 값
+   * @param userId 채팅 메시지를 삭제하려는 사용자의 id 값
+   */
   @Transactional
   public void deleteAllChatMessages(Long chatRoomId, Long userId){
     if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return;
