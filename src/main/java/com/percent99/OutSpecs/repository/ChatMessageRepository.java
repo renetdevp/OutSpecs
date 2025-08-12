@@ -21,4 +21,7 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
 
   @Query("DELETE FROM ChatMessage cm WHERE cm.sender.id = :userId")
   void deleteAllByUserId(@Param("userId") Long userId);
+
+  @Query("DELETE FROM ChatMessage cm WHERE cm.chatRoom.id = :chatRoomId")
+  void deleteAllByChatRoomId(@Param("chatRoomId") Long chatRoomId);
 }
