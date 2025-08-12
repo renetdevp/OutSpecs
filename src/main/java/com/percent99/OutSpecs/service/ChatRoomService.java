@@ -50,6 +50,11 @@ public class ChatRoomService {
     return chatRoomRepository.save(chatRoom);
   }
 
+  /**
+   * userId를 parameter로 받아 해당 사용자가 참여중인 모든 채팅방을 반환하는 메소드
+   * @param userId 참여중인 모든 채팅방을 검색할 사용자의 id 값
+   * @return 해당 사용자가 참여중인 모든 채팅방
+   */
   @Transactional(readOnly = true)
   public List<ChatRoom> findChatRoomByUserId(Long userId){
     if (userId == null) return List.of();
@@ -57,6 +62,11 @@ public class ChatRoomService {
     return chatRoomRepository.findAllByUserId(userId);
   }
 
+  /**
+   * userId를 parameter로 받아 해당 사용자가 참여중인 모든 채팅방을 ChatRoomResponseDTO 형태로 반환하는 메소드
+   * @param userId 참여중인 모든 채팅방을 검색할 사용자의 id 값
+   * @return 해당 사용자가 참여중인 모든 채팅방을 ChatRoomResponseDTO 형태로 변환한 리스트
+   */
   public List<ChatRoomResponseDTO> getChatRoomResponseDTOListByUserId(Long userId){
     if (userId == null) return List.of();
 
@@ -77,6 +87,11 @@ public class ChatRoomService {
     return chatRoomRepository.findById(chatRoomId);
   }
 
+  /**
+   * chatRoomId를 parameter로 받아 해당 채팅방을 ChatRoomResponseDTO 형태로 반환하는 메소드
+   * @param chatRoomId ChatRoomResponseDTO 형태로 반환받을 채팅방의 id 값
+   * @return 해당 채팅방을 ChatRoomResponseDTO 형태로 변환한 결과값
+   */
   public ChatRoomResponseDTO getChatRoomResponseDTOById(Long chatRoomId){
     if (chatRoomId == null) return null;
 
