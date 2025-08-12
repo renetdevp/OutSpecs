@@ -5,6 +5,7 @@ import com.percent99.OutSpecs.entity.UserRoleType;
 import com.percent99.OutSpecs.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -58,40 +59,51 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private OAuth2User process(OAuth2UserRequest req, OAuth2User ou){
 
         String regId = req.getClientRegistration().getRegistrationId();
-        Map<String, Object> attributes = ou.getAttributes();
+        if (!"google".equals(regId)) {
+            throw new OAuth2AuthenticationException("지원하지 않는 OAuth2 Provider: " + regId);
+        }
 
+        Map<String, Object> attributes = ou.getAttributes();
         String socialId = (String) attributes.get("sub");
         String email = (String) attributes.get("email");
 
-        if(email == null || email.isEmpty()){
-            throw new OAuth2AuthenticationException("해당 이메일이 존재하지 않습니다.");
+        if (socialId == null || socialId.isBlank()) {
+            throw new OAuth2AuthenticationException("구글 계정 ID(sub)를 가져오지 못했습니다.");
+        }
+        if (email == null || email.isBlank()) {
+            throw new OAuth2AuthenticationException("구글 계정 이메일 권한이 없습니다.");
         }
 
-        Optional<User> userOptional = userRepository.findByUsername(email);
+        Optional<User> userOptional = userRepository.findByProviderId(socialId);
         if(userOptional.isPresent()){
-           User user = userOptional.get();
-
-            if(user.getProviderId() != null && !user.getProviderId().isBlank()){
-                return new CustomUserPrincipal(user,attributes);
-            }
-            throw new OAuth2AuthenticationException(
-                    "이미 폼 로그인으로 가입된 이메일입니다. 아이디/비밀번호로 로그인해주세요.");
-
-        }else{
-            String randomPassword = generateSecureRandomPassword();
-
-            User user = new User();
-            user.setUsername(generateUniqueUsername(email));
-            user.setProviderId(socialId);
-            user.setRole(UserRoleType.USER);
-            user.setPassword(randomPassword);
-            user.setAiRateLimit(0);
-            user.setCreatedAt(LocalDateTime.now());
-
-            userRepository.save(user);
-            log.info("신규 OAuth2 사용자 생성 : {}",email);
-            return new CustomUserPrincipal(user,attributes);
+            return new CustomUserPrincipal(userOptional.get(),attributes);
         }
+
+        userRepository.findByUsername(email).ifPresent(u -> {
+            if(u.getProviderId() == null || u.getProviderId().isBlank()){
+                throw new OAuth2AuthenticationException(
+                        "이미 폼 로그인으로 가입된 이메일입니다. 아이디/비밀번호로 로그인해주세요.");
+            }
+        });
+
+        String randomPassword = generateSecureRandomPassword();
+
+        User user =  new User();
+        user.setUsername(generateUniqueUsername(email));
+        user.setProviderId(socialId);
+        user.setRole(UserRoleType.USER);
+        user.setPassword(randomPassword);
+        user.setAiRateLimit(5);
+        user.setCreatedAt(LocalDateTime.now());
+
+        try{
+            userRepository.save(user);
+        }catch (DataIntegrityViolationException e) {
+            // 동시성 위반으로 재조회후 로그인 처리
+            user = userRepository.findByProviderId(socialId).orElseThrow(() -> e);
+        }
+        log.info("신규 OAuth2 사용자 생성 : {}",email);
+        return new CustomUserPrincipal(user,attributes);
     }
 
     /**

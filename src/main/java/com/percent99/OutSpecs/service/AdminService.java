@@ -31,16 +31,29 @@ public class AdminService {
     public void changeUserRole(Long userId, UserRoleType newRole){
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
+        if(user.getRole() == newRole) return;
+
+        if (newRole == UserRoleType.ADMIN) {
+            throw new IllegalStateException("관리자 계정으로 변경할 수 없습니다.");
+        }
         user.setRole(newRole);
     }
 
     /**
-     * 신고횟수당한 게시물을 조회합니다.
-     * @return 신고 많은 게시물 리스트
+     * 신고당한 게시물을 조회합니다.
+     * @return 신고 게시물 리스트
      */
     @Transactional(readOnly = true)
     public List<Post> findReportedPosts(){
-        List<Post> list = reactionService.getReportPosts();
-        return list;
+        return reactionService.getReportPosts();
+    }
+
+    /**
+     * 회원가입한 전체 유저 조회합니다.
+     * @return 전체 User
+     */
+    @Transactional(readOnly = true)
+    public List<User>findAllUsers(){
+        return userRepository.findAllByOrderByIdDesc();
     }
 }

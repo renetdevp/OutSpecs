@@ -15,7 +15,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 사용자 오픈(profile) 관련 비지니스 로직을 처리하는 서비스 클래스
@@ -27,6 +29,7 @@ public class ProfileService {
 
     private final ProfileRepository profileRepository;
     private final UserRepository userRepository;
+    private final ReactionService reactionService;
     private final S3Service s3Service;
 
     /**
@@ -62,6 +65,24 @@ public class ProfileService {
     @Transactional(readOnly = true)
     public Optional<Profile> getProfileByUserId(Long userId) {
         return profileRepository.findByUserId(userId);
+    }
+
+    /**
+     * 사용자가 팔로우한 사용자들의 프로필 목록 조회
+     *
+     * @param user 조회할 사용자
+     * @return 팔로우한 사용자들의 프로필 목록
+     */
+    @Transactional(readOnly = true)
+    public List<ProfileDTO> getFollowedUserProfiles(User user){
+        List<User> followedUsers = reactionService.getFollowedUsers(user);
+
+        return followedUsers.stream()
+                .map(followedUser -> getProfileByUserId(followedUser.getId()))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -300,5 +321,18 @@ public class ProfileService {
         if(exists){
             throw  new EntityExistsException("이미 사용 중인 닉네임입니다.");
         }
+    }
+
+    private ProfileDTO convertToDTO(Profile profile){
+        ProfileDTO dto = new ProfileDTO();
+        dto.setUserId(profile.getUserId());
+        dto.setNickname(profile.getNickname());
+        dto.setExperience(profile.getExperience());
+        dto.setSelfInfo(profile.getSelfInfo());
+        dto.setStacks(profile.getStacks());
+        dto.setAllowCompanyAccess(profile.getAllowCompanyAccess());
+        dto.setImageUrl(profile.getImageUrl());
+
+        return dto;
     }
 }

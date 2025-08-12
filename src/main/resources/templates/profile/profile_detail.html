@@ -37,11 +37,10 @@
                     <div class="text pre" th:text="${profile.experience}">경력 내용</div>
                 </div>
                 <div class="block row">
-                    <span>기업에 <strong>오픈프로필</strong> 허용 여부</span>
-                    <label class="switch">
-                        <input type="checkbox" th:checked="${profile.allowCompanyAccess}" disabled>
-                        <span class="slider"></span>
-                    </label>
+                    <span class="badge"
+                          th:text="${profile.allowCompanyAccess} ? '기업 접근 허용' : '기업 접근 비허용'">
+                    기업 접근 비허용
+                    </span>
                 </div>
             </div>
 
@@ -50,6 +49,121 @@
                 <form th:action="@{/users/profiles/{userId}/delete(userId=${profile.userId})}" method="post" >
                     <button type="submit" class="btn">삭제</button>
                 </form>
+            </div>
+
+            <div class="tabs">
+                <nav class="tab-nav" role="tablist" aria-label="프로필 탭">
+                    <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab-following" data-tab="following" id="btn-following" title="팔로우한 목록">
+                        <img th:src="@{/css/images/follow_icon.svg}">
+                        팔로우
+                    </button>
+                    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-likes" data-tab="likes" id="btn-likes" title="좋아요한 목록">
+                        <img th:src="@{/css/images/like_icon.svg}">
+                        좋아요
+                    </button>
+                    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-bookmarks" data-tab="bookmarks" id="btn-bookmarks" title="북마크한 목록">
+                        <img th:src="@{/css/images/bookmark_icon.svg}">
+                        북마크
+                    </button>
+                    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-noti" data-tab="noti" id="btn-noti" title="알림">
+                        <img th:src="@{/css/images/bell_icon.svg}">
+                        알림
+                    </button>
+                </nav>
+                <div class="tab-panels">
+                    <!-- 팔로우한 목록 -->
+                    <section id="tab-following" class="panel active" role="tabpanel" aria-labelledby="btn-following">
+                        <div class="grid">
+                            <!-- 팔로우한 사용자들 -->
+                            <div class="user-card" th:each="u : ${followProfiles}">
+                                <img th:src="${u.imageUrl != null ? u.imageUrl : '/css/images/profile_icon.svg'}" alt="" />
+                                <div class="user-meta">
+                                    <div class="post-meta">
+                                        <span class="id" th:text="${u.nickname}">user01</span>
+                                        <form th:action="@{/users/profiles/{userId}/follow/delete(userId=${u.userId})}" method="post" >
+                                            <button type="submit" class="delete-btn" title="취소" onclick="return confirm('팔로우 취소하시겠습니까?')">x</button>
+                                        </form>
+                                    </div>
+                                    <span class="muted" th:text="${u.experience != null ? u.experience : '경력 미입력'}">경력</span>
+                                </div>
+                            </div>
+
+                            <!-- 팔로우한 사용자가 없을 때 -->
+                            <div th:if="${followProfiles.isEmpty()}" class="empty-message">
+                                <p>아직 팔로우한 사용자가 없습니다.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 좋아요한 목록 -->
+                    <section id="tab-likes" class="panel" role="tabpanel" aria-labelledby="btn-likes">
+                        <div class="grid">
+                            <!-- 좋아요한 게시글들 -->
+                            <div class="post-card" th:each="p : ${likedPosts}">
+                                <div class="post-thumb"
+                                     th:style="${p.images != null and !p.images.isEmpty() and p.images[0].imageUrl != null ?
+                                      'background-image:url(' + p.images[0].imageUrl + '); background-size:cover;' : ''}">
+                                </div>
+                                <div class="user-meta">
+                                    <div class="post-meta">
+                                        <span class="id" th:text="${p.title}">게시글 제목</span>
+                                        <form th:action="@{/users/profiles/{userId}/like/{postId}/delete(userId=${profile.userId}, postId=${p.id})}" method="post" >
+                                            <button type="submit" class="delete-btn" title="취소" onclick="return confirm('좋아요 취소하시겠습니까?')">x</button>
+                                        </form>
+                                    </div>
+                                    <span class="muted" th:text="${#temporals.format(p.createdAt, 'yyyy.MM.dd HH:mm')}">2025.08.10 12:34</span>
+                                </div>
+                            </div>
+
+                            <!-- 좋아요한 게시글이 없을 때 -->
+                            <div th:if="${likedPosts.isEmpty()}" class="empty-message">
+                                <p>아직 좋아요한 게시글이 없습니다.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 북마크한 목록 -->
+                    <section id="tab-bookmarks" class="panel" role="tabpanel" aria-labelledby="btn-bookmarks">
+                        <div class="grid">
+                            <!-- 북마크한 게시글들 -->
+                            <div class="post-card" th:each="p : ${bookmarkedPosts}">
+                                <div class="post-thumb"
+                                     th:style="${p.images != null and !p.images.isEmpty() and p.images[0].imageUrl != null ?
+                                      'background-image:url(' + p.images[0].imageUrl + '); background-size:cover;' : ''}">
+                                </div>
+                                <div class="user-meta">
+                                    <div class="post-meta">
+                                        <span class="id" th:text="${p.title}">게시글 제목</span>
+                                        <form th:action="@{/users/profiles/{userId}/bookmark/{postId}/delete(userId=${profile.userId}, postId=${p.id})}" method="post" >
+                                            <button type="submit" class="delete-btn" title="취소" onclick="return confirm('북마크 취소하시겠습니까?')">x</button>
+                                        </form>
+                                    </div>
+                                    <span class="muted" th:text="${#temporals.format(p.createdAt, 'yyyy.MM.dd HH:mm')}">2025.08.10 12:34</span>
+                                </div>
+                            </div>
+
+                            <!-- 북마크한 게시글이 없을 때 -->
+                            <div th:if="${bookmarkedPosts.isEmpty()}" class="empty-message">
+                                <p>아직 북마크한 게시글이 없습니다.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 알림 목록 -->
+                    <section id="tab-noti" class="panel" role="tabpanel" aria-labelledby="btn-noti">
+                        <div class="noti-list">
+                            <div class="noti-item" th:each="n : ${notifications}">
+                                <span th:text="${n.message}">누군가 회원님의 글에 댓글을 남겼습니다.</span>
+                                <span class="noti-time" th:text="${#temporals.format(n.createdAt, 'MM월 dd일 HH:mm')}">08월 10일 12:22</span>
+                            </div>
+
+                            <!-- 알림이 없거나 notifications가 null일 때 -->
+                            <div th:if="${notifications == null || notifications.isEmpty()}" class="empty-message">
+                                <p>새로운 알림이 없습니다.</p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
             </div>
         </section>
 
@@ -60,5 +174,20 @@
             </div>
         </section>
     </main>
+    <script>
+        // 간단한 탭 스위칭 (접근성 고려)
+        const btns = document.querySelectorAll('.tab-btn');
+        const panels = document.querySelectorAll('.panel');
+        btns.forEach(btn=>{
+          btn.addEventListener('click',()=>{
+            const t = btn.dataset.tab;
+            // 버튼 상태
+            btns.forEach(b => { b.classList.toggle('active', b===btn); b.setAttribute('aria-selected', b===btn)});
+            // 패널 상태
+            panels.forEach(p => p.classList.toggle('active', p.id === 'tab-'+t));
+          });
+        });
+    </script>
+
 </body>
 </html>

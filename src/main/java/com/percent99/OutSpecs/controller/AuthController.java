@@ -1,7 +1,9 @@
 package com.percent99.OutSpecs.controller;
 
 import com.percent99.OutSpecs.dto.UserDTO;
+import com.percent99.OutSpecs.entity.UserRoleType;
 import com.percent99.OutSpecs.security.CustomUserPrincipal;
+import com.percent99.OutSpecs.service.AdminService;
 import com.percent99.OutSpecs.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final UserService  userService;
+    private final UserService userService;
 
     @GetMapping("/signup")
     public String showRegister(Model model,
