@@ -10,12 +10,15 @@ import com.percent99.OutSpecs.repository.ProfileRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -78,6 +81,11 @@ public class ChatMessageService {
     return chatMessageRepository.findAllByChatRoomId(chatRoomId);
   }
 
+  @Transactional(readOnly = true)
+  private Page<ChatMessage> findByChatRoomId(Long chatRoomId, Pageable pageable){
+    return chatMessageRepository.findByChatRoomId(chatRoomId, pageable);
+  }
+
   /**
    * chatRoomId와 userId, pageable을 parameter로 받아 채팅방에 속한 메시지의 일부를 가져오는 메소드.<br>
    * 사용자가 해당 chatRoom에 참가하고 있지 않다면 null을 반환.
@@ -91,6 +99,49 @@ public class ChatMessageService {
     if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return null;
 
     return chatMessageRepository.findByChatRoomId(chatRoomId, pageable);
+  }
+
+  /**
+   * chatRoomId와 userId를 parameter로 받아 해당 채팅방의 최근 채팅 메시지를 최대 15개까지 반환하는 메소드.
+   * @param chatRoomId 최근 채팅 메시지를 가져오고자 하는 채팅방의 id 값
+   * @param userId 최근 채팅 메시지를 가져오고자 하는 사용자의 id 값
+   * @return 해당 채팅방의 최근 채팅 메시지를 최대 15개까지 반환
+   */
+  public List<ChatMessageDTO> getChatMessageDTOByChatRoomId(Long chatRoomId, Long userId){
+    if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return List.of();
+
+    Pageable defaultPageable = PageRequest.of(1, 15, Sort.by("createdAt").descending());
+
+    Page<ChatMessage> chatMessagePage = this.findByChatRoomId(chatRoomId, defaultPageable);
+
+    if (!chatMessagePage.hasContent()) return List.of();
+
+    return this.convertChatMessageListToDTOList(chatMessagePage.getContent());
+  }
+
+  /**
+   * ChatMessage의 List를 ChatMessageDTO 형태의 List로 변환하는 메소드
+   * @param chatMessageList ChatMessageDTO 형태로 변환할 ChatMessage의 List
+   * @return ChatMessageDTO 형태로 변환된 ChatMessage의 List
+   */
+  private List<ChatMessageDTO> convertChatMessageListToDTOList(List<ChatMessage> chatMessageList){
+    List<ChatMessageDTO> result = new ArrayList<>();
+
+    for (ChatMessage chatMessage: chatMessageList){
+      result.add(this.convertChatMessageToDTO(chatMessage));
+    }
+
+    return result;
+  }
+
+  private ChatMessageDTO convertChatMessageToDTO(ChatMessage chatMessage){
+    ChatMessageDTO result = new ChatMessageDTO();
+
+    result.setSenderId(chatMessage.getSender().getId());
+    result.setContent(chatMessage.getContent());
+    result.setCreatedAt(chatMessage.getCreatedAt());
+
+    return result;
   }
 
   /**
