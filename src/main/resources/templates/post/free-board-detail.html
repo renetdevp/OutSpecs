@@ -79,14 +79,14 @@
           </div>
           <div class="comment-content" th:text="${comment.content}">댓글 내용</div>
         </div>
-        <div class="comment-more">
+        <div class="comment-more" th:if="${user.id == comment.user.id}">
           <img class="comment-more-icon" src="/images/more-vertical.png" alt="더보기 아이콘"
                th:onclick="'toggleMoreMenu(event, \'comment-more-menu-' + ${comment.id} + '\')'">
           <div class="comment-more-menu" th:id="'comment-more-menu-' + ${comment.id}">
-            <button type="button" class="edit-btn" onclick="editComment(this)">수정</button>
+            <button th:if="${user.id == comment.user.id}" type="button" class="edit-btn" onclick="editComment(this)">수정</button>
             <form th:action="@{/free-board/{postId}/comment/{commentId}(postId=${post.id}, commentId=${comment.id})}"
                   method="post" style="display:inline;">
-              <button class="delete-btn" type="submit" onclick="return confirm('댓글을 삭제하시겠습니까?')">삭제</button>
+              <button th:if="${user.id == comment.user.id}" class="delete-btn" type="submit" onclick="return confirm('댓글을 삭제하시겠습니까?')">삭제</button>
             </form>
           </div>
         </div>
@@ -116,13 +116,13 @@
             </div>
             <p class="reply-content" th:text="${reply.content}">대댓글 내용</p>
           </div>
-          <div class="reply-more">
+          <div class="reply-more" th:if="${user.id == reply.user.id}">
             <img class="comment-more-icon" src="/images/more-vertical.png" alt="더보기 아이콘"
                  th:onclick="'toggleMoreMenu(event, \'reply-more-menu-' + ${reply.id} + '\')'">
             <div class="comment-more-menu" th:id="'reply-more-menu-' + ${reply.id}">
               <form th:action="@{/free-board/{postId}/comment/{commentId}(postId=${post.id}, commentId=${reply.id})}"
                     method="post" style="display:inline;">
-                <button class="delete-btn" type="submit" onclick="return confirm('대댓글을 삭제하시겠습니까?')">삭제</button>
+                <button th:if="${user.id == reply.user.id}" class="delete-btn" type="submit" onclick="return confirm('대댓글을 삭제하시겠습니까?')">삭제</button>
               </form>
             </div>
           </div>
@@ -157,7 +157,7 @@
     </div>
   </div>
 
-  <div class="post-actions">
+  <div class="post-actions" th:if="${user.id == post.user.id}">
     <a class="post-btn" th:href="@{|/free-board/${post.id}/edit|}">수정하기</a>
     <form th:action="@{|/free-board/${post.id}/delete|}" method="post" style="display:inline;">
       <button class="post-btn delete-btn" type="submit" onclick="return confirm('게시글을 삭제하시겠습니까?')">삭제하기</button>

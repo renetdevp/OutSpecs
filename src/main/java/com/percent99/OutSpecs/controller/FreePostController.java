@@ -102,7 +102,7 @@ public class FreePostController {
     public String detailFreePost(@AuthenticationPrincipal CustomUserPrincipal principal,
                                  @PathVariable Long postId, Model model,
                                  @ModelAttribute("errorMessage") String errorMessage) {
-        Post post = postQueryService.getPostById(postId);
+        Post post = postQueryService.getPostAndIncreaseViewCount(postId);
         User user = principal.getUser();
         List<Comment> comments = commentService.getCommentsByPostId(postId);
         PostResponseDTO reactions = postQueryService.getPostReactionDetail(postId, user);

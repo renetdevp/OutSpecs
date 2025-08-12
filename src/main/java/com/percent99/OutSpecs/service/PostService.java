@@ -82,6 +82,9 @@ public class PostService {
     public Post updatePost(Long id, PostDTO dto) {
 
         Post post = postQueryService.getPostById(id);
+        if(!post.getUser().getId().equals(dto.getUserId())) {
+            throw new IllegalArgumentException("게시글 작성자가 아닙니다.");
+        }
         post.setType(dto.getType());
         post.setTitle(dto.getTitle());
         post.setContent(dto.getContent());
