@@ -94,47 +94,6 @@ body{
   color:#374151;
   background:#fff;
 }
-.row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-}
-.switch{
-  position:relative;
-  width:46px;
-  height:26px;
-}
-.switch input{
-  position:absolute;
-  opacity:0;
-  margin:0;
-}
-.slider{
-  position:absolute;
-  background:#e5e7eb;
-  border-radius:999px;
-  transition:.2s;
-  pointer-events:none;
-}
-.slider::before{
-  content:"";
-  position:absolute;
-  left:4px;
-  top:3px;
-  width:20px;
-  height:20px;
-  background:#fff;
-  border-radius:50%;
-  transition:.2s;
-  box-shadow:0 1px 3px rgba(0,0,0,.25);
-}
-.switch input:checked ~ .slider{
-  background:var(--brand);
-}
-.switch input:checked ~ .slider::before{
-  transform:translateX(20px);
-}
 .actions{
   display:flex;
   justify-content:flex-end;
@@ -163,3 +122,54 @@ body{
 .btn-primary:hover{
   background:var(--brand-strong);
 }
+/* ---- Tabs ---- */
+.tabs{margin-top:26px; border-top:1px solid var(--border);}
+.tab-nav{
+  display:flex; gap:28px; justify-content:center; align-items:center;
+  padding:8px 10px 0;
+}
+.tab-btn{
+  appearance:none; background:none; border:0; cursor:pointer; padding:14px 12px;
+  display:flex; align-items:center; gap:8px; color:#374151; opacity:.75; position:relative;
+}
+.tab-btn svg{width:20px; height:20px}
+.tab-btn.active{opacity:1; color:#111827; font-weight:700}
+.tab-btn.active::after{
+  content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:#111827; border-radius:2px;
+}
+.tab-panels{padding:20px}
+.panel{display:none}
+.panel.active{display:block}
+/* 팔로우/좋아요 카드 그리드 */
+.grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:16px}
+@media (max-width:720px){ .grid{grid-template-columns:repeat(2, 1fr)} }
+@media (max-width:480px){ .grid{grid-template-columns:1fr} }
+.user-card, .post-card{
+  border:1px solid var(--border); border-radius:14px; padding:14px; background:#fff;
+  display:flex; gap:10px; align-items:center;
+}
+.user-card img, .post-thumb{
+  width:48px; height:48px; border-radius:10px; background:#eef2ff; border:1px solid var(--border);
+  object-fit:cover;
+}
+.user-meta{display:flex; flex-direction:column}
+.user-meta .id{font-weight:700}
+.post-meta{
+  display: flex;
+  gap: 10px;
+}
+.delete-btn{
+    background: rgba(255, 0, 0, 0.8);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-size: 12px;
+}
+.muted{color:var(--muted); font-size:13px}
+/* 알림 */
+.noti-list{display:flex; flex-direction:column; gap:10px}
+.noti-item{border:1px solid var(--border); background:#fff; border-radius:12px; padding:12px 14px}
+.noti-time{font-size:12px; color:var(--muted); margin-left:6px}
