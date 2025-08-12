@@ -5,7 +5,9 @@ import com.percent99.OutSpecs.entity.Post;
 import com.percent99.OutSpecs.entity.PostQnA;
 import com.percent99.OutSpecs.entity.PostType;
 import com.percent99.OutSpecs.handler.PostDetailHandler;
+import org.springframework.stereotype.Component;
 
+@Component
 public class PostQnAHandler implements PostDetailHandler {
 
     @Override
@@ -15,10 +17,13 @@ public class PostQnAHandler implements PostDetailHandler {
 
     @Override
     public void handle(Post post, PostDTO dto) {
-        if(dto.getQnaInfo() == null) return;
-        PostQnA postQnA = new PostQnA();
-        postQnA.setPost(post);
-        postQnA.setAnswerComplete(dto.getQnaInfo().isAnswerComplete());
-        post.setPostQnA(postQnA);
+        PostQnA postQnA = post.getPostQnA();
+
+        if(postQnA == null){
+            postQnA = new PostQnA();
+            postQnA.setPost(post);
+            postQnA.setAnswerComplete(false);
+            post.setPostQnA(postQnA);
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.percent99.OutSpecs.controller;
 
 import com.percent99.OutSpecs.dto.ProfileDTO;
 import com.percent99.OutSpecs.entity.Profile;
+import com.percent99.OutSpecs.entity.User;
 import com.percent99.OutSpecs.security.CustomUserPrincipal;
 import com.percent99.OutSpecs.service.ProfileService;
 import jakarta.validation.Valid;
@@ -14,8 +15,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
-
 
 /**
  * 사용자 오픈(profile) 관련 뷰를 처리하는 컨트롤러 클래스
@@ -43,8 +45,11 @@ public class ProfileController {
 
         Profile opt = profileService.getProfileByUserId(userId)
                 .orElse(null);
+        if(opt == null){
+            return "redirect:/users/profiles/new";
+        }
         model.addAttribute("profile", opt);
-        return "profile/profile_list";
+        return "profile/profile_detail";
     }
 
     /**
@@ -59,12 +64,14 @@ public class ProfileController {
     public String createForm(@AuthenticationPrincipal CustomUserPrincipal principal,
                              Model model){
         Long userId = principal.getUser().getId();
+        User user = profileService.getUserById(userId);
 
         if(profileService.getProfileByUserId(userId).isPresent()){
             return "redirect:/users/profiles/" + userId;
         }
+        model.addAttribute("user", user);
         model.addAttribute("profileDTO", new ProfileDTO());
-        return "profile/profile_form";
+        return "profile/profile";
     }
 
     /**
@@ -86,7 +93,7 @@ public class ProfileController {
                          Model model,
                          BindingResult bindingResult) {
         if(bindingResult.hasErrors()){
-            return "profile/profile_form";
+            return "profile/profile";
         }
 
         try{
@@ -98,7 +105,7 @@ public class ProfileController {
             return "redirect:/users/profiles/" + created.getUser().getId();
         }catch (IOException e){
             model.addAttribute("error", e.getMessage());
-            return "profile/profile_form";
+            return "profile/profile";
         }
     }
 
@@ -114,10 +121,22 @@ public class ProfileController {
     public String detail(@PathVariable Long userId, Model model){
 
         Optional<Profile> profile = profileService.getProfileByUserId(userId);
+        User user = profileService.getUserById(userId);
+
         if(profile.isEmpty()){
             return "redirect:/users/profiles/new";
         }
-        model.addAttribute("profile",profile.get());
+        Profile p = profile.get();
+        model.addAttribute("profile",p);
+        model.addAttribute("user", user);
+
+        List<String> stacks = Optional.ofNullable(p.getStacks())
+                        .map(s -> Arrays.stream(s.split(","))
+                                .map(String::trim)
+                                .filter(t -> !t.isEmpty())
+                                .toList())
+                                .orElseGet(List::of);
+        model.addAttribute("stacks", stacks);
         return "profile/profile_detail";
     }
 
@@ -140,8 +159,14 @@ public class ProfileController {
         }
 
         Optional<Profile> profile = profileService.getProfileByUserId(userId);
-        model.addAttribute("profileDTO", profile.get());
-        return "profile/profile_form";
+        User user = profileService.getUserById(userId);
+        if(profile.isEmpty()){
+            return "redirect:/users/profiles/new";
+        }
+        Profile p = profile.get();
+        model.addAttribute("profileDTO", p);
+        model.addAttribute("user",user);
+        return "profile/profile";
     }
 
     /**
@@ -165,7 +190,7 @@ public class ProfileController {
                          @RequestParam(value = "file",required = false) MultipartFile file,
                          Model model){
         if(bindingResult.hasErrors()){
-            return "profile/profile_form";
+            return "profile/profile";
         }
         if(!principal.getUser().getId().equals(userId)){
             return "redirect:/users/profiles/" + userId;

@@ -5,6 +5,7 @@ import com.percent99.OutSpecs.security.CustomUserPrincipal;
 import com.percent99.OutSpecs.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -36,15 +37,20 @@ public class AuthController {
                                Model model, BindingResult bindingResult){
 
         if(bindingResult.hasErrors()){
-            return "";
-        }
-
-        if(userService.findByUsername(userDTO.getUsername()).isPresent()){
-            model.addAttribute("", "이미 존재하는 회원입니다.");
             return "auth/signup";
         }
 
-        userService.registerUser(userDTO);
+        if(userService.findByUsername(userDTO.getUsername()).isPresent()){
+            bindingResult.rejectValue("username", "duplicate" , "이미 존재하는 회원입니다.");
+            return "auth/signup";
+        }
+
+        try{
+            userService.registerUser(userDTO);
+        } catch (DataIntegrityViolationException e){
+            bindingResult.rejectValue("username", "duplicate" , "이미 존재하는 회원입니다.");
+            return "auth/signup";
+        }
         return "auth/login";
     }
 

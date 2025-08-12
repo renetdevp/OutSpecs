@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Q&A 게시판</title>
+</head>
+<body>
+<header>
+    <h1>Q&A 게시판</h1>
+    <a class="" th:href="@{/qna/new}">질문 작성</a>
+</header>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>번호</th>
+        <th>제목</th>
+        <th>작성자</th>
+        <th>작성일</th>
+        <th>조회수</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="post, iterStat : ${posts}">
+        <td th:text="${iterStat.count}">1</td>
+        <td>
+            <a th:href="@{|/qna/${post.id}|}" th:text="${post.title}">제목</a>
+        </td>
+        <td th:text="${post.user.id}">닉네임</td>
+        <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">2025-08-08 14:12</span>
+        <td th:text="${post.viewCount}">0</td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

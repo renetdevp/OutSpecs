@@ -154,8 +154,9 @@ public class ProfileService {
 
         if(file == null || file.isEmpty()){ return; }
 
-        Optional<Profile> exiting = getProfileByUserId(userId);
-        Profile profile = exiting.get();
+        Profile profile = getProfileByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("프로필이 존재하지 않습니다."));
+
         String oldKey = profile.getS3Key();
 
         String newUrl;
@@ -212,19 +213,19 @@ public class ProfileService {
      */
     @Transactional
     public Profile updateProfile(Long userId, ProfileDTO dto) {
-        Optional<Profile> profile = getProfileByUserId(userId);
-        Profile exiting = profile.get();
+        Profile profile = getProfileByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("프로필이 존재하지않습니다."));
 
-        if(!exiting.getNickname().equals(dto.getNickname())){
+        if(!profile.getNickname().equals(dto.getNickname())){
             validateNickname(dto.getNickname(), userId);
         }
 
-        exiting.setNickname(dto.getNickname());
-        exiting.setStacks(dto.getStacks());
-        exiting.setExperience(dto.getExperience());
-        exiting.setSelfInfo(dto.getSelfInfo());
-        exiting.setAllowCompanyAccess(dto.getAllowCompanyAccess());
-        return profileRepository.save(exiting);
+        profile.setNickname(dto.getNickname());
+        profile.setStacks(dto.getStacks());
+        profile.setExperience(dto.getExperience());
+        profile.setSelfInfo(dto.getSelfInfo());
+        profile.setAllowCompanyAccess(dto.getAllowCompanyAccess());
+        return profileRepository.save(profile);
     }
 
     /**
@@ -239,8 +240,9 @@ public class ProfileService {
      */
     public void deleteProfileByUserId(Long userId) {
 
-        Optional<Profile> exiting = getProfileByUserId(userId);
-        Profile profile = exiting.get();
+        Profile profile = getProfileByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("프로필이 존재하지않습니다."));
+
         String s3Key = profile.getS3Key();
         deleteProfileDB(profile.getUserId());
 
@@ -277,7 +279,6 @@ public class ProfileService {
         }
         return imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
     }
-
 
     /**
      * 닉네임 사용 가능 여부를 검증

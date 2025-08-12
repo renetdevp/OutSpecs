@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>자유게시판 목록</title>
+</head>
+<body>
+<h1>자유게시판</h1>
+
+<div>
+  <a th:href="@{/free-board}">글쓰기</a>
+</div>
+
+<table border="1">
+  <thead>
+  <tr>
+    <th>번호</th>
+    <th>제목</th>
+    <th>작성자</th>
+    <th>작성일</th>
+    <th>조회수</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="post, iterStat : ${posts}">
+    <td th:text="${post.id}"></td>
+    <td>
+      <a th:href="@{|/free-board/${post.id}|}" th:text="${post.title}"></a>
+    </td>
+    <td th:text="${post.user.username}"></td>
+    <td th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+    <td th:text="${post.viewCount}"></td>
+  </tr>
+  </tbody>
+</table>
+
+</body>
+</html>
