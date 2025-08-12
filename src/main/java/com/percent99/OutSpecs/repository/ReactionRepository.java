@@ -1,14 +1,12 @@
 package com.percent99.OutSpecs.repository;
 
-import com.percent99.OutSpecs.entity.Reaction;
-import com.percent99.OutSpecs.entity.ReactionType;
-import com.percent99.OutSpecs.entity.TargetType;
-import com.percent99.OutSpecs.entity.User;
+import com.percent99.OutSpecs.entity.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -37,7 +35,6 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
     @Query("SELECT r.targetId FROM Reaction r WHERE r.user = :user AND r.reactionType = 'FOLLOW' AND r.targetType = 'USER'")
     List<Long> findFollowedUserIds(@Param("user") User user);
 
-
     /**
      * User가 북마크한 Post targetId 목록 찾기
      * @param user
@@ -47,9 +44,31 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
     List<Long> findBookmarkedPostIdsByUser(@Param("user") User user);
 
     /**
+     * User가 좋아요한 Post 목록 찾기
+     * @param user
+     * @return User가 좋아요한 Post targetId 목록
+     */
+    @Query("SELECT r.targetId FROM Reaction r WHERE r.user = :user AND r.reactionType = 'LIKE' AND r.targetType = 'POST'")
+    List<Long> findLikedPostIdsByUser(@Param("user") User user);
+
+    /**
      * 신고당한 Post targetId 목록 찾기
      * @return 신고당한 게시글 id 목록
      */
-    @Query("SELECT r.targetId FROM Reaction r WHERE r.reactionType = 'REPORT' AND r.targetType = 'POST'")
-    List<Long> findReportPostId();
+
+    @Query("""
+      select p from Post p
+      join fetch p.user u
+      where exists (
+        select 1 from Reaction r
+        where r.targetType = :tt
+          and r.reactionType = :rt
+          and r.targetId = p.id
+      )
+      order by p.id desc
+    """)
+    List<Post> findReportedPostsWithUser(
+            @Param("tt") TargetType targetType,      // TargetType.POST
+            @Param("rt") ReactionType reactionType   // ReactionType.REPORT
+    );
 }
