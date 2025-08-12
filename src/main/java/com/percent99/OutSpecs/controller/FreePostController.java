@@ -14,6 +14,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Controller
@@ -26,14 +28,16 @@ public class FreePostController {
     private final CommentService commentService;
     private final ReactionService reactionService;
 
-    @GetMapping
+    @GetMapping("/write")
     public String freePostForm(Model model) {
+        List<String> selectedTags = new ArrayList<>();
         model.addAttribute("postDTO", new PostDTO());
+        model.addAttribute("selectedTags", selectedTags);
         model.addAttribute("isEdit", false);
         return "post/free-board-write";
     }
 
-    @PostMapping
+    @PostMapping("/write")
     public String createFreePost(@AuthenticationPrincipal CustomUserPrincipal principal,
                                  @ModelAttribute PostDTO dto) {
         dto.setUserId(principal.getUser().getId());
@@ -42,15 +46,10 @@ public class FreePostController {
         return "redirect:/free-board/" + post.getId();
     }
 
-    @GetMapping("/latest")
-    public String latestFreePost(Model model) {
-        model.addAttribute("posts", postQueryService.getRecentPosts(PostType.FREE, 20));
-        return "post/free-board-list";
-    }
-
-    @GetMapping("/popular")
-    public String popularFreePost(Model model) {
+    @GetMapping
+    public String freePostlist(Model model) {
         model.addAttribute("posts", postQueryService.getViewCountPosts(PostType.FREE, 10));
+        model.addAttribute("posts", postQueryService.getRecentPosts(PostType.FREE, 20));
         return "post/free-board-list";
     }
 
@@ -60,8 +59,14 @@ public class FreePostController {
         if (postDTO == null) {
             return "redirect:/free-board/latest";
         }
+        List<String> selectedTags = new ArrayList<>();
+
+        if (postDTO.getTagsInfo() != null && postDTO.getTagsInfo().getTags() != null) {
+            selectedTags = Arrays.asList(postDTO.getTagsInfo().getTags().split(","));
+        }
         model.addAttribute("postId", postId);
         model.addAttribute("postDTO", postDTO);
+        model.addAttribute("selectedTags", selectedTags);
         model.addAttribute("isEdit", true);
         return "post/free-board-write";
     }
@@ -84,15 +89,21 @@ public class FreePostController {
     }
 
     @GetMapping("/{postId}")
-    public String detailFreePost(@PathVariable Long postId, Model model) {
+    public String detailFreePost(@AuthenticationPrincipal CustomUserPrincipal principal,
+                                 @PathVariable Long postId, Model model) {
         Post post = postQueryService.getPostById(postId);
+        User user = principal.getUser();
         List<Comment> comments = commentService.getCommentsByPostId(postId);
         int commentsCount = commentService.countByTypeAndPostId(CommentType.COMMENT, postId);
-        int likes = reactionService.countReactions(TargetType.POST, postId, ReactionType.LIKE);
+        int likesCount = reactionService.countReactions(TargetType.POST, postId, ReactionType.LIKE);
+        boolean isLiked = reactionService.isReactionExists(user, TargetType.POST, postId, ReactionType.LIKE);
+        boolean isBookmarked = reactionService.isReactionExists(user, TargetType.POST, postId, ReactionType.BOOKMARK);
         model.addAttribute("post", post);
         model.addAttribute("comments", comments);
         model.addAttribute("commentsCount", commentsCount);
-        model.addAttribute("likes", likes);
+        model.addAttribute("likesCount", likesCount);
+        model.addAttribute("isLiked", isLiked);
+        model.addAttribute("isBookmarked", isBookmarked);
         model.addAttribute("commentDTO", new CommentDTO());
         return "post/free-board-detail";
     }
@@ -121,6 +132,30 @@ public class FreePostController {
                                       @ModelAttribute CommentDTO dto) {
         dto.setUserId(principal.getUser().getId());
         commentService.updateComment(commentId, dto);
+        return "redirect:/free-board/" + postId;
+    }
+
+    @PostMapping("/{postId}/like")
+    public String addLikeFreePost(@AuthenticationPrincipal CustomUserPrincipal principal,
+                                  @PathVariable Long postId) {
+        User user = principal.getUser();
+        reactionService.addReaction(user, TargetType.POST, postId, ReactionType.LIKE);
+        return "redirect:/free-board/" + postId;
+    }
+
+    @PostMapping("/{postId}/bookmark")
+    public String addBookMarkFreePost(@AuthenticationPrincipal CustomUserPrincipal principal,
+                                  @PathVariable Long postId) {
+        User user = principal.getUser();
+        reactionService.addReaction(user, TargetType.POST, postId, ReactionType.BOOKMARK);
+        return "redirect:/free-board/" + postId;
+    }
+
+    @PostMapping("/{postId}/report")
+    public String addReportFreePost(@AuthenticationPrincipal CustomUserPrincipal principal,
+                                      @PathVariable Long postId) {
+        User user = principal.getUser();
+        reactionService.addReaction(user, TargetType.POST, postId, ReactionType.REPORT);
         return "redirect:/free-board/" + postId;
     }
 }

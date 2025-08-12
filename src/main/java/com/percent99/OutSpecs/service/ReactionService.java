@@ -9,7 +9,9 @@ import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -31,12 +33,14 @@ public class ReactionService {
      * @param targetId
      * @param reactionType
      */
+    @Transactional
     public void addReaction(User user, TargetType targetType, Long targetId, ReactionType reactionType) {
         if(!userRepository.existsById(user.getId())) {
             throw new EntityNotFoundException("해당 유저는 존재하지 않습니다.");
         }
         if(reactionRepository.existsByUserAndTargetTypeAndTargetIdAndReactionType(user, targetType, targetId, reactionType)) {
-            throw new EntityExistsException("이미 반응이 존재합니다.");
+            deleteReaction(user, targetType, targetId, reactionType);
+            return;
         }
         if(targetType.equals(TargetType.POST) && !postRepository.existsById(targetId)) {
             throw new EntityNotFoundException("해당 게시물은 존재하지 않습니다.");
@@ -55,6 +59,7 @@ public class ReactionService {
         reaction.setTargetType(targetType);
         reaction.setTargetId(targetId);
         reaction.setReactionType(reactionType);
+        reaction.setCreatedAt(LocalDateTime.now());
 
         reactionRepository.save(reaction);
 
@@ -103,6 +108,7 @@ public class ReactionService {
      * @param targetId
      * @param reactionType
      */
+    @Transactional
     public void deleteReaction(User user, TargetType targetType, Long targetId, ReactionType reactionType) {
         if(!userRepository.existsById(user.getId())) {
             throw new EntityNotFoundException("해당 유저는 존재하지 않습니다.");
