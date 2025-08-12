@@ -12,7 +12,7 @@
                 <img class="header__left-logo"  th:src="@{/css/images/logo.svg}" alt="메인으로 돌아가기">
             </a>
             <div class="header__left-menu">
-                <a class="header__btn--left" >자유게시판</a>
+                <a class="header__btn--left" th:href="@{/free-board/latest}" >자유게시판</a>
                 <a class="header__btn--left" >QNA</a>
                 <a class="header__btn--left" >채용공고</a>
                 <a class="header__btn--left" >팀모집</a>
@@ -29,6 +29,9 @@
             <form th:action="@{/logout}" method="post" th:if="${user != null}">
                 <button type="submit" class="header__btn--login">로그아웃</button>
             </form>
+            <a class="header__btn--login"
+               th:if="${user != null and user.role.name() == 'ADMIN'}"
+               th:href="@{/admin}">관리자</a>
             <a class="header__btn--login" th:if="${user == null}" th:href="@{/users/login}">로그인</a>
             <a class="header__btn--signup" th:if="${user == null}" th:href="@{/users/signup}">회원가입</a>
         </div>
