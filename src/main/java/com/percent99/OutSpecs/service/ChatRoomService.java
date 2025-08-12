@@ -36,8 +36,7 @@ public class ChatRoomService {
     if (!profileRepository.existsByUserId(userId)) return null;
     if (!profileRepository.existsByUserId(targetId)) return null;
 
-    if (chatRoomRepository.existsByUser1AndUser2(user1, user2)) return null;
-    if (chatRoomRepository.existsByUser1AndUser2(user2, user1)) return null;
+    if (chatRoomRepository.existsByUser1IdAndUser2Id(userId, targetId)) return null;
 
     ChatRoom chatRoom = new ChatRoom();
 
@@ -52,16 +51,16 @@ public class ChatRoomService {
   }
 
   @Transactional(readOnly = true)
-  public List<ChatRoom> findChatRoomByUsername(String username){
-    if (username==null || username.isBlank()) return List.of();
+  public List<ChatRoom> findChatRoomByUserId(Long userId){
+    if (userId == null) return List.of();
 
-    return chatRoomRepository.findByUsername(username);
+    return chatRoomRepository.findAllByUserId(userId);
   }
 
-  public List<ChatRoomResponseDTO> getChatRoomResponseDTOListByUsername(String username){
-    if (username==null || username.isBlank()) return List.of();
+  public List<ChatRoomResponseDTO> getChatRoomResponseDTOListByUserId(Long userId){
+    if (userId == null) return List.of();
 
-    List<ChatRoom> chatRooms = this.findChatRoomByUsername(username);
+    List<ChatRoom> chatRooms = this.findChatRoomByUserId(userId);
 
     return convertChatRoomListToDTOList(chatRooms);
   }
@@ -91,19 +90,30 @@ public class ChatRoomService {
   @Transactional
   public ChatRoom updateChatRoomById(ChatRoom chatRoom, Long userId){
     if (chatRoom==null || userId==null) return null;
-    if (!chatRoomRepository.existsByIdAndUserId(chatRoom.getId(), userId)) return null;
+    if (!isChatRoomParticipant(chatRoom.getId(), userId)) return null;
 
     return chatRoomRepository.save(chatRoom);
   }
 
+  /**
+   * chatRoomId와 userId를 parameter로 받아 해당 채팅방을 삭제하는 메소드. <br>
+   * 사용자가 해당 채팅방에 참여하고 있지 않다면 삭제할 수 없음.
+   * @param chatRoomId 삭제할 채팅방의 id 값
+   * @param userId 채팅방을 삭제하려 하는 사용자의 id 값
+   */
   @Transactional
   public void deleteChatRoomById(Long chatRoomId, Long userId){
     if (chatRoomId==null || userId==null) return;
-    if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return;
+    if (!isChatRoomParticipant(chatRoomId, userId)) return;
 
+//    chatMessageRepository.deleteAllByChatRoomIdAndUserId(chatRoomId, userId);
     chatRoomRepository.deleteById(chatRoomId);
   }
 
+  /**
+   * 해당 사용자가 참여중인 모든 채팅방을 삭제하는 메소드
+   * @param userId 채팅방을 삭제할 사용자의 id 값
+   */
   @Transactional
   public void deleteAllChatRoomsByUserId(Long userId){
     if (userId == null) return;
@@ -197,6 +207,12 @@ public class ChatRoomService {
     return this.convertChatRoomToDTO(chatRoom, user1Profile, user2Profile);
   }
 
+  /**
+   * 사용자가 해당 채팅방에 참여중인지 여부를 반환하는 메소드
+   * @param chatRoomId 사용자가 참여중인지 확인할 채팅방의 id 값
+   * @param userId 채팅방에 참여중인지 확인할 사용자의 id 값
+   * @return 사용자가 해당 채팅방에 참여중인지 여부
+   */
   public boolean isChatRoomParticipant(Long chatRoomId, Long userId){
     return chatRoomRepository.existsByIdAndUserId(chatRoomId, userId);
   }
