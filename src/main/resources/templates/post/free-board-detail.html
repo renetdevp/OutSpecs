@@ -8,7 +8,7 @@
 <body>
 <header th:replace="~{fragments/header :: header}"></header>
 <div class="post">
-  <a class="postlist-back post-btn" th:href="@{/free-board/latest}">← 목록으로</a>
+  <a class="post-list-back post-btn" th:href="@{/free-board}">← 목록으로</a>
   <div class="post-container">
     <div class="post-header">
       <img class="post-user-image" src="/images/profileImage.png" alt="프로필 이미지">
@@ -41,11 +41,11 @@
         <div class="reaction-item">
           <form th:action="@{/free-board/{postId}/like(postId=${post.id})}" method="post" style="display: inline;">
             <button type="submit" class="like-btn">
-              <img class="post-icon" th:if="${!isLiked}" src="/images/like.png" alt="좋아요 아이콘">
-              <img class="post-icon" th:if="${isLiked}" src="/images/like-fill.svg" alt="좋아요 아이콘">
+              <img class="post-icon" th:if="${!reactions.isLiked}" src="/images/like.png" alt="좋아요 아이콘">
+              <img class="post-icon" th:if="${reactions.isLiked}" src="/images/like-fill.svg" alt="좋아요 아이콘">
             </button>
           </form>
-          <span th:text="${likesCount}">0</span>
+          <span th:text="${reactions.likesCount}">0</span>
         </div>
         <div class="reaction-item">
           <img class="post-icon" src="/images/view.png" alt="조회수 아이콘">
@@ -53,13 +53,13 @@
         </div>
         <div class="reaction-item">
           <img class="post-icon" src="/images/comment.png" alt="댓글 아이콘">
-          <span th:text="${commentsCount}">0</span>
+          <span th:text="${reactions.commentsCount}">0</span>
         </div>
       </div>
       <form th:action="@{/free-board/{postId}/bookmark(postId=${post.id})}" method="post" style="display: inline;">
         <button type="submit" class="bookmark-btn">
-          <img class="post-icon" th:if="${!isBookmarked}" src="/images/bookmark.png" alt="북마크 아이콘">
-          <img class="post-icon" th:if="${isBookmarked}" src="/images/bookmark-fill.svg" alt="북마크 아이콘">
+          <img class="post-icon" th:if="${!reactions.isBookmarked}" src="/images/bookmark.png" alt="북마크 아이콘">
+          <img class="post-icon" th:if="${reactions.isBookmarked}" src="/images/bookmark-fill.svg" alt="북마크 아이콘">
         </button>
       </form>
     </div>
@@ -70,12 +70,15 @@
 
     <div class="comment comment-item" th:if="${!#lists.isEmpty(comments) && comment.type.name() == 'COMMENT'}"
          th:each="comment : ${comments}" th:attr="data-comment-id=${comment.id}">
-      <div class="comment-info">
-        <div class="comment-user-profile">
-          <img class="user-image" src="/images/profileImage.png" alt="댓글 작성자 이미지">
-          <div class="user-nickname" th:text="${comment.user.username}">유저 닉네임</div>
+      <div class="comment-container">
+        <img class="user-image" src="/images/profileImage.png" alt="댓글 작성자 이미지">
+        <div class="comment-info">
+          <div class="comment-header">
+            <div class="user-nickname" th:text="${comment.user.username}">유저 닉네임</div>
+            <div class="comment-date" th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}">작성시간</div>
+          </div>
+          <div class="comment-content" th:text="${comment.content}">댓글 내용</div>
         </div>
-        <div class="comment-content" th:text="${comment.content}">댓글 내용</div>
         <div class="comment-more">
           <img class="comment-more-icon" src="/images/more-vertical.png" alt="더보기 아이콘"
                th:onclick="'toggleMoreMenu(event, \'comment-more-menu-' + ${comment.id} + '\')'">
@@ -106,11 +109,13 @@
       <div class="comment-reply">
         <div class="comment-reply-list" th:each="reply : ${comments}"
              th:if="${reply.type.name() == 'REPLY' and reply.parentId == comment.id}">
-          <div class="reply-header">
-            <span class="reply-author" th:text="${reply.user.username}">대댓글 작성자</span>
-            <span class="reply-date" th:text="${#temporals.format(reply.createdAt, 'yyyy-MM-dd HH:mm')}">작성시간</span>
+          <div class="comment-info">
+            <div class="comment-header">
+              <span class="reply-author" th:text="${reply.user.username}">대댓글 작성자</span>
+              <span class="reply-date" th:text="${#temporals.format(reply.createdAt, 'yyyy-MM-dd HH:mm')}">작성시간</span>
+            </div>
+            <p class="reply-content" th:text="${reply.content}">대댓글 내용</p>
           </div>
-          <p class="reply-content" th:text="${reply.content}">대댓글 내용</p>
           <div class="reply-more">
             <img class="comment-more-icon" src="/images/more-vertical.png" alt="더보기 아이콘"
                  th:onclick="'toggleMoreMenu(event, \'reply-more-menu-' + ${reply.id} + '\')'">
@@ -127,7 +132,7 @@
               method="post" class="reply-form" th:id="'reply-form-' + ${comment.id}" style="display:none;">
           <input type="hidden" name="type" value="REPLY"/>
           <input type="hidden" name="parentId" th:value="${comment.id}" />
-          <textarea class="comment-input" name="content" placeholder="대댓글 내용을 입력하세요" required></textarea>
+          <textarea class="comment-input" name="content" placeholder="대댓글 내용을 입력하세요" required maxlength="250"></textarea>
           <div class="comment-form-buttons">
             <button class="comment-btn" type="submit">등록</button>
             <button type="button" class="comment-btn comment-cancel-btn"
@@ -140,10 +145,6 @@
     <div class="comment new-comment-form">
       <form class="comment-info" th:action="@{/free-board/{postId}/comment(postId=${post.id})}" method="post"
             th:object="${commentDTO}">
-        <div class="comment-user-profile">
-          <img class="user-image" src="/images/profileImage.png" alt="작성자 이미지">
-          <div class="user-nickname">유저 닉네임</div>
-        </div>
         <div style="flex-grow: 1;">
           <input type="hidden" name="type" value="COMMENT"/>
           <input type="hidden" name="parentId" th:value="${post.id}"/>
@@ -163,7 +164,11 @@
     </form>
   </div>
 </div>
-
+<script th:inline="javascript" th:if="${!#strings.isEmpty(errorMessage)}">
+  /*<![CDATA[*/
+      alert([[${errorMessage}]]);
+  /*]]>*/
+</script>
 <script>
   // More 메뉴 토글 함수
   function toggleMoreMenu(event, menuId) {
@@ -185,22 +190,11 @@
   // 게시글 신고 함수
   function reportPost() {
     if (confirm('이 게시글을 신고하시겠습니까?')) {
-      // 신고 로직 구현 (컨트롤러로 요청)
-      fetch('/free-board/' + [[${post.id}]] + '/report', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }).then(response => {
-        if (response.ok) {
-          alert('신고가 접수되었습니다.');
-        } else {
-          alert('신고 접수에 실패했습니다.');
-        }
-      }).catch(error => {
-        console.error('Error:', error);
-        alert('신고 접수 중 오류가 발생했습니다.');
-      });
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/free-board/' + [[${post.id}]] + '/report';
+      document.body.appendChild(form);
+      form.submit();
     }
     document.getElementById('post-more-menu').style.display = 'none';
   }
@@ -237,10 +231,13 @@
   // 답글 폼 숨기기 함수
   function hideReplyForm(commentId) {
     const replyForm = document.getElementById('reply-form-' + commentId);
-    const toggleButton = replyForm.parentElement.querySelector('.comment-btn-toggle');
+    const commentItem = replyForm.closest('.comment-item'); // 댓글 전체 영역
+    const toggleButton = commentItem.querySelector('.comment-btn-toggle'); // 버튼 찾기
 
     replyForm.style.display = 'none';
-    toggleButton.style.display = 'inline-block';
+    if (toggleButton) {
+      toggleButton.style.display = 'inline-block';
+    }
 
     // 폼 내용 초기화
     const textarea = replyForm.querySelector('textarea');

@@ -1,13 +1,31 @@
 @import url("/css/shared/header.css");
 
-.write-container {
+* {
+    font-size: 14px;
+    font-weight: normal;
+    box-sizing: border-box;
+}
+
+textarea {
+    resize: none;
+}
+
+.post {
+    display: flex;
+    flex-direction: column;
     max-width: 891px;
     margin: 30px auto;
-    padding: 20px;
+    padding: 20px 35px;
+    gap: 10px;
+}
+
+.write-container {
     border: 1px solid #D9D9D9;
-    border-radius: 8px;
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    padding: 25px 30px;
+    gap: 23px;
 }
 
 .form-top {
@@ -307,8 +325,4 @@
     .form-group label {
         padding-top: 0;
     }
-}
-
-textarea {
-    resize: none;
 }

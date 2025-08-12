@@ -7,80 +7,80 @@
 </head>
 <body>
 <header th:replace="~{fragments/header :: header}"></header>
-<div class="write-container">
-    <form th:action="${isEdit} ? @{/free-board/{postId}/edit(postId=${postId})} : @{/free-board/write}"
-          th:object="${postDTO}" method="post" enctype="multipart/form-data">
+<div class="post">
+    <div class="write-container">
+        <form th:action="${isEdit} ? @{/free-board/{postId}/edit(postId=${postId})} : @{/free-board/write}"
+              th:object="${postDTO}" method="post" enctype="multipart/form-data">
 
-        <input type="hidden" th:field="*{userId}" />
-        <input type="hidden" th:field="*{type}"/>
+            <input type="hidden" th:field="*{userId}" />
+            <input type="hidden" th:field="*{type}"/>
 
-        <div class="form-top">
-            <div class="image-upload">
-                <div class="image-preview-container">
-                    <label for="images" class="image-box" id="mainImageBox">
-                        <div class="upload-text">
-                            <div class="upload-icon">📷</div>
-                            <span>이미지 추가</span>
-                            <small>(최대 5개)</small>
+            <div class="form-top">
+                <div class="image-upload">
+                    <div class="image-preview-container">
+                        <label for="images" class="image-box" id="mainImageBox">
+                            <div class="upload-text">
+                                <span>이미지 추가</span>
+                                <small>(최대 5개)</small>
+                            </div>
+                        </label>
+                        <input type="file" id="images" name="images" multiple accept="image/*" hidden />
+
+                        <div class="image-thumbnails" id="imageThumbnails"></div>
+                        <div class="image-info">
+                            <span id="imageCount">0</span>/5개 선택됨
                         </div>
-                    </label>
-                    <input type="file" id="images" name="images" multiple accept="image/*" hidden />
+                    </div>
+                </div>
 
-                    <div class="image-thumbnails" id="imageThumbnails"></div>
-                    <div class="image-info">
-                        <span id="imageCount">0</span>/5개 선택됨
+                <div class="title-tag">
+                    <div class="form-group">
+                        <label for="title">게시글 제목</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="title" th:field="*{title}" placeholder="제목을 입력하세요" required maxlength="70"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>태그</label>
+                        <div class="input-wrapper">
+                            <!-- 서버로 보낼 쉼표 문자열 -->
+                            <input type="hidden" id="tagsInput" th:field="*{tagsInfo.tags}"/>
+
+                            <div class="chips"
+                                 th:with="
+                                    opts=${T(java.util.List).of('Java','Spring','React','Vue','Python','AI','SQL', 'C++','C','JavaScript','HTML','CSS')},
+                                    selectedTags=${selectedTags}
+                                 ">
+                                <label class="chip" th:each="opt : ${opts}">
+                                    <input type="checkbox"
+                                           class="tag-chip"
+                                           name="tagChips"
+                                           th:value="${opt}"
+                                           th:checked="${selectedTags.contains(opt)}">
+                                    <span th:text="${opt}">Java</span>
+                                </label>
+                            </div>
+
+                            <p id="tagsClientError" class="error" style="display:none"></p>
+                            <p class="error" th:if="${#fields.hasErrors('tagsInfo.tags')}" th:errors="*{tagsInfo.tags}"></p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="title-tag">
-                <div class="form-group">
-                    <label for="title">게시글 제목</label>
-                    <div class="input-wrapper">
-                        <input type="text" id="title" th:field="*{title}" placeholder="제목을 입력하세요" required />
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>태그</label>
-                    <div class="input-wrapper">
-                        <!-- 서버로 보낼 쉼표 문자열 -->
-                        <input type="hidden" id="tagsInput" th:field="*{tagsInfo.tags}"/>
-
-                        <div class="chips"
-                             th:with="
-                                opts=${T(java.util.List).of('Java','Spring','React','Vue','Python','AI','SQL', 'C++','C','JavaScript','HTML','CSS')},
-                                selectedTags=${selectedTags}
-                             ">
-                            <label class="chip" th:each="opt : ${opts}">
-                                <input type="checkbox"
-                                       class="tag-chip"
-                                       name="tagChips"
-                                       th:value="${opt}"
-                                       th:checked="${selectedTags.contains(opt)}">
-                                <span th:text="${opt}">Java</span>
-                            </label>
-                        </div>
-
-                        <p id="tagsClientError" class="error" style="display:none"></p>
-                        <p class="error" th:if="${#fields.hasErrors('tagsInfo.tags')}" th:errors="*{tagsInfo.tags}"></p>
-                    </div>
-                </div>
+            <div class="form-content">
+                <label for="content">게시글 내용</label>
+                <textarea id="content" th:field="*{content}" placeholder="내용을 입력하세요" required></textarea>
             </div>
-        </div>
 
-        <div class="form-content">
-            <label for="content">게시글 내용</label>
-            <textarea id="content" th:field="*{content}" placeholder="내용을 입력하세요" required></textarea>
-        </div>
-
-        <div class="form-actions">
-            <button type="button" class="cancel-btn" onclick="history.back()">취소</button>
-            <button type="submit" th:text="${isEdit} ? '수정하기' : '저장하기'">저장하기</button>
-        </div>
-    </form>
+            <div class="form-actions">
+                <button type="button" class="cancel-btn" onclick="history.back()">취소</button>
+                <button type="submit" th:text="${isEdit} ? '수정하기' : '저장하기'">저장하기</button>
+            </div>
+        </form>
+    </div>
 </div>
-
 <script>
     document.addEventListener("DOMContentLoaded", () => {
             // 태그 관리
