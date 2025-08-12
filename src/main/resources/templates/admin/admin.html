@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>관리자 대시보드</title>
+</head>
+<body>
+<div class="container">
+    <h1 class="page-title">관리자 대시보드</h1>
+    <table aria-label="회원 목록">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>이메일(아이디)</th>
+                <th>권한</th>
+                <th>소셜ID</th>
+                <th>AI 제한</th>
+                <th>가입일</th>
+                <th class="nowrap">동작</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="u : ${users}">
+                <td th:text="${u.id}"></td>
+                <td th:text="${u.username}"></td>
+                <td th:text="${u.role}"></td>
+                <td th:text="${#strings.isEmpty(u.providerId) ? '-' : u.providerId}"></td>
+                <td th:text="${u.aiRateLimit}"></td>
+                <td th:text="${#temporals.format(u.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                <td class="nowrap">
+                    <div class="actions">
+                        <!-- 권한 변경 -->
+                        <form  th:if="${u.role != null and (u.role.name() == 'USER' or u.role.name() == 'ENTUSER')}"
+                                th:action="@{/admin/users/{userId}/role(userId=${u.id})}" method="post">
+                            <select name="role">
+                                <option value="USER"  th:selected="${u.role != null and u.role.name() == 'USER'}">USER</option>
+                                <option value="ENTUSER" th:selected="${u.role != null and u.role.name() == 'ENTUSER'}">ENTUSER</option>
+                            </select>
+                            <button type="submit" class="btn">변경</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(users)}">
+                <td colspan="7">표시할 사용자가 없습니다.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table aria-label="신고된 게시글 목록">
+        <thead>
+        <tr>
+            <th>게시글ID</th>
+            <th>제목</th>
+            <th>작성자</th>
+            <th class="nowrap">동작</th>
+            <th class="nowrap">게시물 삭제</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="p : ${posts}">
+            <td th:text="${p.id}">100</td>
+            <td>
+                <a th:text="${p.title}">게시글 제목</a>
+            </td>
+            <td th:text="${p.user != null && p.user.username != null ? p.user.username : 'Anonymous'}">작성자</td>
+            <td class="nowrap">
+                <div class="actions">
+                    <a class="btn" th:href="@{/{prefix}/{postId}(prefix=${p.type.pathPrefix()}, postId=${p.id})}">보기</a>
+                </div>
+            </td>
+            <td class="nowrap">
+                <div class="actions">
+                    <form th:action="@{/admin/posts/{postId}/delete(postId=${p.id})}"
+                          method="post"
+                          onsubmit="return confirm('게시글을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.');">
+                        <button type="submit" class="btn danger">삭제</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+
+        </tr>
+        <tr th:if="${#lists.isEmpty(posts)}">
+            <td colspan="4">신고된 게시글이 없습니다.</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
