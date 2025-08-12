@@ -2,18 +2,23 @@ package com.percent99.OutSpecs.controller;
 
 import com.percent99.OutSpecs.dto.CommentDTO;
 import com.percent99.OutSpecs.dto.PostDTO;
+import com.percent99.OutSpecs.dto.PostResponseDTO;
 import com.percent99.OutSpecs.entity.*;
 import com.percent99.OutSpecs.security.CustomUserPrincipal;
 import com.percent99.OutSpecs.service.CommentService;
 import com.percent99.OutSpecs.service.PostQueryService;
 import com.percent99.OutSpecs.service.PostService;
 import com.percent99.OutSpecs.service.ReactionService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Controller
@@ -26,14 +31,19 @@ public class FreePostController {
     private final CommentService commentService;
     private final ReactionService reactionService;
 
-    @GetMapping
-    public String freePostForm(Model model) {
+    @GetMapping("/write")
+    public String freePostForm(@AuthenticationPrincipal CustomUserPrincipal principal,
+                               Model model) {
+        User user = principal.getUser();
+        List<String> selectedTags = new ArrayList<>();
         model.addAttribute("postDTO", new PostDTO());
+        model.addAttribute("selectedTags", selectedTags);
         model.addAttribute("isEdit", false);
+        model.addAttribute("user", user);
         return "post/free-board-write";
     }
 
-    @PostMapping
+    @PostMapping("/write")
     public String createFreePost(@AuthenticationPrincipal CustomUserPrincipal principal,
                                  @ModelAttribute PostDTO dto) {
         dto.setUserId(principal.getUser().getId());
@@ -42,15 +52,14 @@ public class FreePostController {
         return "redirect:/free-board/" + post.getId();
     }
 
-    @GetMapping("/latest")
-    public String latestFreePost(Model model) {
-        model.addAttribute("posts", postQueryService.getRecentPosts(PostType.FREE, 20));
-        return "post/free-board-list";
-    }
-
-    @GetMapping("/popular")
-    public String popularFreePost(Model model) {
-        model.addAttribute("posts", postQueryService.getViewCountPosts(PostType.FREE, 10));
+    @GetMapping
+    public String freePostlist(@AuthenticationPrincipal CustomUserPrincipal principal,
+                               Model model) {
+        User user = principal.getUser();
+        model.addAttribute("user", user);
+        // 인기게시글과 최신글을 다른 이름으로 분리
+        model.addAttribute("popularPosts", postQueryService.getViewCountPosts(PostType.FREE, 10));
+        model.addAttribute("recentPosts", postQueryService.getRecentPosts(PostType.FREE, 20));
         return "post/free-board-list";
     }
 
@@ -60,8 +69,14 @@ public class FreePostController {
         if (postDTO == null) {
             return "redirect:/free-board/latest";
         }
+        List<String> selectedTags = new ArrayList<>();
+
+        if (postDTO.getTagsInfo() != null && postDTO.getTagsInfo().getTags() != null) {
+            selectedTags = Arrays.asList(postDTO.getTagsInfo().getTags().split(","));
+        }
         model.addAttribute("postId", postId);
         model.addAttribute("postDTO", postDTO);
+        model.addAttribute("selectedTags", selectedTags);
         model.addAttribute("isEdit", true);
         return "post/free-board-write";
     }
@@ -84,16 +99,19 @@ public class FreePostController {
     }
 
     @GetMapping("/{postId}")
-    public String detailFreePost(@PathVariable Long postId, Model model) {
+    public String detailFreePost(@AuthenticationPrincipal CustomUserPrincipal principal,
+                                 @PathVariable Long postId, Model model,
+                                 @ModelAttribute("errorMessage") String errorMessage) {
         Post post = postQueryService.getPostById(postId);
+        User user = principal.getUser();
         List<Comment> comments = commentService.getCommentsByPostId(postId);
-        int commentsCount = commentService.countByTypeAndPostId(CommentType.COMMENT, postId);
-        int likes = reactionService.countReactions(TargetType.POST, postId, ReactionType.LIKE);
+        PostResponseDTO reactions = postQueryService.getPostReactionDetail(postId, user);
         model.addAttribute("post", post);
         model.addAttribute("comments", comments);
-        model.addAttribute("commentsCount", commentsCount);
-        model.addAttribute("likes", likes);
+        model.addAttribute("reactions", reactions);
         model.addAttribute("commentDTO", new CommentDTO());
+        model.addAttribute("errorMessage", errorMessage);
+        model.addAttribute("user", user);
         return "post/free-board-detail";
     }
 
@@ -121,6 +139,47 @@ public class FreePostController {
                                       @ModelAttribute CommentDTO dto) {
         dto.setUserId(principal.getUser().getId());
         commentService.updateComment(commentId, dto);
+        return "redirect:/free-board/" + postId;
+    }
+
+    @PostMapping("/{postId}/like")
+    public String addLikeFreePost(@AuthenticationPrincipal CustomUserPrincipal principal,
+                                  @PathVariable Long postId,
+                                  RedirectAttributes redirectAttributes) {
+        try {
+            User user = principal.getUser();
+            reactionService.addReaction(user, TargetType.POST, postId, ReactionType.LIKE);
+        } catch (RuntimeException e) {
+            System.out.println("Exception message = " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/free-board/" + postId;
+    }
+
+    @PostMapping("/{postId}/bookmark")
+    public String addBookMarkFreePost(@AuthenticationPrincipal CustomUserPrincipal principal,
+                                      @PathVariable Long postId,
+                                      RedirectAttributes redirectAttributes) {
+        try {
+            User user = principal.getUser();
+            reactionService.addReaction(user, TargetType.POST, postId, ReactionType.BOOKMARK);
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/free-board/" + postId;
+    }
+
+    @PostMapping("/{postId}/report")
+    public String addReportFreePost(@AuthenticationPrincipal CustomUserPrincipal principal,
+                                    @PathVariable Long postId,
+                                    RedirectAttributes redirectAttributes) {
+        try {
+            User user = principal.getUser();
+            reactionService.addReaction(user, TargetType.POST, postId, ReactionType.REPORT);
+            redirectAttributes.addFlashAttribute("errorMessage", "신고가 접수되었습니다.");
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
         return "redirect:/free-board/" + postId;
     }
 }
