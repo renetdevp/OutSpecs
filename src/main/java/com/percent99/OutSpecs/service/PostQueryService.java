@@ -47,6 +47,18 @@ public class PostQueryService {
     }
 
     /**
+     * 조회수 1 증가 후 게시글 조회
+     * @param postId 조회할 게시글 ID
+     * @return 조회된 post 엔티티
+     */
+    @Transactional
+    public Post getPostAndIncreaseViewCount(Long postId) {
+        postRepository.increaseViewCount(postId);
+        return getPostById(postId);
+    }
+
+
+    /**
      * 특정 사용자가 작성한 모든 게시글을 조회한다.
      * @param userId 조회할 사용자의 ID
      * @return 해당 사용자가 작성한 게시글 목록
