@@ -16,7 +16,7 @@ public enum PostType {
     public String pathPrefix(){
         return switch (this){
             case QNA -> "qna";
-            case FREE -> "free-board";
+            case FREE -> "free";
             case TEAM -> "team";
             case AIPLAY -> "ai-play";
             case PLAY -> "play";

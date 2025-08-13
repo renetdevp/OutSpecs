@@ -158,8 +158,9 @@ public class PostQueryService {
         int commentsCount = (int)commentRepository.countByTypeAndParentId(CommentType.COMMENT, postId);
         boolean isLiked = reactionRepository.existsByUserAndTargetTypeAndTargetIdAndReactionType(user, TargetType.POST, postId, ReactionType.LIKE);
         boolean isBookmarked = reactionRepository.existsByUserAndTargetTypeAndTargetIdAndReactionType(user, TargetType.POST, postId, ReactionType.BOOKMARK);
+        int teamCount = participationService.countAcceptedParticipation(postId);
 
-        return new PostResponseDTO(likesCount, commentsCount, isLiked, isBookmarked);
+        return new PostResponseDTO(likesCount, commentsCount, isLiked, isBookmarked, teamCount);
     }
 
     /**

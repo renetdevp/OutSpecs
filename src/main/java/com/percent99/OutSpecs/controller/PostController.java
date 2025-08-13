@@ -45,7 +45,6 @@ public class PostController {
     public String createPost(@AuthenticationPrincipal CustomUserPrincipal principal,
                              @ModelAttribute PostDTO dto) {
         dto.setUserId(principal.getUser().getId());
-        System.out.println("********qna answer: " + dto.getQnaInfo().getAnswerComplete());
         Post post = postService.createPost(dto);
         return "redirect:/post/" + post.getId();
     }
@@ -57,9 +56,12 @@ public class PostController {
         Post post = postQueryService.getPostAndIncreaseViewCount(postId);
         User user = principal.getUser();
         List<Comment> comments = commentService.getCommentsByPostId(postId);
+        List<Participation> participations = participationService.getParticipationByPostId(postId);
         PostResponseDTO reactions = postQueryService.getPostReactionDetail(postId, user);
+
         model.addAttribute("post", post);
         model.addAttribute("comments", comments);
+        model.addAttribute("participations", participations);
         model.addAttribute("reactions", reactions);
         model.addAttribute("commentDTO", new CommentDTO());
         model.addAttribute("errorMessage", errorMessage);

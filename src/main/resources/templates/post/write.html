@@ -38,7 +38,9 @@
 
           <div class="form-group">
             <label for="postType">게시판 타입</label>
-            <select id="postType" name="type" th:field="*{type}" required>
+            <input th:if="${isEdit}" type="hidden" th:field="*{type}" />
+            <select id="postType" name="type" th:field="*{type}"
+                    th:disabled="${isEdit}" required>
               <option value="">게시판을 선택하세요</option>
               <option value="FREE">자유게시판</option>
               <option value="TEAM">팀모집</option>
@@ -100,13 +102,13 @@
           <div class="form-group" id="teamStatusField">
             <label>팀 모집 상태</label>
             <div class="input-wrapper">
-              <div class="checkbox-group">
-                <div class="checkbox-item">
-                  <input type="checkbox" id="teamStatus1" th:field="*{teamInfo.status}" value="OPEN">
+              <div class="radio-group">
+                <div class="radio-item">
+                  <input type="radio" id="teamStatus1" th:field="*{teamInfo.status}" value="OPEN">
                   <label for="teamStatus1">모집중</label>
                 </div>
-                <div class="checkbox-item">
-                  <input type="checkbox" id="teamStatus2" th:field="*{teamInfo.status}" value="CLOSED">
+                <div class="radio-item">
+                  <input type="radio" id="teamStatus2" th:field="*{teamInfo.status}" value="CLOSED">
                   <label for="teamStatus2">모집완료</label>
                 </div>
               </div>
