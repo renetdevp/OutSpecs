@@ -16,8 +16,6 @@
             <div class="banner error" role="alert" th:if="${loginError}" th:text="${loginError}">
                 로그인 에러
             </div>
-
-
             <form th:action="@{/login}" method="post" class="auth-form" novalidate>
                 <!-- USERNAME -->
                 <div class="field">
