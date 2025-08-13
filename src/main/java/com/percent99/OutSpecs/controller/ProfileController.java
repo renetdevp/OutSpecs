@@ -13,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -96,9 +97,24 @@ public class ProfileController {
      * @return "profile/profile_detail" 뷰 이름 또는 생성 폼 리다이렉트
      */
     @GetMapping("/{userId}")
-    public String detail(@PathVariable Long userId, Model model){
+    public String detail(@AuthenticationPrincipal CustomUserPrincipal principal,
+                         @PathVariable Long userId,
+                         Model model){
 
         Optional<Profile> profile = profileService.getProfileByUserId(userId);
+
+        Long meId = (principal != null ? principal.getUser().getId(): null);
+        boolean isMine = (meId != null && meId.equals(userId));
+        boolean isFollowing = false;
+
+        if(!isMine && meId != null){
+            isFollowing = reactionService.isFollowing(principal.getUser(), userId);
+        }
+
+        model.addAttribute("meId",meId);
+        model.addAttribute("isMine",isMine);
+        model.addAttribute("isFollowing",isFollowing);
+
         User user = profileService.getUserById(userId);
 
         List<ProfileDTO> followProfiles = profileService.getFollowedUserProfiles(user);
@@ -211,6 +227,31 @@ public class ProfileController {
     }
 
     /**
+     * 오픈프로필 팔로우를 합니다.
+     * @param userId 팔로우 할 상대 id
+     * @param principal 로그인한 id
+     * @return 팔로우 이후 해당 프로필 redirect
+     */
+    @PostMapping("/{userId}/follow")
+    public String toggleFollow(@PathVariable Long userId,
+                               @AuthenticationPrincipal CustomUserPrincipal principal,
+                               RedirectAttributes redirectAttributes){
+        boolean profile = profileService.getProfileByUserId(principal.getUser().getId())
+                        .isPresent();
+        if(!profile){
+            redirectAttributes.addFlashAttribute("error", "먼저 오픈프로필을 제작해주세요");
+            return "redirect:/users/profiles/" + userId;
+        }
+        reactionService.addReaction(
+                principal.getUser(),
+                TargetType.USER,
+                userId,
+                ReactionType.FOLLOW
+        );
+        return "redirect:/users/profiles/"+userId;
+    }
+
+    /**
      * 사용자가 좋아요한 게시물 목록 삭제합합니다
      * @param principal 인증된 사용자 정보가 담긴 CustomUserPrincipal 객체
      * @param userId
@@ -249,4 +290,5 @@ public class ProfileController {
         reactionService.deleteReaction(user, TargetType.USER, userId,  ReactionType.FOLLOW);
         return "redirect:/users/profiles/" + meId;
     }
+
 }

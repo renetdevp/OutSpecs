@@ -1,10 +1,9 @@
 package com.percent99.OutSpecs.controller;
 
 import com.percent99.OutSpecs.dto.UserDTO;
-import com.percent99.OutSpecs.entity.UserRoleType;
 import com.percent99.OutSpecs.security.CustomUserPrincipal;
-import com.percent99.OutSpecs.service.AdminService;
 import com.percent99.OutSpecs.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -57,9 +56,16 @@ public class AuthController {
     }
 
     @GetMapping("/login")
-    public String showLogin(@AuthenticationPrincipal CustomUserPrincipal principal){
+    public String showLogin(HttpSession session,
+                            Model model,
+                            @AuthenticationPrincipal CustomUserPrincipal principal){
         if(principal != null){
             return "redirect:/";
+        }
+        Object msg = session.getAttribute("loginError");
+        if(msg != null){
+            model.addAttribute("loginError", msg);
+            session.removeAttribute("loginError");
         }
         return "auth/login";
     }

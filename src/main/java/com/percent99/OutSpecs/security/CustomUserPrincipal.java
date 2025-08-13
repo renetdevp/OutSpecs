@@ -1,6 +1,7 @@
 package com.percent99.OutSpecs.security;
 
 import com.percent99.OutSpecs.entity.User;
+import com.percent99.OutSpecs.entity.UserStatus;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -66,7 +67,10 @@ public class CustomUserPrincipal implements OAuth2User, UserDetails {
     }
 
     @Override public boolean isAccountNonExpired() { return true; }
-    @Override public boolean isAccountNonLocked() { return true; }
+    @Override public boolean isAccountNonLocked() {
+        return  user.getStatus() != UserStatus.SUSPENDED; }
     @Override public boolean isCredentialsNonExpired() { return true; }
-    @Override public boolean isEnabled() { return true; }
+    @Override public boolean isEnabled() {
+        return user.getStatus() != UserStatus.DELETED;
+    }
 }

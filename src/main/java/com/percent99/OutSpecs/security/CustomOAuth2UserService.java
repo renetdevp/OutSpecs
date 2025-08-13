@@ -2,6 +2,7 @@ package com.percent99.OutSpecs.security;
 
 import com.percent99.OutSpecs.entity.User;
 import com.percent99.OutSpecs.entity.UserRoleType;
+import com.percent99.OutSpecs.entity.UserStatus;
 import com.percent99.OutSpecs.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +10,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
@@ -76,6 +78,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         Optional<User> userOptional = userRepository.findByProviderId(socialId);
         if(userOptional.isPresent()){
+            User user = userOptional.get();
+            ensureLoginAllowed(user);
             return new CustomUserPrincipal(userOptional.get(),attributes);
         }
 
@@ -103,6 +107,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             user = userRepository.findByProviderId(socialId).orElseThrow(() -> e);
         }
         log.info("신규 OAuth2 사용자 생성 : {}",email);
+
+        ensureLoginAllowed(user);
         return new CustomUserPrincipal(user,attributes);
     }
 
@@ -132,4 +138,18 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         }
         return username;
     }
-}
+
+    /**
+     * 밴/탈퇴 계정 로그인 차단
+     * @param user
+     */
+    private void ensureLoginAllowed(User user) {
+        if (user.getStatus() == UserStatus.SUSPENDED) {
+            OAuth2Error error = new OAuth2Error("ACCOUNT_SUSPENDED", "정지된 계정입니다.", null);
+            throw new OAuth2AuthenticationException(error, "정지된 계정입니다.");
+        }
+        if (user.getStatus() == UserStatus.DELETED) {
+            OAuth2Error error = new OAuth2Error("ACCOUNT_DELETED", "탈퇴(비활성)된 계정입니다.", null);
+            throw new OAuth2AuthenticationException(error,"탈퇴(비활성)된 계정입니다.");
+        }
+    }}

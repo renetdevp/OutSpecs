@@ -5,7 +5,6 @@ import com.percent99.OutSpecs.repository.CommentRepository;
 import com.percent99.OutSpecs.repository.PostRepository;
 import com.percent99.OutSpecs.repository.ReactionRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
-import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -71,7 +70,6 @@ public class ReactionService {
         } else if(reaction.getReactionType().equals(ReactionType.LIKE) && reaction.getTargetType().equals(TargetType.COMMENT)) {
             notificationService.sendNotification(user, receiver, NotificationType.LIKE_COMMENT, targetId);
         }
-
     }
 
     /**
@@ -97,7 +95,6 @@ public class ReactionService {
             user = Optional.ofNullable(comment.getUser())
                     .orElseThrow(() -> new IllegalStateException("해당 댓글의 작성자가 없습니다."));
         }
-
         return user;
     }
 
@@ -190,5 +187,19 @@ public class ReactionService {
      */
     public List<Post> getReportPosts() {
         return reactionRepository.findReportedPostsWithUser(TargetType.POST, ReactionType.REPORT);
+    }
+
+    /**
+     * 내가 targetUserId를 팔로우 중인지
+     * @param me 자신
+     * @param targetId 상대방
+     * @return true or false
+     */
+    @Transactional(readOnly = true)
+    public boolean isFollowing(User me, Long targetId){
+        if(me == null || me.getId().equals(targetId)) return false;
+        return reactionRepository.existsByUserAndTargetTypeAndTargetIdAndReactionType(
+                me, TargetType.USER, targetId, ReactionType.FOLLOW
+        );
     }
 }
