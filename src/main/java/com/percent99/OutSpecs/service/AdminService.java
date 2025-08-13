@@ -3,6 +3,7 @@ package com.percent99.OutSpecs.service;
 import com.percent99.OutSpecs.entity.Post;
 import com.percent99.OutSpecs.entity.User;
 import com.percent99.OutSpecs.entity.UserRoleType;
+import com.percent99.OutSpecs.entity.UserStatus;
 import com.percent99.OutSpecs.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 
@@ -55,5 +56,32 @@ public class AdminService {
     @Transactional(readOnly = true)
     public List<User>findAllUsers(){
         return userRepository.findAllByOrderByIdDesc();
+    }
+
+    @Transactional
+    public void banUser(Long userId){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
+        if(user.getStatus() == UserStatus.DELETED){
+            throw new IllegalStateException("이미 탈퇴한 유저입니다.");
+        }
+        user.setStatus(UserStatus.SUSPENDED);
+    }
+
+    @Transactional
+    public void unBanUser(Long userId){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
+        if(user.getStatus() == UserStatus.DELETED){
+            throw new IllegalStateException("이미 탈퇴한 유저입니다.");
+        }
+        user.setStatus(UserStatus.ACTIVE);
+    }
+
+    @Transactional
+    public void deleteUser(Long userId){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
+        user.setStatus(UserStatus.DELETED);
     }
 }
