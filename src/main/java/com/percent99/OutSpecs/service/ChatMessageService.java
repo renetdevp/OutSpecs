@@ -1,6 +1,7 @@
 package com.percent99.OutSpecs.service;
 
 import com.percent99.OutSpecs.dto.ChatMessageDTO;
+import com.percent99.OutSpecs.dto.ChatRoomResponseDTO;
 import com.percent99.OutSpecs.entity.ChatMessage;
 import com.percent99.OutSpecs.entity.ChatRoom;
 import com.percent99.OutSpecs.entity.User;
@@ -110,7 +111,7 @@ public class ChatMessageService {
   public List<ChatMessageDTO> getChatMessageDTOByChatRoomId(Long chatRoomId, Long userId){
     if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return List.of();
 
-    Pageable defaultPageable = PageRequest.of(1, 15, Sort.by("createdAt").descending());
+    Pageable defaultPageable = PageRequest.of(0, 15, Sort.by("createdAt").descending());
 
     Page<ChatMessage> chatMessagePage = this.findByChatRoomId(chatRoomId, defaultPageable);
 
@@ -227,5 +228,16 @@ public class ChatMessageService {
     if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return;
 
     messagingTemplate.convertAndSend("/queue/rooms/"+chatRoomId, chatMessageDTO);
+  }
+
+  public List<ChatRoomResponseDTO> loadChatMessagesIntoChatRoomResponseDTOList(List<ChatRoomResponseDTO> chatRoomResponseDTOList, Long userId){
+    List<ChatRoomResponseDTO> result = new ArrayList<>();
+
+    for (ChatRoomResponseDTO chatRoomResponseDTO: chatRoomResponseDTOList){
+      chatRoomResponseDTO.setChatMessageDTOList(this.getChatMessageDTOByChatRoomId(chatRoomResponseDTO.getChatRoomId(), userId));
+      result.add(chatRoomResponseDTO);
+    }
+
+    return result;
   }
 }
