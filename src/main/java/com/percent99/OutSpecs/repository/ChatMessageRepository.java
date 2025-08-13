@@ -1,6 +1,8 @@
 package com.percent99.OutSpecs.repository;
 
 import com.percent99.OutSpecs.entity.ChatMessage;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,4 +16,12 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
 
   @Query("DELETE FROM ChatMessage cm WHERE cm.chatRoom.id = :chatRoomId AND cm.sender.id = :userId")
   void deleteAllByChatRoomIdAndUserId(@Param("chatRoomId") Long chatRoomId, @Param("userId") Long userId);
+
+  Page<ChatMessage> findByChatRoomId(Long chatRoomId, Pageable pageable);
+
+  @Query("DELETE FROM ChatMessage cm WHERE cm.sender.id = :userId")
+  void deleteAllByUserId(@Param("userId") Long userId);
+
+  @Query("DELETE FROM ChatMessage cm WHERE cm.chatRoom.id = :chatRoomId")
+  void deleteAllByChatRoomId(@Param("chatRoomId") Long chatRoomId);
 }

@@ -6,6 +6,7 @@ import com.percent99.OutSpecs.entity.ChatRoom;
 import com.percent99.OutSpecs.entity.User;
 import com.percent99.OutSpecs.repository.ChatMessageRepository;
 import com.percent99.OutSpecs.repository.ChatRoomRepository;
+import com.percent99.OutSpecs.repository.ProfileRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +29,7 @@ public class ChatMessageServiceTest {
   @Mock private ChatRoomService chatRoomService;
   @Mock private ChatRoomRepository chatRoomRepository;
   @Mock private UserRepository userRepository;
+  @Mock private ProfileRepository profileRepository;
   @InjectMocks private ChatMessageService chatMessageService;
 
   private ChatMessage chatMessage;
@@ -66,11 +69,27 @@ public class ChatMessageServiceTest {
   }
 
   @Test
-  @DisplayName("ChatMessageService.createChatMessage failed when chatroom not found")
+  @DisplayName("ChatMessageService.createChatMessage failed when user not found")
   void createChatMessageFailedWhenUserNotFound(){
     // give
     when(chatRoomService.findChatRoomById(chatMessageDTO.getChatRoomId())).thenReturn(Optional.of(chatRoom));
     when(userRepository.findById(user.getId())).thenReturn(Optional.empty());
+
+    // when
+    chatMessageService.createChatMessage(chatMessageDTO, user.getId());
+
+    // then
+    verify(chatMessageRepository, never()).save(chatMessage);
+    verify(chatRoomService, never()).updateChatRoomById(chatRoom, user.getId());
+  }
+
+  @Test
+  @DisplayName("ChatMessageService.createChatMessage failed when user has no profile")
+  void createChatMessageFailedWhenUserHasNoProfile(){
+    // give
+    when(chatRoomService.findChatRoomById(chatMessageDTO.getChatRoomId())).thenReturn(Optional.of(chatRoom));
+    when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+    when(profileRepository.existsByUserId(user.getId())).thenReturn(false);
 
     // when
     chatMessageService.createChatMessage(chatMessageDTO, user.getId());
@@ -86,6 +105,7 @@ public class ChatMessageServiceTest {
     // give
     when(chatRoomService.findChatRoomById(chatMessageDTO.getChatRoomId())).thenReturn(Optional.of(chatRoom));
     when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+    when(profileRepository.existsByUserId(user.getId())).thenReturn(true);
     when(chatRoomRepository.existsByIdAndUserId(chatRoom.getId(), user.getId())).thenReturn(false);
 
     // when
@@ -102,6 +122,7 @@ public class ChatMessageServiceTest {
     // give
     when(chatRoomService.findChatRoomById(chatMessageDTO.getChatRoomId())).thenReturn(Optional.of(chatRoom));
     when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+    when(profileRepository.existsByUserId(user.getId())).thenReturn(true);
     when(chatRoomRepository.existsByIdAndUserId(chatRoom.getId(), user.getId())).thenReturn(true);
     when(chatMessageRepository.save(any(ChatMessage.class))).thenReturn(chatMessage);
     when(chatRoomService.updateChatRoomById(chatRoom, user.getId())).thenReturn(chatRoom);
@@ -139,6 +160,38 @@ public class ChatMessageServiceTest {
 
     // then
     assertThat(result).isEqualTo(List.of(chatMessage));
+  }
+
+  @Test
+  @DisplayName("ChatMessageService.findByChatRoomId failed when user not in chatroom")
+  void findByChatRoomIdFailedWhenUserNotInChatRoom(){
+    // given
+    Pageable pageable = PageRequest.of(0, 5, Sort.by("createdAt").descending());
+
+    when(chatRoomRepository.existsByIdAndUserId(chatRoom.getId(), user.getId())).thenReturn(false);
+
+    // when
+    Page<ChatMessage> result = chatMessageService.findByChatRoomId(chatRoom.getId(), user.getId(), pageable);
+
+    // then
+    assertThat(result).isNull();
+  }
+
+  @Test
+  @DisplayName("ChatMessageService.findByChatRoomId success")
+  void findByChatRoomIdSuccess(){
+    // given
+    Pageable pageable = PageRequest.of(0, 5, Sort.by("createdAt").descending());
+    Page<ChatMessage> tmpPage = new PageImpl<>(List.of(chatMessage), pageable, 1);
+
+    when(chatRoomRepository.existsByIdAndUserId(chatRoom.getId(), user.getId())).thenReturn(true);
+    when(chatMessageRepository.findByChatRoomId(chatRoom.getId(), pageable)).thenReturn(tmpPage);
+
+    // when
+    Page<ChatMessage> result = chatMessageService.findByChatRoomId(chatRoom.getId(), user.getId(), pageable);
+
+    // then
+    assertThat(result).isEqualTo(tmpPage);
   }
 
   @Test

@@ -6,12 +6,10 @@ import com.percent99.OutSpecs.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.stereotype.Component;
-import org.springframework.util.MultiValueMap;
 
 import java.security.Principal;
 
@@ -31,15 +29,13 @@ public class ChatInterceptor implements ChannelInterceptor {
   public Message<?> preSend(Message<?> message, MessageChannel channel) {
     StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
-    if (StompCommand.SUBSCRIBE.equals(accessor.getCommand()) | StompCommand.SEND.equals(accessor.getCommand())){
+    if (StompCommand.SUBSCRIBE.equals(accessor.getCommand()) || StompCommand.SEND.equals(accessor.getCommand())){
       try {
-        MessageHeaders headers = message.getHeaders();
-        MultiValueMap<String, String> map = headers.get(StompHeaderAccessor.NATIVE_HEADERS, MultiValueMap.class);
-        Long chatRoomId = Long.parseLong(map.getFirst("chatRoomId"));
+        Long chatRoomId = Long.parseLong(accessor.getFirstNativeHeader("chatRoomId"));
         Principal principal = accessor.getUser();
         User user = userRepository.findByUsername(principal.getName()).orElse(null);
 
-        if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, user.getId())) {
+        if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, user.getId())){
           return null;
         }
       }catch (NullPointerException e){
