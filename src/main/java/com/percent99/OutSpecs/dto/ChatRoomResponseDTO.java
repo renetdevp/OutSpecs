@@ -4,15 +4,17 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
 public class ChatRoomResponseDTO {
   private Long chatRoomId;
   private boolean chatRoomIsChatBot;
-//  private Long chatRoomLastMessageId;
   private String chatRoomLastMessage;
   private LocalDateTime chatRoomLastMessageCreatedAt;
+
+  private List<ChatMessageDTO> chatMessageDTOList;
 
   private Long user1Id;
   private String user1Nickname;
