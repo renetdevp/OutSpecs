@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>outspecs - 자유게시판</title>
-  <link rel="stylesheet" th:href="@{/css/free-board-list.css}">
+  <title>outspecs - 게시판</title>
+  <link rel="stylesheet" th:href="@{/css/post-list.css}">
 </head>
 <body>
 <header th:replace="~{fragments/header :: header}"></header>
@@ -13,7 +13,7 @@
     <div class="list-title">인기게시글</div>
     <div class="popular-posts">
       <th:block th:each="post, iterStat : ${popularPosts}">
-        <a th:href="@{/free-board/{id}(id=${post.id})}" class="popular-post">
+        <a th:href="@{/post/{id}(id=${post.id})}" class="popular-post">
           <div class="post-info">
             <div class="post-number" th:text="${iterStat.count}">1</div>
             <div class="post-title" th:text="${post.title}">게시글 제목</div>
@@ -29,22 +29,28 @@
   </section>
 
   <div class="content-wrapper">
-    <div class="tech-tags">
+
+    <div class="tech-tags" th:if="${postType == 'PLAY'}">
+      <div class="list-title">장소</div>
+      <div th:with="opts=${T(java.util.List).of('서울특별시','강원도','경기도','충청도','전라도','경상도')}">
+        <div class="tag-list">
+          <div class="tag-item" th:each="opt : ${opts}" th:text="${opt}">서울특별시</div>
+        </div>
+      </div>
+    </div>
+    <div class="tech-tags" th:if="${postType != 'PLAY'}">
       <div class="list-title">태그</div>
-      <div class="tag-list">
-        <div class="tag-item">Java</div>
-        <div class="tag-item">C++</div>
-        <div class="tag-item">Python</div>
-        <div class="tag-item">C</div>
-        <div class="tag-item active">JavaScript</div>
-        <div class="tag-item">Spring</div>
-        <div class="tag-item">SQL</div>
-        <div class="tag-item">HTML</div>
+      <div th:with="opts=${T(java.util.List).of('Java','Spring','React','Vue','Python','AI','SQL', 'C++','C','JavaScript','HTML','CSS')}">
+        <div class="tag-list">
+          <div class="tag-item" th:each="opt : ${opts}" th:text="${opt}">Java</div>
+        </div>
       </div>
     </div>
 
+
+
     <main class="main-content">
-      <a class="write-btn" th:href="@{/free-board/write}">글쓰기</a>
+      <a class="write-btn" th:href="@{/post/write}">글쓰기</a>
       <div class="post-list">
         <article class="post-item" th:each="post : ${recentPosts}">
             <div class="post-header">
@@ -65,7 +71,7 @@
               </div>
             </div>
 
-            <a class="post-content" th:href="@{/free-board/{id}(id=${post.id})}">
+            <a class="post-content" th:href="@{/post/{id}(id=${post.id})}">
               <div th:if="${post.images}">
                 <div th:each="img : ${post.images}">
                   <img th:src="@{|/uploads/${img.fileName}|}" alt="첨부 이미지">
@@ -77,7 +83,7 @@
             <div class="post-reaction">
               <div class="post-reaction-count">
                 <div class="reaction-item">
-                  <form th:action="@{/free-board/{postId}/like(postId=${post.id})}" method="post" style="display: inline;">
+                  <form th:action="@{/post/{postId}/like(postId=${post.id})}" method="post" style="display: inline;">
                     <button type="submit" class="like-btn">
                       <img class="post-icon" src="/images/like.png" alt="좋아요 아이콘">
                     </button>
@@ -93,7 +99,7 @@
                   <span>0</span>
                 </div>
               </div>
-              <form th:action="@{/free-board/{postId}/bookmark(postId=${post.id})}" method="post" style="display: inline;">
+              <form th:action="@{/post/{postId}/bookmark(postId=${post.id})}" method="post" style="display: inline;">
                 <button type="submit" class="bookmark-btn">
                   <img class="post-icon"  src="/images/bookmark.png" alt="북마크 아이콘">
                 </button>
@@ -166,7 +172,7 @@
     if (confirm('이 게시글을 신고하시겠습니까?')) {
       const form = document.createElement('form');
       form.method = 'POST';
-      form.action = '/free-board/' + postId + '/report';
+      form.action = '/post/' + postId + '/report';
       document.body.appendChild(form);
       form.submit();
     }

@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <title th:text="${post.title}">게시글 상세</title>
-  <link rel="stylesheet" th:href="@{/css/free-board-detail.css}">
+  <link rel="stylesheet" th:href="@{/css/post-detail.css}">
 </head>
 <body>
 <header th:replace="~{fragments/header :: header}"></header>
-<div class="post">
-  <a class="post-list-back post-btn" th:href="@{/free-board}">← 목록으로</a>
+<div class="post" data-post-id="[[${post.id}]]">
+  <a class="post-list-back post-btn" th:href="@{/list/free}">← 목록으로</a>
   <div class="post-container">
+    <div class="post-type" th:text="${post.type.displayName()}">포스트 타입</div>
     <div class="post-header">
       <img class="post-user-image" src="/images/profileImage.png" alt="프로필 이미지">
       <div class="post-title-container">
@@ -22,11 +23,20 @@
       <div class="more-menu-container">
         <img class="more-icon" src="/images/more-vertical.png" alt="더보기 아이콘" onclick="toggleMoreMenu(event, 'post-more-menu')">
         <div class="more-menu" id="post-more-menu">
-          <button type="button" class="report-btn" onclick="reportPost()">신고</button>
+          <button type="button" class="report-btn" id="report-button">신고</button>
         </div>
       </div>
     </div>
 
+    <div class="team-content" th:if="${post.type.name() == 'TEAM'}">
+      <div class="team-capacity">모집 인원 : <span th:text="${post.teamInfo.capacity}"></span> </div>
+      <form th:action="@{/post/{postId}/team(postId=${post.id})}" th:object="${participationDTO}"
+            method="post" style="display: inline;">
+        <input type="hidden" name="userId" th:value="${user.id}" />
+        <input type="hidden" name="postId" th:value="${post.id}" />
+        <button type="submit" class="team-btn">신청하기</button>
+      </form>
+    </div>
     <div class="post-content">
       <div th:if="${post.images}">
         <div th:each="img : ${post.images}">
@@ -35,11 +45,20 @@
       </div>
       <div th:text="${post.content}">게시글 내용</div>
     </div>
-
+      <div class="post-tags">
+        <div th:if="${post.type.name() == 'RECRUIT'}">
+          <div class="chip" th:each="item : ${post.postJob.techniques}" th:text="${item.tech}">태그</div>
+        </div>
+        <div th:if="${post.type.name() == 'FREE' or post.type.name() == 'QNA'}">
+          <div class="chip" th:each="item : ${post.postTags}" th:text="${item.tags}">태그</div>
+        </div>
+        <div class="chip" th:if="${post.type.name() == 'PLAY'}"
+              th:text="${post.postHangout != null ? post.postHangout.placeName : ''}">태그</div>
+      </div>
     <div class="post-reaction">
       <div class="post-reaction-count">
         <div class="reaction-item">
-          <form th:action="@{/free-board/{postId}/like(postId=${post.id})}" method="post" style="display: inline;">
+          <form th:action="@{/post/{postId}/like(postId=${post.id})}" method="post" style="display: inline;">
             <button type="submit" class="like-btn">
               <img class="post-icon" th:if="${!reactions.isLiked}" src="/images/like.png" alt="좋아요 아이콘">
               <img class="post-icon" th:if="${reactions.isLiked}" src="/images/like-fill.svg" alt="좋아요 아이콘">
@@ -56,7 +75,7 @@
           <span th:text="${reactions.commentsCount}">0</span>
         </div>
       </div>
-      <form th:action="@{/free-board/{postId}/bookmark(postId=${post.id})}" method="post" style="display: inline;">
+      <form th:action="@{/post/{postId}/bookmark(postId=${post.id})}" method="post" style="display: inline;">
         <button type="submit" class="bookmark-btn">
           <img class="post-icon" th:if="${!reactions.isBookmarked}" src="/images/bookmark.png" alt="북마크 아이콘">
           <img class="post-icon" th:if="${reactions.isBookmarked}" src="/images/bookmark-fill.svg" alt="북마크 아이콘">
@@ -84,7 +103,7 @@
                th:onclick="'toggleMoreMenu(event, \'comment-more-menu-' + ${comment.id} + '\')'">
           <div class="comment-more-menu" th:id="'comment-more-menu-' + ${comment.id}">
             <button th:if="${user.id == comment.user.id}" type="button" class="edit-btn" onclick="editComment(this)">수정</button>
-            <form th:action="@{/free-board/{postId}/comment/{commentId}(postId=${post.id}, commentId=${comment.id})}"
+            <form th:action="@{/post/{postId}/comment/{commentId}(postId=${post.id}, commentId=${comment.id})}"
                   method="post" style="display:inline;">
               <button th:if="${user.id == comment.user.id}" class="delete-btn" type="submit" onclick="return confirm('댓글을 삭제하시겠습니까?')">삭제</button>
             </form>
@@ -92,7 +111,7 @@
         </div>
       </div>
 
-      <form th:action="@{/free-board/{postId}/comment/{commentId}/edit(postId=${post.id}, commentId=${comment.id})}"
+      <form th:action="@{/post/{postId}/comment/{commentId}/edit(postId=${post.id}, commentId=${comment.id})}"
             method="post" class="comment-edit-form" style="display:none;">
         <textarea class="comment-input" name="content" th:text="${comment.content}" placeholder="댓글 내용을 입력하세요" required maxlength="250"></textarea>
         <div class="comment-form-buttons">
@@ -120,7 +139,7 @@
             <img class="comment-more-icon" src="/images/more-vertical.png" alt="더보기 아이콘"
                  th:onclick="'toggleMoreMenu(event, \'reply-more-menu-' + ${reply.id} + '\')'">
             <div class="comment-more-menu" th:id="'reply-more-menu-' + ${reply.id}">
-              <form th:action="@{/free-board/{postId}/comment/{commentId}(postId=${post.id}, commentId=${reply.id})}"
+              <form th:action="@{/post/{postId}/comment/{commentId}(postId=${post.id}, commentId=${reply.id})}"
                     method="post" style="display:inline;">
                 <button th:if="${user.id == reply.user.id}" class="delete-btn" type="submit" onclick="return confirm('대댓글을 삭제하시겠습니까?')">삭제</button>
               </form>
@@ -128,7 +147,7 @@
           </div>
         </div>
 
-        <form th:action="@{/free-board/{postId}/comment(postId=${post.id})}" th:object="${commentDTO}"
+        <form th:action="@{/post/{postId}/comment(postId=${post.id})}" th:object="${commentDTO}"
               method="post" class="reply-form" th:id="'reply-form-' + ${comment.id}" style="display:none;">
           <input type="hidden" name="type" value="REPLY"/>
           <input type="hidden" name="parentId" th:value="${comment.id}" />
@@ -143,7 +162,7 @@
     </div>
 
     <div class="comment new-comment-form">
-      <form class="comment-info" th:action="@{/free-board/{postId}/comment(postId=${post.id})}" method="post"
+      <form class="comment-info" th:action="@{/post/{postId}/comment(postId=${post.id})}" method="post"
             th:object="${commentDTO}">
         <div style="flex-grow: 1;">
           <input type="hidden" name="type" value="COMMENT"/>
@@ -158,8 +177,8 @@
   </div>
 
   <div class="post-actions" th:if="${user.id == post.user.id}">
-    <a class="post-btn" th:href="@{|/free-board/${post.id}/edit|}">수정하기</a>
-    <form th:action="@{|/free-board/${post.id}/delete|}" method="post" style="display:inline;">
+    <a class="post-btn" th:href="@{|/post/${post.id}/edit|}">수정하기</a>
+    <form th:action="@{|/post/${post.id}/delete|}" method="post" style="display:inline;">
       <button class="post-btn delete-btn" type="submit" onclick="return confirm('게시글을 삭제하시겠습니까?')">삭제하기</button>
     </form>
   </div>
@@ -171,96 +190,96 @@
 </script>
 <script>
   // More 메뉴 토글 함수
-  function toggleMoreMenu(event, menuId) {
-    event.stopPropagation();
-    const menu = document.getElementById(menuId);
-    const allMenus = document.querySelectorAll('.more-menu, .comment-more-menu');
+function toggleMoreMenu(event, menuId) {
+  event.stopPropagation();
+  const menu = document.getElementById(menuId);
+  const allMenus = document.querySelectorAll('.more-menu, .comment-more-menu');
 
-    // 다른 메뉴들 닫기
-    allMenus.forEach(m => {
-      if (m.id !== menuId) {
-        m.style.display = 'none';
-      }
-    });
-
-    // 현재 메뉴 토글
-    menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
-  }
-
-  // 게시글 신고 함수
-  function reportPost() {
-    if (confirm('이 게시글을 신고하시겠습니까?')) {
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = '/free-board/' + [[${post.id}]] + '/report';
-      document.body.appendChild(form);
-      form.submit();
-    }
-    document.getElementById('post-more-menu').style.display = 'none';
-  }
-
-  // 댓글 수정 함수
-  function editComment(button) {
-    const commentItem = button.closest('.comment-item');
-    const content = commentItem.querySelector('.comment-content');
-    const editForm = commentItem.querySelector('.comment-edit-form');
-    const moreMenu = button.closest('.comment-more-menu');
-
-    content.style.display = 'none';
-    editForm.style.display = 'block';
-    moreMenu.style.display = 'none';
-  }
-
-  // 댓글 수정 취소 함수
-  function cancelEdit(button) {
-    const commentItem = button.closest('.comment-item');
-    const content = commentItem.querySelector('.comment-content');
-    const editForm = commentItem.querySelector('.comment-edit-form');
-
-    content.style.display = 'block';
-    editForm.style.display = 'none';
-  }
-
-  // 답글 폼 표시 함수
-  function showReplyForm(commentId, toggleButton) {
-    const replyForm = document.getElementById('reply-form-' + commentId);
-    replyForm.style.display = 'block';
-    toggleButton.style.display = 'none';
-  }
-
-  // 답글 폼 숨기기 함수
-  function hideReplyForm(commentId) {
-    const replyForm = document.getElementById('reply-form-' + commentId);
-    const commentItem = replyForm.closest('.comment-item'); // 댓글 전체 영역
-    const toggleButton = commentItem.querySelector('.comment-btn-toggle'); // 버튼 찾기
-
-    replyForm.style.display = 'none';
-    if (toggleButton) {
-      toggleButton.style.display = 'inline-block';
-    }
-
-    // 폼 내용 초기화
-    const textarea = replyForm.querySelector('textarea');
-    textarea.value = '';
-  }
-
-  // 외부 클릭 시 메뉴 닫기
-  document.addEventListener('click', function(event) {
-    if (!event.target.closest('.more-menu-container') && !event.target.closest('.comment-more')) {
-      const allMenus = document.querySelectorAll('.more-menu, .comment-more-menu');
-      allMenus.forEach(menu => {
-        menu.style.display = 'none';
-      });
+  // 다른 메뉴들 닫기
+  allMenus.forEach(m => {
+    if (m.id !== menuId) {
+      m.style.display = 'none';
     }
   });
 
-  // 페이지 로드 시 스크롤 이벤트 추가 (메뉴 닫기)
-  window.addEventListener('scroll', function() {
+  // 현재 메뉴 토글
+  menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+}
+
+// 게시글 신고 함수
+function reportPost() {
+  if (confirm('이 게시글을 신고하시겠습니까?')) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/post/' + [[${post.id}]] + '/report';
+    document.body.appendChild(form);
+    form.submit();
+  }
+  document.getElementById('post-more-menu').style.display = 'none';
+}
+
+// 댓글 수정 함수
+function editComment(button) {
+  const commentItem = button.closest('.comment-item');
+  const content = commentItem.querySelector('.comment-content');
+  const editForm = commentItem.querySelector('.comment-edit-form');
+  const moreMenu = button.closest('.comment-more-menu');
+
+  content.style.display = 'none';
+  editForm.style.display = 'block';
+  moreMenu.style.display = 'none';
+}
+
+// 댓글 수정 취소 함수
+function cancelEdit(button) {
+  const commentItem = button.closest('.comment-item');
+  const content = commentItem.querySelector('.comment-content');
+  const editForm = commentItem.querySelector('.comment-edit-form');
+
+  content.style.display = 'block';
+  editForm.style.display = 'none';
+}
+
+// 답글 폼 표시 함수
+function showReplyForm(commentId, toggleButton) {
+  const replyForm = document.getElementById('reply-form-' + commentId);
+  replyForm.style.display = 'block';
+  toggleButton.style.display = 'none';
+}
+
+// 답글 폼 숨기기 함수
+function hideReplyForm(commentId) {
+  const replyForm = document.getElementById('reply-form-' + commentId);
+  const commentItem = replyForm.closest('.comment-item'); // 댓글 전체 영역
+  const toggleButton = commentItem.querySelector('.comment-btn-toggle'); // 버튼 찾기
+
+  replyForm.style.display = 'none';
+  if (toggleButton) {
+    toggleButton.style.display = 'inline-block';
+  }
+
+  // 폼 내용 초기화
+  const textarea = replyForm.querySelector('textarea');
+  textarea.value = '';
+}
+
+// 외부 클릭 시 메뉴 닫기
+document.addEventListener('click', function(event) {
+  if (!event.target.closest('.more-menu-container') && !event.target.closest('.comment-more')) {
     const allMenus = document.querySelectorAll('.more-menu, .comment-more-menu');
     allMenus.forEach(menu => {
       menu.style.display = 'none';
     });
+  }
+});
+
+// 페이지 로드 시 스크롤 이벤트 추가 (메뉴 닫기)
+window.addEventListener('scroll', function() {
+  const allMenus = document.querySelectorAll('.more-menu, .comment-more-menu');
+  allMenus.forEach(menu => {
+    menu.style.display = 'none';
   });
+});
 </script>
 
 </body>

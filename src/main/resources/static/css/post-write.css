@@ -17,6 +17,7 @@ textarea {
     margin: 30px auto;
     padding: 20px 35px;
     gap: 10px;
+    min-height: calc(100vh - 100px);
 }
 
 .write-container {
@@ -26,6 +27,8 @@ textarea {
     flex-direction: column;
     padding: 25px 30px;
     gap: 23px;
+    min-height: fit-content;
+    height: auto;
 }
 
 .form-top {
@@ -158,7 +161,9 @@ textarea {
     flex: 1;
 }
 
-.form-group input[type="text"] {
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select {
     width: 100%;
     padding: 10px 12px;
     border: 1px solid #D9D9D9;
@@ -168,10 +173,102 @@ textarea {
     box-sizing: border-box;
 }
 
-.form-group input[type="text"]:focus {
+.form-group input[type="text"]:focus,
+.form-group input[type="number"]:focus,
+.form-group select:focus {
     outline: none;
     border-color: #3B38A0;
     box-shadow: 0 0 0 2px rgba(59, 56, 160, 0.1);
+}
+
+    .form-group select {
+        cursor: pointer;
+    }
+
+    .form-group select option {
+        padding: 8px;
+    }
+
+/* 스위치 스타일 */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+    margin-top: 5px;
+}
+
+.switch input,
+.switch input[type="checkbox"] {
+    opacity: 0;
+    width: 50px;
+    height: 24px;
+    margin: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .3s;
+    border-radius: 24px;
+    pointer-events: none;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #3B38A0;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* 체크박스 그룹 스타일 */
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.checkbox-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #3B38A0;
+}
+
+.checkbox-item label {
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    padding-top: 0;
+    flex: none;
 }
 
 .form-content {
@@ -293,6 +390,11 @@ textarea {
     font-size: 12px;
     color: #666;
     margin-top: 5px;
+}
+
+/* 숨김 클래스 */
+.hidden {
+    display: none !important;
 }
 
 /* 반응형 디자인 */

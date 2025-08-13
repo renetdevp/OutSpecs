@@ -23,4 +23,14 @@ public enum PostType {
             case RECRUIT -> "recruit";
         };
     }
+    public String displayName(){
+        return switch (this){
+            case QNA -> "Q&A게시판";
+            case FREE -> "자유게시판";
+            case TEAM -> "팀 모집";
+            case AIPLAY -> "AI랑 나가서 놀기";
+            case PLAY -> "나가서놀기";
+            case RECRUIT -> "채용 공고";
+        };
+    }
 }

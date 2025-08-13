@@ -192,6 +192,10 @@
     gap: 23px;
 }
 
+.post-team-item {
+    gap: 10px;
+}
+
 .post-header {
     display: flex;
     gap: 15px;
@@ -298,6 +302,20 @@
     height: auto;
     border-radius: 5px;
     margin: 10px 0;
+}
+
+.post-team-content {
+    display: flex;
+    gap: 20px;
+    text-decoration: none;
+    color: inherit;
+}
+.post-team-content .post-date {
+    color: black;
+    font-size: 14px;
+}
+.post-team-content .post-title {
+    font-size: 16px;
 }
 
 .post-reaction {

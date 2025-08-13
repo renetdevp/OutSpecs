@@ -27,6 +27,7 @@ public class PostQueryService {
     private final PostRepository postRepository;
     private final ReactionRepository reactionRepository;
     private final CommentRepository commentRepository;
+    private final ParticipationService participationService;
 
     /**
      * ID로 게시글을 조회한다.
@@ -227,7 +228,7 @@ public class PostQueryService {
     private void addQnAInfo(PostDTO dto, Post post) {
         if (post.getPostQnA() != null) {
             PostQnADTO qnaDTO = new PostQnADTO();
-            qnaDTO.setAnswerComplete(post.getPostQnA().isAnswerComplete());
+            qnaDTO.setAnswerComplete(post.getPostQnA().getAnswerComplete());
             dto.setQnaInfo(qnaDTO);
         }
     }

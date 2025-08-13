@@ -25,6 +25,14 @@ textarea {
     align-self: flex-start;
 }
 
+.post-type {
+    background: #F3F3FF;
+    border: none;
+    border-radius: 5px;
+    font-weight: 500;
+    padding: 5px 10px;
+}
+
 .post-container {
     border: 1px solid #D9D9D9;
     border-radius: 5px;
@@ -126,6 +134,33 @@ textarea {
     color: #e74c3c;
 }
 
+.team-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.team-capacity {
+    border: 1px solid #D9D9D9;
+    border-radius: 5px;
+    padding: 2px 7px;
+    color: black;
+    height: 30px;
+    flex-grow: 1;
+}
+
+.team-btn {
+    background: #3B38A0;
+    color: white;
+    border: none;
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    height: 30px;
+}
+
 .post-content {
     border: 1px solid #D9D9D9;
     border-radius: 5px;
@@ -144,6 +179,25 @@ textarea {
     height: auto;
     border-radius: 5px;
     margin: 10px 0;
+}
+
+.post-tags{
+    display:flex;
+    flex-direction: row;
+    gap:8px;
+    flex-wrap: wrap;
+}
+
+.chip{
+    padding:6px 12px;
+    border:1px solid #D9D9D9;
+    border-radius:999px;
+    font-size:12px;
+    color:#374151;
+    background:#fff;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
 }
 
 .post-reaction {

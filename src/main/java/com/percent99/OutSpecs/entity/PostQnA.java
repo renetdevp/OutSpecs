@@ -30,5 +30,5 @@ public class PostQnA {
     private Post post;
 
     @Column(name = "answer_complete", nullable = false)
-    private boolean answerComplete = false;
+    private Boolean answerComplete;
 }
