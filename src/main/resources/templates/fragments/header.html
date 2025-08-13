@@ -12,29 +12,44 @@
                 <img class="header__left-logo"  th:src="@{/css/images/logo.svg}" alt="메인으로 돌아가기">
             </a>
             <div class="header__left-menu">
-                <a class="header__btn--left" th:href="@{/free-board/latest}" >자유게시판</a>
+                <a class="header__btn--left" th:href="@{/free-board}" >자유게시판</a>
                 <a class="header__btn--left" >QNA</a>
                 <a class="header__btn--left" >채용공고</a>
                 <a class="header__btn--left" >팀모집</a>
                 <a class="header__btn--left" >나가서놀기</a>
             </div>
         </div>
-
         <div class="header__right">
             <a class="alert-btn" >
                 <img th:src="@{/css/images/alert_icon.svg}" th:if="${user != null}" alt="알림 아이콘">
             </a>
-
-            <a class="header__btn--login" th:if="${user != null}" >채팅하기</a>
-            <form th:action="@{/logout}" method="post" th:if="${user != null}">
-                <button type="submit" class="header__btn--login">로그아웃</button>
-            </form>
+            <div class="profile-dropdown" th:if="${user != null}">
+                <button id="avatarBtn" type="button" class="avatar-btn" aria-haspopup="menu" aria-expanded="false">
+                    <img class="profile-avatar-img"
+                         th:src="${(Profile != null and Profile.imageUrl != null) ? Profile.imageUrl : '/css/images/profile_icon.svg'}"
+                         alt="오픈프로필">
+                    <span class="avatar-caret" aria-hidden="true">▾</span>
+                </button>
+                <div class="profile-menu" role="menu" aria-labelledby="avatarBtn">
+                    <a role="menuitem"
+                       th:href="${Profile != null} ? @{/users/profiles/{userId}(userId=${Profile.userId})} : @{/users/profiles/new}">
+                        내 프로필
+                    </a>
+                    <a role="menuitem" th:if="${user != null}" >채팅하기</a>
+                    <form th:action="@{/logout}" method="post" role="none">
+                        <button type="submit" class="menu-item logout" role="menuitem">로그아웃</button>
+                    </form>
+                </div>
+            </div>
+            <!-- 관리자용 -->
             <a class="header__btn--login"
                th:if="${user != null and user.role.name() == 'ADMIN'}"
                th:href="@{/admin}">관리자</a>
+            <!-- 비로그인 상태-->
             <a class="header__btn--login" th:if="${user == null}" th:href="@{/users/login}">로그인</a>
             <a class="header__btn--signup" th:if="${user == null}" th:href="@{/users/signup}">회원가입</a>
         </div>
+        <script defer th:src="@{/js/header.js}"></script>
     </header>
 </body>
 </html>
