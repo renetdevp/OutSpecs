@@ -1,21 +1,18 @@
 package com.percent99.OutSpecs.config;
 
-
 import com.percent99.OutSpecs.security.CustomOAuth2UserService;
 import com.percent99.OutSpecs.security.CustomUserDetailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 /**
  * 애플리케이션의 보안 설정을 담당하는 Configuration 클래스
@@ -34,6 +31,7 @@ import java.nio.charset.StandardCharsets;
  */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -94,8 +92,16 @@ public class SecurityConfig {
                         .loginProcessingUrl("/login")
                         .defaultSuccessUrl("/", true)
                         .failureHandler((request, response, exception) -> {
-                            String errorMsg = URLEncoder.encode(exception.getMessage(), StandardCharsets.UTF_8);
-                            response.sendRedirect("/users/login?error=" + errorMsg);
+                            String msg;
+                            if (exception instanceof org.springframework.security.authentication.LockedException) {
+                                msg = "정지된 계정입니다.";
+                            } else if (exception instanceof org.springframework.security.authentication.DisabledException) {
+                                msg = "탈퇴(비활성화)된 계정입니다.";
+                            } else {
+                                msg = "로그인에 실패했습니다. 잠시 후 다시 시도해주세요.";
+                            }
+                            request.getSession().setAttribute("loginError", msg);
+                            response.sendRedirect("/users/login");
                         })
                         .usernameParameter("username")
                         .passwordParameter("password")
@@ -112,8 +118,18 @@ public class SecurityConfig {
                         })
                         .defaultSuccessUrl("/", true)
                         .failureHandler((request, response, exception) -> {
-                            String errorMsg = URLEncoder.encode(exception.getMessage(), StandardCharsets.UTF_8);
-                            response.sendRedirect("/users/login?error=" + errorMsg);
+                            String msg = "소셜 로그인에 실패했습니다. 잠시 후 다시 시도해주세요.";
+
+                            if (exception instanceof org.springframework.security.oauth2.core.OAuth2AuthenticationException oae) {
+                                var err = oae.getError();
+                                String code = (err != null) ? err.getErrorCode() : null;
+                                String desc = (err != null && err.getDescription() != null) ? err.getDescription() : null;
+
+                                if ("ACCOUNT_SUSPENDED".equals(code))      msg = (desc != null) ? desc : "정지된 계정입니다.";
+                                else if ("ACCOUNT_DELETED".equals(code))   msg = (desc != null) ? desc : "탈퇴(비활성)된 계정입니다.";
+                            }
+                            request.getSession().setAttribute("loginError", msg);
+                            response.sendRedirect("/users/login");
                         })
                 );
         return http.build();
