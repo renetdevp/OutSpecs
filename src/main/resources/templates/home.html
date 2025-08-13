@@ -1,36 +1,227 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"xmlns:th="http://www.thymeleaf.org" >
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OustSpecs</title>
-    <link rel="stylesheet" th:href="@{/css/shared/header.css}">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>메인</title>
+    <link rel="stylesheet" href="/css/pages/home.css">
 </head>
-<body class="">
-    <header th:replace="~{fragments/header :: header}"></header>
-    <main class="">
-        <section class="">
-            <div class="">
-                <!-- 로그인 여부 체크 -->
-                <div th:if="${user != null}">
-                    <p>안녕하세요, <span th:text="${user.username}">사용자명</span>님</p>
+<body>
+<header th:replace="~{fragments/header :: header}"></header>
+<main class="home">
 
-                    <div th:if="${profile == null}">
-                        <a th:href="@{/users/profiles/new}" class="">오픈 프로필 만들기</a>
-                    </div>
+    <!-- 히어로(상단 보라색 영역) -->
+    <section class="hero">
+        <div class="hero-inner">
 
-                    <div th:if="${profile != null}">
-                        <a th:href="@{/users/profiles/{id}/edit(id=${profile.userId})}" class="">오픈 프로필 수정</a>
-                    </div>
+            <!-- 퀵 작성 -->
+            <form class="quick-compose" onsubmit="return goCompose(event)">
+                <select id="composeCategory" aria-label="카테고리 선택">
+                    <option value="free">자유</option>
+                    <option value="qna">QnA</option>
+                    <option value="team">팀모집</option>
+                    <option value="jobs">채용공고</option>
+                </select>
+                <input id="composeTitle" type="text" placeholder="무엇을 공유할까요? (제목 한 줄)"
+                       aria-label="제목 입력" />
+                <button type="submit" class="btn primary">작성하기</button>
+                <a href="/qna/new" class="btn ghost">질문하기</a>
+            </form>
 
-                    <div>
-                        <a th:href="@{/qna}" class="">Q&A 게시판가기</a>
-                    </div>
+            <!-- 트렌딩 태그 (더미) -->
+            <nav class="trending-tags" aria-label="트렌딩 태그">
+                <a href="/tag/spring">#spring</a>
+                <a href="/tag/jpa">#jpa</a>
+                <a href="/tag/docker">#docker</a>
+                <a href="/tag/oauth2">#oauth2</a>
+                <a href="/tag/websocket">#websocket</a>
+                <a href="/tag/mysql">#mysql</a>
+            </nav>
 
-                    <a th:href="@{/logout}" class="">로그아웃</a>
+        </div>
+    </section>
+
+
+    <!-- 2x2 대시보드 그리드 -->
+    <section class="dash-grid">
+        <!-- 자유게시판 -->
+        <div class="board-tile">
+            <h2 class="section-title">자유 게시판 인기 게시글</h2>
+            <div class="card">
+                <div class="rank-list">
+                    <a class="rank-item" href="/boards/free/1">
+                        <span class="rank-badge">1</span>
+                        <span class="rank-title">좋아요 1위 게시물 제목</span>
+                        <span class="rank-date">2025.08.10</span>
+                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>153</span></span>
+                    </a>
+                    <a class="rank-item" href="/boards/free/2">
+                        <span class="rank-badge">2</span>
+                        <span class="rank-title">좋아요 2위 게시물 제목</span>
+                        <span class="rank-date">2025.08.10</span>
+                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>149</span></span>
+                    </a>
+                    <a class="rank-item" href="/boards/free/3">
+                        <span class="rank-badge">3</span>
+                        <span class="rank-title">좋아요 3위 게시물 제목</span>
+                        <span class="rank-date">2025.08.10</span>
+                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>141</span></span>
+                    </a>
+                    <a class="rank-item" href="/boards/free/4">
+                        <span class="rank-badge">4</span>
+                        <span class="rank-title">좋아요 4위 게시물 제목</span>
+                        <span class="rank-date">2025.08.10</span>
+                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>137</span></span>
+                    </a>
+                    <a class="rank-item" href="/boards/free/5">
+                        <span class="rank-badge">5</span>
+                        <span class="rank-title">좋아요 5위 게시물 제목</span>
+                        <span class="rank-date">2025.08.10</span>
+                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>133</span></span>
+                    </a>
                 </div>
             </div>
-        </section>
-    </main>
+        </div>
+
+        <!-- QnA -->
+        <div class="board-tile">
+            <h2 class="section-title">QnA 인기 게시글</h2>
+            <div class="card">
+                <div class="rank-list">
+                    <a class="rank-item" href="/boards/qna/1">
+                        <span class="rank-badge">1</span>
+                        <span class="rank-title">QnA 1위 게시물 제목</span>
+                        <span class="rank-date">2025.08.10</span>
+                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>153</span></span>
+                    </a>
+                    <a class="rank-item" href="/boards/qna/2">
+                        <span class="rank-badge">2</span>
+                        <span class="rank-title">QnA 2위 게시물 제목</span>
+                        <span class="rank-date">2025.08.10</span>
+                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>146</span></span>
+                    </a>
+                    <a class="rank-item" href="/boards/qna/3">
+                        <span class="rank-badge">3</span>
+                        <span class="rank-title">QnA 3위 게시물 제목</span>
+                        <span class="rank-date">2025.08.10</span>
+                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>138</span></span>
+                    </a>
+                    <a class="rank-item" href="/boards/qna/4">
+                        <span class="rank-badge">4</span>
+                        <span class="rank-title">QnA 4위 게시물 제목</span>
+                        <span class="rank-date">2025.08.10</span>
+                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>130</span></span>
+                    </a>
+                    <a class="rank-item" href="/boards/qna/5">
+                        <span class="rank-badge">5</span>
+                        <span class="rank-title">QnA 5위 게시물 제목</span>
+                        <span class="rank-date">2025.08.10</span>
+                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>125</span></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 팀모집 -->
+        <div class="board-tile">
+            <h2 class="section-title">팀모집 인기 게시글</h2>
+            <div class="card">
+                <div class="rank-list">
+                    <a class="rank-item" href="/boards/team/1">
+                        <span class="rank-badge">1</span>
+                        <span class="rank-title">팀모집 1위 게시물 제목</span>
+                        <span class="rank-date">2025.08.10</span>
+                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>88</span></span>
+                    </a>
+                    <a class="rank-item" href="/boards/team/2">
+                        <span class="rank-badge">2</span>
+                        <span class="rank-title">팀모집 2위 게시물 제목</span>
+                        <span class="rank-date">2025.08.10</span>
+                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>77</span></span>
+                    </a>
+                    <a class="rank-item" href="/boards/team/3">
+                        <span class="rank-badge">3</span>
+                        <span class="rank-title">팀모집 3위 게시물 제목</span>
+                        <span class="rank-date">2025.08.10</span>
+                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>69</span></span>
+                    </a>
+                    <a class="rank-item" href="/boards/team/4">
+                        <span class="rank-badge">4</span>
+                        <span class="rank-title">팀모집 4위 게시물 제목</span>
+                        <span class="rank-date">2025.08.10</span>
+                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>65</span></span>
+                    </a>
+                    <a class="rank-item" href="/boards/team/5">
+                        <span class="rank-badge">5</span>
+                        <span class="rank-title">팀모집 5위 게시물 제목</span>
+                        <span class="rank-date">2025.08.10</span>
+                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>60</span></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 즐겨찾기(북마크) -->
+        <div class="board-tile">
+            <h2 class="section-title">즐겨찾기 인기 게시글</h2>
+            <div class="card">
+                <div class="rank-list">
+                    <a class="rank-item" href="/bookmarks/1">
+                        <span class="rank-badge">1</span>
+                        <span class="rank-title">즐겨찾기 1위 게시물 제목</span>
+                        <span class="rank-date">2025.08.10</span>
+                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>146</span></span>
+                    </a>
+                    <a class="rank-item" href="/bookmarks/2">
+                        <span class="rank-badge">2</span>
+                        <span class="rank-title">즐겨찾기 2위 게시물 제목</span>
+                        <span class="rank-date">2025.08.10</span>
+                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>130</span></span>
+                    </a>
+                    <a class="rank-item" href="/bookmarks/3">
+                        <span class="rank-badge">3</span>
+                        <span class="rank-title">즐겨찾기 3위 게시물 제목</span>
+                        <span class="rank-date">2025.08.10</span>
+                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>119</span></span>
+                    </a>
+                    <a class="rank-item" href="/bookmarks/4">
+                        <span class="rank-badge">4</span>
+                        <span class="rank-title">즐겨찾기 4위 게시물 제목</span>
+                        <span class="rank-date">2025.08.10</span>
+                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>108</span></span>
+                    </a>
+                    <a class="rank-item" href="/bookmarks/5">
+                        <span class="rank-badge">5</span>
+                        <span class="rank-title">즐겨찾기 5위 게시물 제목</span>
+                        <span class="rank-date">2025.08.10</span>
+                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>97</span></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+<script>
+    // 카테고리에 따라 새 글 작성 경로 라우팅 (더미)
+    function goCompose(e){
+      e.preventDefault();
+      const cat = document.getElementById('composeCategory').value;
+      const title = document.getElementById('composeTitle').value.trim();
+      const map = {
+        free: '/boards/free/new',
+        qna:  '/boards/qna/new',
+        team: '/boards/team/new',
+        jobs: '/jobs/new'
+      };
+      const url = map[cat] || '/posts/new';
+      // 제목을 query로 넘겨 초안에 미리 채워도 됨
+      const q = title ? ('?title=' + encodeURIComponent(title)) : '';
+      window.location.href = url + q;
+      return false;
+    }
+</script>
+
 </body>
+
 </html>
