@@ -27,6 +27,7 @@ public class PostQueryService {
     private final PostRepository postRepository;
     private final ReactionRepository reactionRepository;
     private final CommentRepository commentRepository;
+    private final ParticipationService participationService;
 
     /**
      * ID로 게시글을 조회한다.
@@ -45,6 +46,18 @@ public class PostQueryService {
         // Post 엔티티를 클라이언트에 전달할 PostDTO로 변환합니다.
         return convertToDto(post);
     }
+
+    /**
+     * 조회수 1 증가 후 게시글 조회
+     * @param postId 조회할 게시글 ID
+     * @return 조회된 post 엔티티
+     */
+    @Transactional
+    public Post getPostAndIncreaseViewCount(Long postId) {
+        postRepository.increaseViewCount(postId);
+        return getPostById(postId);
+    }
+
 
     /**
      * 특정 사용자가 작성한 모든 게시글을 조회한다.
@@ -145,8 +158,9 @@ public class PostQueryService {
         int commentsCount = (int)commentRepository.countByTypeAndParentId(CommentType.COMMENT, postId);
         boolean isLiked = reactionRepository.existsByUserAndTargetTypeAndTargetIdAndReactionType(user, TargetType.POST, postId, ReactionType.LIKE);
         boolean isBookmarked = reactionRepository.existsByUserAndTargetTypeAndTargetIdAndReactionType(user, TargetType.POST, postId, ReactionType.BOOKMARK);
+        int teamCount = participationService.countAcceptedParticipation(postId);
 
-        return new PostResponseDTO(likesCount, commentsCount, isLiked, isBookmarked);
+        return new PostResponseDTO(likesCount, commentsCount, isLiked, isBookmarked, teamCount);
     }
 
     /**
@@ -215,7 +229,7 @@ public class PostQueryService {
     private void addQnAInfo(PostDTO dto, Post post) {
         if (post.getPostQnA() != null) {
             PostQnADTO qnaDTO = new PostQnADTO();
-            qnaDTO.setAnswerComplete(post.getPostQnA().isAnswerComplete());
+            qnaDTO.setAnswerComplete(post.getPostQnA().getAnswerComplete());
             dto.setQnaInfo(qnaDTO);
         }
     }

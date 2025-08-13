@@ -12,4 +12,5 @@ public class PostResponseDTO {
     private int commentsCount;
     private boolean isLiked;
     private boolean isBookmarked;
+    private int teamCount;
 }

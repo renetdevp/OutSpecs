@@ -47,6 +47,12 @@ public class ParticipationService {
         Post post = postRepository.findById(dto.getPostId())
                 .orElseThrow(() -> new EntityNotFoundException("해당 게시글 정보가 발견되지않았습니다."));
 
+        if(dto.getUserId().equals(post.getUser().getId())) {
+            throw new IllegalStateException("자신의 팀모집에는 신청할 수 없습니다.");
+        }
+        if(post.getTeamInfo().getStatus().equals(PostStatus.CLOSED)) {
+            throw new IllegalStateException("모집이 완료되었습니다.");
+        }
         if(countParticipation(post.getId()) >= post.getTeamInfo().getCapacity() + 5) {
             throw new IllegalStateException("모집신청인원이 많아 신청이 불가합니다.");
         }

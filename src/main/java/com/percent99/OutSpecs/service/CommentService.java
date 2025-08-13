@@ -89,6 +89,9 @@ public class CommentService {
     @Transactional
     public Comment updateComment(Long id, CommentDTO dto) {
         Comment comment = getCommentById(id);
+        if(!comment.getUser().getId().equals(dto.getUserId())) {
+            throw new IllegalArgumentException("댓글 작성자가 아닙니다.");
+        }
         comment.setContent(dto.getContent());
         return commentRepository.save(comment);
     }

@@ -11,5 +11,5 @@ import lombok.Setter;
 @Getter
 @Setter
 public class PostQnADTO {
-    private boolean answerComplete;
+    private Boolean answerComplete;
 }

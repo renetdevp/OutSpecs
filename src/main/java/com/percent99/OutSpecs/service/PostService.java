@@ -48,6 +48,10 @@ public class PostService {
         User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저는 존재하지 않습니다."));
 
+        if(dto.getType() == PostType.RECRUIT && !user.getRole().equals(UserRoleType.ENTUSER)){
+            throw new IllegalArgumentException("채용 공고는 기업 회원만 작성할 수 있습니다.");
+        }
+
         Post post = new Post();
         post.setTitle(dto.getTitle());
         post.setContent(dto.getContent());
@@ -56,10 +60,6 @@ public class PostService {
         post.setCreatedAt(LocalDateTime.now());
         post.setUpdatedAt(LocalDateTime.now());
         post.setViewCount(0);
-
-        if(post.getType() == PostType.RECRUIT && !user.getRole().equals(UserRoleType.ENTUSER)){
-            throw new IllegalArgumentException("채용 공고는 기업 회원만 작성할 수 있습니다.");
-        }
         
         detailHandlers.stream()
                 .filter(h -> h.supports(dto.getType()))
@@ -82,14 +82,19 @@ public class PostService {
     public Post updatePost(Long id, PostDTO dto) {
 
         Post post = postQueryService.getPostById(id);
+        if(!post.getUser().getId().equals(dto.getUserId())) {
+            throw new IllegalArgumentException("게시글 작성자가 아닙니다.");
+        }
+
+        if(dto.getType() == PostType.RECRUIT && !post.getUser().getRole().equals(UserRoleType.ENTUSER)){
+            throw new IllegalArgumentException("채용 공고는 기업 회원만 작성할 수 있습니다.");
+        }
+
         post.setType(dto.getType());
         post.setTitle(dto.getTitle());
         post.setContent(dto.getContent());
         post.setUpdatedAt(LocalDateTime.now());
 
-        if(post.getType() == PostType.RECRUIT && !post.getUser().getRole().equals(UserRoleType.ENTUSER)){
-            throw new IllegalArgumentException("채용 공고는 기업 회원만 작성할 수 있습니다.");
-        }
         detailHandlers.stream()
                 .filter(h -> h.supports(dto.getType()))
                 .forEach(h -> h.handle(post,dto));
@@ -174,7 +179,7 @@ public class PostService {
 
         if (post.getPostQnA() == null) { return; }
 
-        boolean currentStatus = post.getPostQnA().isAnswerComplete();
+        boolean currentStatus = post.getPostQnA().getAnswerComplete();
         post.getPostQnA().setAnswerComplete(!currentStatus);
     }
 }

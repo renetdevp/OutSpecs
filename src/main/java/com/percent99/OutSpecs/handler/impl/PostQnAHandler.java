@@ -17,13 +17,17 @@ public class PostQnAHandler implements PostDetailHandler {
 
     @Override
     public void handle(Post post, PostDTO dto) {
+        if(dto.getQnaInfo() == null) {
+            return;
+        }
         PostQnA postQnA = post.getPostQnA();
-
         if(postQnA == null){
             postQnA = new PostQnA();
             postQnA.setPost(post);
-            postQnA.setAnswerComplete(false);
+            postQnA.setAnswerComplete(dto.getQnaInfo().getAnswerComplete());
             post.setPostQnA(postQnA);
         }
+        postQnA.setAnswerComplete(dto.getQnaInfo().getAnswerComplete());
+
     }
 }
