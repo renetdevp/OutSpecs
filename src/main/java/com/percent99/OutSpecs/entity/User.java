@@ -40,6 +40,10 @@ public class User {
     @Column(name = "provider_id")
     private String providerId;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private UserStatus status = UserStatus.ACTIVE;
+
     @Column(name = "created_at" ,updatable = false)
     @CreatedDate
     private LocalDateTime createdAt;
