@@ -70,6 +70,56 @@
   background-color: white;
 }
 
+.profile-dropdown {
+  position: relative;
+}
+.avatar-btn {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border-radius:25px;
+  border:1px solid #e5e7eb;
+  background:#2f2f85;
+  color:#fff;
+  cursor:pointer;
+}
+.profile-avatar-img {
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  object-fit:cover;
+  background:#ddd;
+}
+
+.avatar-caret {
+  font-size:12px;
+  opacity:.9;
+}
+
+.profile-menu {
+  position:absolute; right:0; top:calc(100% + 8px);
+  min-width:110px; background:#fff; border:1px solid #e5e7eb;
+  border-radius:10px; box-shadow:0 12px 24px rgba(0,0,0,.12);
+  padding:8px; display:none; z-index:1000;
+}
+.profile-dropdown.open .profile-menu { display:block; }
+
+.profile-menu a,
+.profile-menu .menu-item {
+  display:block; padding:10px 12px; border-radius:8px;
+  text-decoration:none; color:#111; font-size:14px;
+}
+.profile-menu a:hover,
+.profile-menu .menu-item:hover { background:#f3f4f6; }
+
+.profile-menu hr {
+  margin:8px 0; border:0; border-top:1px solid #e5e7eb;
+}
+.profile-menu .logout {
+  width:100%; background:transparent; border:0; text-align:left; cursor:pointer;
+}
+
 @media (max-width: 1024px){
     .header__left-menu {
         display:none;
