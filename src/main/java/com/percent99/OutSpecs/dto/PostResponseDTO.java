@@ -10,6 +10,7 @@ import lombok.Setter;
 public class PostResponseDTO {
     private int likesCount;
     private int commentsCount;
+    private int answersCount;
     private boolean isLiked;
     private boolean isBookmarked;
     private int teamCount;
