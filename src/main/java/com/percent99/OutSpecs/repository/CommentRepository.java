@@ -3,8 +3,11 @@ package com.percent99.OutSpecs.repository;
 import com.percent99.OutSpecs.entity.Comment;
 import com.percent99.OutSpecs.entity.CommentType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -38,4 +41,16 @@ public interface CommentRepository extends JpaRepository<Comment,Long> {
      * @return 해당 부모에 달린 댓글 갯수
      */
     long countByTypeAndParentId(CommentType type, Long parentId);
+
+    interface CountByPostId { Long getPostId(); long getCnt(); }
+
+    @Query("""
+      select c.parentId as postId, count(c) as cnt
+      from Comment c
+      where c.type = :ct
+        and c.parentId in :postIds
+      group by c.parentId
+    """)
+    List<CountByPostId> countCommentsInBatch(@Param("postIds") Collection<Long> postIds,
+                                             @Param("ct") CommentType commentType);
 }

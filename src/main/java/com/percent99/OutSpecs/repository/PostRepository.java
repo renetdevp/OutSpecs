@@ -4,6 +4,7 @@ import com.percent99.OutSpecs.entity.Post;
 import com.percent99.OutSpecs.entity.PostStatus;
 import com.percent99.OutSpecs.entity.PostType;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -120,4 +121,23 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     @Query("UPDATE Post p set p.viewCount = p.viewCount + 1 where p.id = :postId")
     int increaseViewCount(@Param("postId") Long postId);
 
+    /**
+     * 검색 결과 타입과 제목이 같은(부분 일치, 대소문자 무시) 게시물이 존재하는지 확인합니다.
+     *
+     * @param type   조회할 게시물 타입(예: FREE, QNA, TEAM, RECRUIT, PLAY, AIPLAY)
+     * @param title  부분 일치로 검색할 제목 키워드(대소문자 무시). 공백만 있는 값은 사용하지 않는 것을 권장합니다.
+     * @return       조건을 만족하는 게시물이 하나라도 존재하면 true, 없으면 false
+     */
+    boolean existsByTypeAndTitleContainingIgnoreCase(PostType type, String title);
+
+    @EntityGraph(attributePaths = {"user"})
+    @Query("""
+      select p
+      from Post p
+      where (:type is null or p.type = :type)
+        and lower(p.title) like lower(concat('%', :title, '%'))
+      order by p.id desc
+    """)
+    List<Post> searchByOptionalTypeAndTitle(@Param("type") PostType type,
+                                            @Param("title") String title);
 }

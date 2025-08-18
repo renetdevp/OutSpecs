@@ -31,10 +31,17 @@ public class PostController {
 
     @GetMapping("/write")
     public String postForm(@AuthenticationPrincipal CustomUserPrincipal principal,
+                           @RequestParam(required = false) PostType type,
+                           @RequestParam(required = false) String title,
                            Model model) {
         User user = principal.getUser();
         List<String> selectedTags = new ArrayList<>();
-        model.addAttribute("postDTO", new PostDTO());
+
+        PostDTO dto = new PostDTO();
+        if(type != null) dto.setType(type);
+        if(title != null) dto.setTitle(title);
+
+        model.addAttribute("postDTO", dto);
         model.addAttribute("selectedTags", selectedTags);
         model.addAttribute("isEdit", false);
         model.addAttribute("user", user);
@@ -42,7 +49,7 @@ public class PostController {
     }
 
     @PostMapping("/write")
-    public String createPost(@AuthenticationPrincipal CustomUserPrincipal principal,
+    public String createPost(@AuthenticationPrincipal CustomUserPrincipal principal                             ,
                              @ModelAttribute PostDTO dto) {
         dto.setUserId(principal.getUser().getId());
         Post post = postService.createPost(dto);
@@ -187,5 +194,4 @@ public class PostController {
 
         return "redirect:/post/" + postId;
     }
-
 }

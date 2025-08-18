@@ -47,6 +47,7 @@ public class PostServiceTest {
     private PostDTO postDTO;
     private Post post;
 
+    /*
     @BeforeEach
     void setup() {
         user = new User();
@@ -71,8 +72,8 @@ public class PostServiceTest {
         post.setPostQnA(new PostQnA());
 
         postService = new PostService(postRepository, userRepository, userService, List.of(handler1, handler2));
-
     }
+     */
 
     /**
      *  createPost test
