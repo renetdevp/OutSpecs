@@ -103,12 +103,21 @@ public class CommentService {
      */
     @Transactional(readOnly = true)
     public List<Comment> getCommentsByPostId(Long postId) {
+        List<Comment> answers = commentRepository.findByTypeAndParentId(CommentType.ANSWER, postId);
         List<Comment> topComments = commentRepository.findByTypeAndParentId(CommentType.COMMENT, postId);
+        List<Long> answerIds = answers.stream()
+                .map(Comment::getId)
+                .collect(Collectors.toList());
         List<Long> topCommentIds = topComments.stream()
                 .map(Comment::getId)
                 .collect(Collectors.toList());
 
         List<Comment> replies = new ArrayList<>();
+        if (!answerIds.isEmpty()) {
+            for (Long commentId : answerIds) {
+                replies.addAll(commentRepository.findByTypeAndParentId(CommentType.REPLY, commentId));
+            }
+        }
         if (!topCommentIds.isEmpty()) {
             for (Long commentId : topCommentIds) {
                 replies.addAll(commentRepository.findByTypeAndParentId(CommentType.REPLY, commentId));
@@ -116,6 +125,7 @@ public class CommentService {
         }
 
         List<Comment> allComments = new ArrayList<>();
+        allComments.addAll(answers);
         allComments.addAll(topComments);
         allComments.addAll(replies);
         return allComments;

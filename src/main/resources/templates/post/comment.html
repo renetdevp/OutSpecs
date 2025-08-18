@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${post.title}">답변</title>
+    <link rel="stylesheet" th:href="@{/css/post-detail.css}">
+</head>
+<body>
+
+<div>
+    <div class="comment comment-item" th:if="${!#lists.isEmpty(comments) and comment.type.name() == 'COMMENT'}"
+         th:each="comment : ${comments}" th:attr="data-comment-id=${comment.id}">
+        <div class="comment-container">
+            <img class="user-image" src="/images/profileImage.png" alt="댓글 작성자 이미지">
+            <div class="comment-info">
+                <div class="comment-header">
+                    <div class="user-nickname" th:text="${comment.user.username}">유저 닉네임</div>
+                    <div class="comment-date" th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}">작성시간</div>
+                </div>
+                <div class="comment-content" th:text="${comment.content}">댓글 내용</div>
+            </div>
+            <div class="comment-more" th:if="${user.id == comment.user.id}">
+                <img class="comment-more-icon" src="/images/more-vertical.png" alt="더보기 아이콘"
+                     th:onclick="'toggleMoreMenu(event, \'comment-more-menu-' + ${comment.id} + '\')'">
+                <div class="comment-more-menu" th:id="'comment-more-menu-' + ${comment.id}">
+                    <button th:if="${user.id == comment.user.id}" type="button" class="edit-btn" onclick="editComment(this)">수정</button>
+                    <form th:action="@{/post/{postId}/comment/{commentId}(postId=${post.id}, commentId=${comment.id})}"
+                          method="post" style="display:inline;">
+                        <button th:if="${user.id == comment.user.id}" class="delete-btn" type="submit" onclick="return confirm('댓글을 삭제하시겠습니까?')">삭제</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <form th:action="@{/post/{postId}/comment/{commentId}/edit(postId=${post.id}, commentId=${comment.id})}"
+              method="post" class="comment-edit-form" style="display:none;">
+            <textarea class="comment-input" name="content" th:text="${comment.content}" placeholder="댓글 내용을 입력하세요" required maxlength="250"></textarea>
+            <div class="comment-form-buttons">
+                <button class="comment-btn" type="submit">수정 완료</button>
+                <button class="comment-btn comment-cancel-btn" type="button" onclick="cancelEdit(this)">취소</button>
+            </div>
+        </form>
+
+        <button class="comment-btn comment-btn-toggle" type="button"
+                th:onclick="'showReplyForm(' + ${comment.id} + ', this)'">
+            답글달기
+        </button>
+
+        <div class="comment-reply">
+            <div class="comment-reply-list" th:each="reply : ${comments}"
+                 th:if="${reply.type.name() == 'REPLY' and reply.parentId == comment.id}">
+                <div class="comment-info">
+                    <div class="comment-header">
+                        <span class="reply-author" th:text="${reply.user.username}">대댓글 작성자</span>
+                        <span class="reply-date" th:text="${#temporals.format(reply.createdAt, 'yyyy-MM-dd HH:mm')}">작성시간</span>
+                    </div>
+                    <p class="reply-content" th:text="${reply.content}">대댓글 내용</p>
+                </div>
+                <div class="reply-more" th:if="${user.id == reply.user.id}">
+                    <img class="comment-more-icon" src="/images/more-vertical.png" alt="더보기 아이콘"
+                         th:onclick="'toggleMoreMenu(event, \'reply-more-menu-' + ${reply.id} + '\')'">
+                    <div class="comment-more-menu" th:id="'reply-more-menu-' + ${reply.id}">
+                        <form th:action="@{/post/{postId}/comment/{commentId}(postId=${post.id}, commentId=${reply.id})}"
+                              method="post" style="display:inline;">
+                            <button th:if="${user.id == reply.user.id}" class="delete-btn" type="submit" onclick="return confirm('대댓글을 삭제하시겠습니까?')">삭제</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <form th:action="@{/post/{postId}/comment(postId=${post.id})}" th:object="${commentDTO}"
+                  method="post" class="reply-form" th:id="'reply-form-' + ${comment.id}" style="display:none;">
+                <input type="hidden" name="type" value="REPLY"/>
+                <input type="hidden" name="parentId" th:value="${comment.id}" />
+                <textarea class="comment-input" name="content" placeholder="대댓글 내용을 입력하세요" required maxlength="250"></textarea>
+                <div class="comment-form-buttons">
+                    <button class="comment-btn" type="submit">등록</button>
+                    <button type="button" class="comment-btn comment-cancel-btn"
+                            th:onclick="'hideReplyForm(' + ${comment.id} + ')'">취소</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="comment new-comment-form">
+        <form class="comment-info" th:action="@{/post/{postId}/comment(postId=${post.id})}" method="post"
+              th:object="${commentDTO}">
+            <div style="flex-grow: 1;">
+                <input type="hidden" name="type" value="COMMENT"/>
+                <input type="hidden" name="parentId" th:value="${post.id}"/>
+                <textarea class="comment-input" th:field="*{content}" placeholder="댓글을 입력하세요" required maxlength="250"></textarea>
+                <div class="comment-form-buttons">
+                    <button class="comment-btn" type="submit">등록하기</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- QNA 답변 섹션 -->
+<div class="answers-section" th:if="${post.type.name() == 'QNA'}">
+    <div class="section-title">답변 <span th:text="${reactions.answersCount}">(0)</span>개</div>
+
+    <div class="answer-post-container" th:if="${!#lists.isEmpty(comments) and answer.type.name() == 'ANSWER'}"
+         th:each="answer : ${comments}" th:attr="data-answer-id=${answer.id}">
+        <div class="post-header">
+            <img class="post-user-image" src="/images/profileImage.png" alt="답변 작성자 이미지">
+            <div class="answer-user-container">
+                <div class="post-title-info">
+                    <div class="post-user-nickname" th:text="${answer.user.username}">답변 작성자</div>
+                </div>
+                <div class="post-date" th:text="${#temporals.format(answer.createdAt, 'yyyy-MM-dd HH:mm')}">작성시간</div>
+            </div>
+            <div class="more-menu-container" th:if="${user.id == answer.user.id}">
+                <img class="more-icon" src="/images/more-vertical.png" alt="더보기 아이콘"
+                     th:onclick="'toggleMoreMenu(event, \'answer-more-menu-' + ${answer.id} + '\')'">
+                <div class="more-menu" th:id="'answer-more-menu-' + ${answer.id}">
+                    <button th:if="${user.id == answer.user.id}" type="button" class="edit-btn" onclick="editAnswer(this)">수정</button>
+                    <form th:action="@{/post/{postId}/comment/{answerId}(postId=${post.id}, answerId=${answer.id})}"
+                          method="post" style="display:inline;">
+                        <button th:if="${user.id == answer.user.id}" class="delete-btn" type="submit" onclick="return confirm('답변을 삭제하시겠습니까?')">삭제</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="answer-content" th:text="${answer.content}">답변 내용</div>
+
+        <form th:action="@{/post/{postId}/comment/{answerId}/edit(postId=${post.id}, answerId=${answer.id})}"
+              method="post" class="answer-edit-form" style="display:none;">
+            <textarea class="post-content-textarea" name="content" th:text="${answer.content}" placeholder="답변 내용을 입력하세요" required maxlength="500"></textarea>
+            <div class="answer-form-buttons">
+                <button class="post-btn" type="submit">수정 완료</button>
+                <button class="post-btn answer-cancel-btn" type="button" onclick="cancelEditAnswer(this)">취소</button>
+            </div>
+        </form>
+
+        <div class="comment comment-item" th:if="${!#lists.isEmpty(comments) and comment.type.name() == 'REPLY' and comment.parentId == answer.id}"
+             th:each="comment : ${comments}" th:attr="data-comment-id=${comment.id}">
+            <div class="comment-container">
+                <img class="user-image" src="/images/profileImage.png" alt="댓글 작성자 이미지">
+                <div class="comment-info">
+                    <div class="comment-header">
+                        <div class="user-nickname" th:text="${comment.user.username}">유저 닉네임</div>
+                        <div class="comment-date" th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}">작성시간</div>
+                    </div>
+                    <div class="comment-content" th:text="${comment.content}">댓글 내용</div>
+                </div>
+                <div class="comment-more" th:if="${user.id == comment.user.id}">
+                    <img class="comment-more-icon" src="/images/more-vertical.png" alt="더보기 아이콘"
+                         th:onclick="'toggleMoreMenu(event, \'comment-more-menu-' + ${comment.id} + '\')'">
+                    <div class="comment-more-menu" th:id="'comment-more-menu-' + ${comment.id}">
+                        <button th:if="${user.id == comment.user.id}" type="button" class="edit-btn" onclick="editComment(this)">수정</button>
+                        <form th:action="@{/post/{postId}/comment/{commentId}(postId=${post.id}, commentId=${comment.id})}"
+                              method="post" style="display:inline;">
+                            <button th:if="${user.id == comment.user.id}" class="delete-btn" type="submit" onclick="return confirm('댓글을 삭제하시겠습니까?')">삭제</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <form th:action="@{/post/{postId}/comment/{commentId}/edit(postId=${post.id}, commentId=${comment.id})}"
+                  method="post" class="comment-edit-form" style="display:none;">
+                <textarea class="comment-input" name="content" th:text="${comment.content}" placeholder="댓글 내용을 입력하세요" required maxlength="250"></textarea>
+                <div class="comment-form-buttons">
+                    <button class="comment-btn" type="submit">수정 완료</button>
+                    <button class="comment-btn comment-cancel-btn" type="button" onclick="cancelEdit(this)">취소</button>
+                </div>
+            </form>
+
+        </div>
+
+        <div class="comment new-comment-form">
+            <form class="comment-info" th:action="@{/post/{postId}/comment(postId=${post.id})}" method="post"
+                  th:object="${commentDTO}">
+                <div style="flex-grow: 1;">
+                    <input type="hidden" name="type" value="REPLY"/>
+                    <input type="hidden" name="parentId" th:value="${answer.id}"/>
+                    <textarea class="comment-input" th:field="*{content}" placeholder="댓글을 입력하세요" required maxlength="250"></textarea>
+                    <div class="comment-form-buttons">
+                        <button class="comment-btn" type="submit">등록하기</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="new-answer-form">
+        <div class="post-header">
+            <img class="post-user-image" src="/images/profileImage.png" alt="내 프로필 이미지">
+            <div class="answer-user-container">
+                <div class="post-title-info">
+                    <div class="post-user-nickname" th:text="${user.username}">내 닉네임</div>
+                </div>
+            </div>
+        </div>
+        <form th:action="@{/post/{postId}/comment(postId=${post.id})}" method="post" th:object="${commentDTO}">
+            <input type="hidden" name="type" value="ANSWER"/>
+            <input type="hidden" name="parentId" th:value="${post.id}"/>
+            <textarea class="post-content-textarea" th:field="*{content}" placeholder="답변을 입력하세요" required maxlength="500"></textarea>
+            <div class="post-actions">
+                <button class="post-btn" type="submit">답변 등록</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>

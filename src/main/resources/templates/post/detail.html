@@ -45,18 +45,18 @@
           <img th:src="@{|/uploads/${img.fileName}|}" alt="첨부 이미지">
         </div>
       </div>
-      <div th:text="${post.content}">게시글 내용</div>
+      <pre th:text="${post.content}">게시글 내용</pre>
     </div>
-      <div class="post-tags">
-        <div th:if="${post.type.name() == 'RECRUIT'}">
-          <div class="chip" th:each="item : ${post.postJob.techniques}" th:text="${item.tech}">태그</div>
-        </div>
-        <div th:if="${post.type.name() == 'FREE' or post.type.name() == 'QNA'}">
-          <div class="chip" th:each="item : ${post.postTags}" th:text="${item.tags}">태그</div>
-        </div>
-        <div class="chip" th:if="${post.type.name() == 'PLAY'}"
-              th:text="${post.postHangout != null ? post.postHangout.placeName : ''}">태그</div>
+    <div class="post-tags">
+      <div th:if="${post.type.name() == 'RECRUIT'}">
+        <div class="chip" th:each="item : ${post.postJob.techniques}" th:text="${item.tech}">태그</div>
       </div>
+      <div th:if="${post.type.name() == 'FREE' or post.type.name() == 'QNA'}">
+        <div class="chip" th:each="item : ${post.postTags}" th:text="${item.tags}">태그</div>
+      </div>
+      <div class="chip" th:if="${post.type.name() == 'PLAY'}"
+            th:text="${post.postHangout != null ? post.postHangout.placeName : ''}">태그</div>
+    </div>
     <div class="post-reaction">
       <div class="post-reaction-count">
         <div class="reaction-item">
@@ -85,97 +85,7 @@
       </form>
     </div>
 
-    <div th:if="${#lists.isEmpty(comments)}" class="no-comments">
-      <p>아직 댓글이 없습니다. 첫 번째 댓글을 작성해보세요!</p>
-    </div>
-
-    <div class="comment comment-item" th:if="${!#lists.isEmpty(comments) && comment.type.name() == 'COMMENT'}"
-         th:each="comment : ${comments}" th:attr="data-comment-id=${comment.id}">
-      <div class="comment-container">
-        <img class="user-image" src="/images/profileImage.png" alt="댓글 작성자 이미지">
-        <div class="comment-info">
-          <div class="comment-header">
-            <div class="user-nickname" th:text="${comment.user.username}">유저 닉네임</div>
-            <div class="comment-date" th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}">작성시간</div>
-          </div>
-          <div class="comment-content" th:text="${comment.content}">댓글 내용</div>
-        </div>
-        <div class="comment-more" th:if="${user.id == comment.user.id}">
-          <img class="comment-more-icon" src="/images/more-vertical.png" alt="더보기 아이콘"
-               th:onclick="'toggleMoreMenu(event, \'comment-more-menu-' + ${comment.id} + '\')'">
-          <div class="comment-more-menu" th:id="'comment-more-menu-' + ${comment.id}">
-            <button th:if="${user.id == comment.user.id}" type="button" class="edit-btn" onclick="editComment(this)">수정</button>
-            <form th:action="@{/post/{postId}/comment/{commentId}(postId=${post.id}, commentId=${comment.id})}"
-                  method="post" style="display:inline;">
-              <button th:if="${user.id == comment.user.id}" class="delete-btn" type="submit" onclick="return confirm('댓글을 삭제하시겠습니까?')">삭제</button>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <form th:action="@{/post/{postId}/comment/{commentId}/edit(postId=${post.id}, commentId=${comment.id})}"
-            method="post" class="comment-edit-form" style="display:none;">
-        <textarea class="comment-input" name="content" th:text="${comment.content}" placeholder="댓글 내용을 입력하세요" required maxlength="250"></textarea>
-        <div class="comment-form-buttons">
-          <button class="comment-btn" type="submit">수정 완료</button>
-          <button class="comment-btn comment-cancel-btn" type="button" onclick="cancelEdit(this)">취소</button>
-        </div>
-      </form>
-
-      <button class="comment-btn comment-btn-toggle" type="button"
-              th:onclick="'showReplyForm(' + ${comment.id} + ', this)'">
-        답글달기
-      </button>
-
-      <div class="comment-reply">
-        <div class="comment-reply-list" th:each="reply : ${comments}"
-             th:if="${reply.type.name() == 'REPLY' and reply.parentId == comment.id}">
-          <div class="comment-info">
-            <div class="comment-header">
-              <span class="reply-author" th:text="${reply.user.username}">대댓글 작성자</span>
-              <span class="reply-date" th:text="${#temporals.format(reply.createdAt, 'yyyy-MM-dd HH:mm')}">작성시간</span>
-            </div>
-            <p class="reply-content" th:text="${reply.content}">대댓글 내용</p>
-          </div>
-          <div class="reply-more" th:if="${user.id == reply.user.id}">
-            <img class="comment-more-icon" src="/images/more-vertical.png" alt="더보기 아이콘"
-                 th:onclick="'toggleMoreMenu(event, \'reply-more-menu-' + ${reply.id} + '\')'">
-            <div class="comment-more-menu" th:id="'reply-more-menu-' + ${reply.id}">
-              <form th:action="@{/post/{postId}/comment/{commentId}(postId=${post.id}, commentId=${reply.id})}"
-                    method="post" style="display:inline;">
-                <button th:if="${user.id == reply.user.id}" class="delete-btn" type="submit" onclick="return confirm('대댓글을 삭제하시겠습니까?')">삭제</button>
-              </form>
-            </div>
-          </div>
-        </div>
-
-        <form th:action="@{/post/{postId}/comment(postId=${post.id})}" th:object="${commentDTO}"
-              method="post" class="reply-form" th:id="'reply-form-' + ${comment.id}" style="display:none;">
-          <input type="hidden" name="type" value="REPLY"/>
-          <input type="hidden" name="parentId" th:value="${comment.id}" />
-          <textarea class="comment-input" name="content" placeholder="대댓글 내용을 입력하세요" required maxlength="250"></textarea>
-          <div class="comment-form-buttons">
-            <button class="comment-btn" type="submit">등록</button>
-            <button type="button" class="comment-btn comment-cancel-btn"
-                    th:onclick="'hideReplyForm(' + ${comment.id} + ')'">취소</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <div class="comment new-comment-form">
-      <form class="comment-info" th:action="@{/post/{postId}/comment(postId=${post.id})}" method="post"
-            th:object="${commentDTO}">
-        <div style="flex-grow: 1;">
-          <input type="hidden" name="type" value="COMMENT"/>
-          <input type="hidden" name="parentId" th:value="${post.id}"/>
-          <textarea class="comment-input" th:field="*{content}" placeholder="댓글을 입력하세요" required maxlength="250"></textarea>
-          <div class="comment-form-buttons">
-            <button class="comment-btn" type="submit">등록하기</button>
-          </div>
-        </div>
-      </form>
-    </div>
+    <div th:replace="~{post/comment}"></div>
   </div>
 
   <div class="post-actions" th:if="${user.id == post.user.id}">
@@ -184,105 +94,14 @@
       <button class="post-btn delete-btn" type="submit" onclick="return confirm('게시글을 삭제하시겠습니까?')">삭제하기</button>
     </form>
   </div>
+
 </div>
+
 <script th:inline="javascript" th:if="${!#strings.isEmpty(errorMessage)}">
   /*<![CDATA[*/
       alert([[${errorMessage}]]);
   /*]]>*/
 </script>
-<script>
-  // More 메뉴 토글 함수
-function toggleMoreMenu(event, menuId) {
-  event.stopPropagation();
-  const menu = document.getElementById(menuId);
-  const allMenus = document.querySelectorAll('.more-menu, .comment-more-menu');
-
-  // 다른 메뉴들 닫기
-  allMenus.forEach(m => {
-    if (m.id !== menuId) {
-      m.style.display = 'none';
-    }
-  });
-
-  // 현재 메뉴 토글
-  menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
-}
-
-// 게시글 신고 함수
-function reportPost() {
-  if (confirm('이 게시글을 신고하시겠습니까?')) {
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '/post/' + [[${post.id}]] + '/report';
-    document.body.appendChild(form);
-    form.submit();
-  }
-  document.getElementById('post-more-menu').style.display = 'none';
-}
-
-// 댓글 수정 함수
-function editComment(button) {
-  const commentItem = button.closest('.comment-item');
-  const content = commentItem.querySelector('.comment-content');
-  const editForm = commentItem.querySelector('.comment-edit-form');
-  const moreMenu = button.closest('.comment-more-menu');
-
-  content.style.display = 'none';
-  editForm.style.display = 'block';
-  moreMenu.style.display = 'none';
-}
-
-// 댓글 수정 취소 함수
-function cancelEdit(button) {
-  const commentItem = button.closest('.comment-item');
-  const content = commentItem.querySelector('.comment-content');
-  const editForm = commentItem.querySelector('.comment-edit-form');
-
-  content.style.display = 'block';
-  editForm.style.display = 'none';
-}
-
-// 답글 폼 표시 함수
-function showReplyForm(commentId, toggleButton) {
-  const replyForm = document.getElementById('reply-form-' + commentId);
-  replyForm.style.display = 'block';
-  toggleButton.style.display = 'none';
-}
-
-// 답글 폼 숨기기 함수
-function hideReplyForm(commentId) {
-  const replyForm = document.getElementById('reply-form-' + commentId);
-  const commentItem = replyForm.closest('.comment-item'); // 댓글 전체 영역
-  const toggleButton = commentItem.querySelector('.comment-btn-toggle'); // 버튼 찾기
-
-  replyForm.style.display = 'none';
-  if (toggleButton) {
-    toggleButton.style.display = 'inline-block';
-  }
-
-  // 폼 내용 초기화
-  const textarea = replyForm.querySelector('textarea');
-  textarea.value = '';
-}
-
-// 외부 클릭 시 메뉴 닫기
-document.addEventListener('click', function(event) {
-  if (!event.target.closest('.more-menu-container') && !event.target.closest('.comment-more')) {
-    const allMenus = document.querySelectorAll('.more-menu, .comment-more-menu');
-    allMenus.forEach(menu => {
-      menu.style.display = 'none';
-    });
-  }
-});
-
-// 페이지 로드 시 스크롤 이벤트 추가 (메뉴 닫기)
-window.addEventListener('scroll', function() {
-  const allMenus = document.querySelectorAll('.more-menu, .comment-more-menu');
-  allMenus.forEach(menu => {
-    menu.style.display = 'none';
-  });
-});
-</script>
-
+<script src="/js/post-detail.js"></script>
 </body>
 </html>
