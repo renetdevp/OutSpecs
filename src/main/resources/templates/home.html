@@ -15,17 +15,17 @@
         <div class="hero-inner">
 
             <!-- 퀵 작성 -->
-            <form class="quick-compose" onsubmit="return goCompose(event)">
-                <select id="composeCategory" aria-label="카테고리 선택">
+            <form class="quick-compose" th:action="@{/compose/route}" method="get">
+                <select id="composeCategory" name="category" aria-label="카테고리 선택">
                     <option value="free">자유</option>
                     <option value="qna">QnA</option>
                     <option value="team">팀모집</option>
-                    <option value="jobs">채용공고</option>
+                    <option value="recruit">채용공고</option>
+                    <option value="play">나가서놀기</option>
+                    <option value="ai-play">AI랑 나가서 놀기</option>
                 </select>
-                <input id="composeTitle" type="text" placeholder="무엇을 공유할까요? (제목 한 줄)"
-                       aria-label="제목 입력" />
+                <input id="composeTitle" name="title" type="text" placeholder="무엇을 공유할까요? (제목 한 줄)" aria-label="제목 입력" />
                 <button type="submit" class="btn primary">작성하기</button>
-                <a href="/qna/new" class="btn ghost">질문하기</a>
             </form>
 
             <!-- 트렌딩 태그 (더미) -->
@@ -37,10 +37,8 @@
                 <a href="/tag/websocket">#websocket</a>
                 <a href="/tag/mysql">#mysql</a>
             </nav>
-
         </div>
     </section>
-
 
     <!-- 2x2 대시보드 그리드 -->
     <section class="dash-grid">
@@ -200,7 +198,6 @@
             </div>
         </div>
     </section>
-
 </main>
 <script>
     // 카테고리에 따라 새 글 작성 경로 라우팅 (더미)
@@ -221,7 +218,5 @@
       return false;
     }
 </script>
-
 </body>
-
 </html>
