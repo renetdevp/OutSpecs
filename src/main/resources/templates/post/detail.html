@@ -7,20 +7,28 @@
 </head>
 <body>
 <header th:replace="~{fragments/header :: header}"></header>
-<div class="post" data-post-id="[[${post.id}]]">
+<div class="post" th:data-post-id="${post.id}">
   <a class="post-list-back post-btn" th:href="@{/list/{type}(type=${post.type.pathPrefix()})}">← 목록으로</a>
   <div class="post-container">
     <div class="post-type" th:text="${post.type.displayName()}">포스트 타입</div>
     <div class="post-header">
-      <img class="post-user-image" src="/images/profileImage.png" alt="프로필 이미지">
+      <a th:if="${user != null and user.profile != null}"
+         class="post-user-image-link" th:href="@{/users/profiles/{id}(id=${post.user.id})}">
+        <img class="post-user-image" src="/images/profileImage.png" alt="프로필 이미지">
+      </a>
+      <img th:unless="${user != null and user.profile != null}"
+           class="post-user-image" src="/images/profileImage.png" alt="프로필 이미지">
       <div class="post-title-container">
         <div class="post-title-info">
-          <div class="post-user-nickname" th:text="${post.user.username}">사용자명</div>
+          <a th:if="${user != null and user.profile != null}" th:href="@{/users/profiles/{id}(id=${post.user.id})}"
+                  class="post-user-nickname" th:text="${post.user.profile.nickname}">사용자명</a>
+          <div th:unless="${user != null and user.profile != null}" th:href="@{/users/profiles/{id}(id=${post.user.id})}"
+             class="post-user-nickname" th:text="${post.user.profile.nickname}">사용자명</div>
           <div class="post-title" th:text="${post.title}">게시글 제목</div>
         </div>
         <div class="post-date" th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</div>
       </div>
-      <div class="more-menu-container">
+      <div class="more-menu-container" th:if="${user != null and user.profile != null and user.id != post.user.id and !reactions.isReported}">
         <img class="more-icon" src="/images/more-vertical.png" alt="더보기 아이콘" onclick="toggleMoreMenu(event, 'post-more-menu')">
         <div class="more-menu" id="post-more-menu">
           <button type="button" class="report-btn" id="report-button">신고</button>
@@ -33,7 +41,7 @@
       <div> / </div>
       <div class="team-capacity">모집 인원 : <span th:text="${post.teamInfo.capacity}"></span></div>
       <form th:action="@{/post/{postId}/team(postId=${post.id})}" th:object="${participationDTO}"
-            method="post" style="display: inline;">
+            method="post" style="display: inline;" th:if="${user != null and user.profile != null and user.id != post.user.id}">
         <input type="hidden" name="userId" th:value="${user.id}" />
         <input type="hidden" name="postId" th:value="${post.id}" />
         <button type="submit" class="team-btn">신청하기</button>
@@ -61,7 +69,7 @@
       <div class="post-reaction-count">
         <div class="reaction-item">
           <form th:action="@{/post/{postId}/like(postId=${post.id})}" method="post" style="display: inline;">
-            <button type="submit" class="like-btn">
+            <button type="submit" class="like-btn" th:disabled="${user == null or user.id == post.user.id or user.profile == null}">
               <img class="post-icon" th:if="${!reactions.isLiked}" src="/images/like.png" alt="좋아요 아이콘">
               <img class="post-icon" th:if="${reactions.isLiked}" src="/images/like-fill.svg" alt="좋아요 아이콘">
             </button>
@@ -78,7 +86,7 @@
         </div>
       </div>
       <form th:action="@{/post/{postId}/bookmark(postId=${post.id})}" method="post" style="display: inline;">
-        <button type="submit" class="bookmark-btn">
+        <button type="submit" class="bookmark-btn" th:disabled="${user == null or user.id == post.user.id or user.profile == null}">
           <img class="post-icon" th:if="${!reactions.isBookmarked}" src="/images/bookmark.png" alt="북마크 아이콘">
           <img class="post-icon" th:if="${reactions.isBookmarked}" src="/images/bookmark-fill.svg" alt="북마크 아이콘">
         </button>
@@ -88,20 +96,14 @@
     <div th:replace="~{post/comment}"></div>
   </div>
 
-  <div class="post-actions" th:if="${user.id == post.user.id}">
-    <a class="post-btn" th:href="@{|/post/${post.id}/edit|}">수정하기</a>
-    <form th:action="@{|/post/${post.id}/delete|}" method="post" style="display:inline;">
+  <div class="post-actions" th:if="${user != null and (user.id == post.user.id or user.role.name() == 'ADMIN')}">
+    <a class="post-btn" th:if="${user.id == post.user.id}" th:href="@{|/post/${post.id}/edit|}">수정하기</a>
+    <form th:action="@{|/post/${post.id}/delete|}" method="post" style="display:inline;" th:if="${post.type.name() != 'QNA'}">
       <button class="post-btn delete-btn" type="submit" onclick="return confirm('게시글을 삭제하시겠습니까?')">삭제하기</button>
     </form>
   </div>
 
 </div>
-
-<script th:inline="javascript" th:if="${!#strings.isEmpty(errorMessage)}">
-  /*<![CDATA[*/
-      alert([[${errorMessage}]]);
-  /*]]>*/
-</script>
 <script src="/js/post-detail.js"></script>
 </body>
 </html>

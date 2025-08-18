@@ -203,6 +203,12 @@
     position: relative;
 }
 
+.post-user-image-link {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .post-user-image {
     width: 40px;
     height: 40px;
@@ -227,6 +233,7 @@
     font-weight: 500;
     font-size: 12px;
     color: #555;
+    text-decoration: none;
 }
 
 .post-date {
@@ -359,6 +366,11 @@
 .like-btn:hover, .bookmark-btn:hover {
     background-color: #f0f0f0;
     transform: scale(1.1);
+}
+
+.like-btn:disabled, .bookmark-btn:disabled {
+    cursor: none;
+    pointer-events: none;
 }
 
 .ai-chat {

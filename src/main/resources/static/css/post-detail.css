@@ -7,6 +7,10 @@
     box-sizing: border-box;
 }
 
+a {
+    text-decoration: none;
+}
+
 textarea {
     resize: none;
 }
@@ -48,6 +52,12 @@ textarea {
     gap: 15px;
     width: 100%;
     position: relative;
+}
+
+.post-user-image-link {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .post-user-image {
@@ -239,6 +249,11 @@ textarea {
 .like-btn:hover, .bookmark-btn:hover {
     background-color: #f0f0f0;
     transform: scale(1.1);
+}
+
+.like-btn:disabled, .bookmark-btn:disabled {
+    cursor: none;
+    pointer-events: none;
 }
 
 /* 반응형 디자인 */
