@@ -266,7 +266,7 @@ public class PostQueryService {
     }
 
     /** 공통 변환: 배치 집계로 카운트 모으고 뷰 DTO 채움 */
-    private List<PostListViewDTO> toViews(List<Post> posts, boolean withCounts, boolean withImages) {
+    public List<PostListViewDTO> toViews(List<Post> posts, boolean withCounts, boolean withImages) {
         if (posts.isEmpty()) return List.of();
 
         List<Long> ids = posts.stream().map(Post::getId).toList();
@@ -292,6 +292,14 @@ public class PostQueryService {
                         CommentRepository.CountByPostId::getCnt))
                 : Collections.emptyMap();
 
+        final Map<Long, PostTeamInformationDTO> teamInfoMap =
+                posts.stream()
+                        .filter(p -> p.getType() == PostType.TEAM && p.getTeamInfo() != null)
+                        .collect(Collectors.toMap(
+                                Post::getId,
+                                p -> toTeamInfoDto(p)
+                        ));
+
         return posts.stream().map(p -> new PostListViewDTO(
                 p.getId(),
                 p.getTitle(),
@@ -299,6 +307,7 @@ public class PostQueryService {
                 p.getUser(),
                 p.getType(),
                 p.getCreatedAt(),
+                teamInfoMap.get(p.getId()),
                 p.getViewCount() == null ? 0L : p.getViewCount(),
                 likeMap.getOrDefault(p.getId(), 0L),
                 commentMap.getOrDefault(p.getId(), 0L),
@@ -306,7 +315,12 @@ public class PostQueryService {
                 withImages ? safeImages(p) : null
         )).toList();
     }
-
+    private PostTeamInformationDTO toTeamInfoDto(Post p) {
+        PostTeamInformationDTO dto = new PostTeamInformationDTO();
+        dto.setCapacity(p.getTeamInfo().getCapacity());
+        dto.setStatus(p.getTeamInfo().getStatus());
+        return dto;
+    }
     private String summarize(String s) {
         if (s == null) return null;
         return s.length() > 160 ? s.substring(0, 160) + "…" : s;
