@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'검색: ' + (${q} ?: '')">outspecs - 검색</title>
+    <link rel="stylesheet" th:href="@{/css/post-list.css}">
+</head>
+<body>
+    <header th:replace="~{fragments/header :: header}"></header>
+
+    <div class="container">
+        <!-- 검색바 -->
+        <section class="popular-section" style="padding-bottom:12px;">
+            <form th:action="@{/search}" method="get" style="display:flex; gap:8px; align-items:center;">
+                <select name="type" aria-label="게시판 선택">
+                    <option value="" th:selected="${type == null}">전체</option>
+                    <option th:each="t : ${T(com.percent99.OutSpecs.entity.PostType).values()}"
+                            th:value="${t.name()}"
+                            th:text="${t.displayName()}"
+                            th:selected="${type != null and (type.name() == t.name() or type == t)}">FREE</option>
+                </select>
+                <input type="text" name="q" th:value="${q}" placeholder="검색어를 입력하세요" style="flex:1;">
+                <button type="submit" class="btn primary">검색</button>
+            </form>
+        </section>
+
+        <!-- 탭 -->
+        <nav class="content-wrapper" style="gap:8px; margin-bottom:12px;">
+            <a th:href="@{/search(q=${q})}" class="tag-item" th:classappend="${type} == null ? ' active'">전체</a>
+            <a th:href="@{/search(type='FREE', q=${q})}" class="tag-item" th:classappend="${type?.name() == 'FREE'} ? ' active'">자유</a>
+            <a th:href="@{/search(type='QNA', q=${q})}" class="tag-item" th:classappend="${type?.name() == 'QNA'} ? ' active'">QnA</a>
+            <a th:href="@{/search(type='TEAM', q=${q})}" class="tag-item" th:classappend="${type?.name() == 'TEAM'} ? ' active'">팀모집</a>
+            <a th:href="@{/search(type='RECRUIT', q=${q})}" class="tag-item" th:classappend="${type?.name() == 'RECRUIT'} ? ' active'">채용공고</a>
+            <a th:href="@{/search(type='PLAY', q=${q})}" class="tag-item" th:classappend="${type?.name() == 'PLAY'} ? ' active'">나가서놀기</a>
+            <a th:href="@{/search(type='AIPLAY', q=${q})}" class="tag-item" th:classappend="${type?.name() == 'AIPLAY'} ? ' active'">AI랑 나가서 놀기</a>
+        </nav>
+
+        <div class="content-wrapper">
+            <main class="main-content" style="width:100%;">
+                <div class="list-title">
+                    <span>검색</span>
+                    <span th:if="${q}">: <b th:text="${q}"></b></span>
+                    <small th:text="' (' + ${total} + '건)'"></small>
+                </div>
+                <!-- 결과 있음 -->
+                <div class="post-list" th:if="${#lists.size(results) > 0}">
+                    <article class="post-item" th:each="post : ${results}">
+                        <div class="post-header">
+                            <img class="post-user-image" src="/images/profileImage.png" alt="프로필 이미지">
+                            <div class="post-title-container">
+                                <div class="post-title-info">
+                                    <div class="post-user-nickname"
+                                         th:text="${post.user != null ? post.user.username : (post.authorName != null ? post.authorName : '익명')}">
+                                        사용자명
+                                    </div>
+                                    <div class="post-title" th:text="${post.title}">게시글 제목</div>
+                                </div>
+                                <div class="post-date"
+                                     th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</div>
+                            </div>
+                            <div class="more-menu-container">
+                                <img class="more-icon" src="/images/more-vertical.png" alt="더보기 아이콘"
+                                     th:onclick="|toggleMoreMenu(event, 'post-more-menu-${post.id}')|">
+                                <div class="more-menu" th:id="|post-more-menu-${post.id}|">
+                                    <button type="button" class="report-btn" th:onclick="|reportPost(${post.id})|">신고</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <a class="post-content" th:href="@{/post/{id}(id=${post.id})}">
+                            <div th:if="${post.images}">
+                                <div th:each="img : ${post.images}">
+                                    <img th:src="@{|/uploads/${img.fileName}|}" alt="첨부 이미지">
+                                </div>
+                            </div>
+                            <div th:text="${post.content}">게시글 내용</div>
+                        </a>
+
+                        <div class="post-reaction">
+                            <div class="post-reaction-count">
+                                <div class="reaction-item">
+                                    <form th:action="@{/post/{postId}/like(postId=${post.id})}" method="post" style="display:inline;">
+                                        <button type="submit" class="like-btn">
+                                            <img class="post-icon" src="/images/like.png" alt="좋아요 아이콘">
+                                        </button>
+                                    </form>
+                                    <span th:text="${post.likeCount != null ? post.likeCount : 0}">0</span>
+                                </div>
+                                <div class="reaction-item">
+                                    <img class="post-icon" src="/images/view.png" alt="조회수 아이콘">
+                                    <span th:text="${post.viewCount}">0</span>
+                                </div>
+                                <div class="reaction-item">
+                                    <img class="post-icon" src="/images/comment.png" alt="댓글 아이콘">
+                                    <span th:text="${post.commentCount != null ? post.commentCount : 0}">0</span>
+                                </div>
+                            </div>
+                            <form th:action="@{/post/{postId}/bookmark(postId=${post.id})}" method="post" style="display:inline;">
+                                <button type="submit" class="bookmark-btn">
+                                    <img class="post-icon" src="/images/bookmark.png" alt="북마크 아이콘">
+                                </button>
+                            </form>
+                        </div>
+                    </article>
+                </div>
+                <!-- 결과 없음 -->
+                <section th:if="${#lists.isEmpty(results)}">
+                    <p>검색 결과가 없습니다.</p>
+                    <a class="write-btn"
+                       th:href="@{/post/write(type=${type != null ? type.name() : 'FREE'}, title=${q})}">
+                        이 제목으로 글쓰기
+                    </a>
+                </section>
+            </main>
+        </div>
+    </div>
+    <div class="ai-chat">AI<br>챗봇</div>
+
+    <script>
+        // list.html과 동일 유틸
+        function toggleMoreMenu(event, menuId) {
+          event.stopPropagation();
+          const menu = document.getElementById(menuId);
+          document.querySelectorAll('.more-menu').forEach(m => {
+            if (m.id !== menuId) m.style.display = 'none';
+          });
+          menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+        }
+        document.addEventListener('click', function(e) {
+          if (!e.target.closest('.more-menu-container')) {
+            document.querySelectorAll('.more-menu').forEach(m => m.style.display = 'none');
+          }
+        });
+        window.addEventListener('scroll', function() {
+          document.querySelectorAll('.more-menu').forEach(m => m.style.display = 'none');
+        });
+        function reportPost(postId) {
+          if (confirm('이 게시글을 신고하시겠습니까?')) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/post/' + postId + '/report';
+            document.body.appendChild(form);
+            form.submit();
+          }
+        }
+    </script>
+</body>
+</html>
