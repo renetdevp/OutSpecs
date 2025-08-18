@@ -47,7 +47,6 @@ public class ChatMessageServiceTest {
     chatMessage.setSender(user);
 
     chatMessageDTO = new ChatMessageDTO();
-    chatMessageDTO.setChatRoomId(chatMessage.getId());
 
     chatRoom = new ChatRoom();
     chatRoom.setId(1L);
@@ -57,11 +56,11 @@ public class ChatMessageServiceTest {
   @DisplayName("ChatMessageService.createChatMessage failed when chatroom not found")
   void createChatMessageFailedWhenChatRoomNotFound(){
     // give
-    when(chatRoomService.findChatRoomById(chatMessageDTO.getChatRoomId())).thenReturn(Optional.empty());
+    when(chatRoomService.findChatRoomById(chatRoom.getId())).thenReturn(Optional.empty());
     when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
 
     // when
-    chatMessageService.createChatMessage(chatMessageDTO, user.getId());
+    chatMessageService.createChatMessage(chatRoom.getId(), chatMessageDTO, user.getId());
 
     // then
     verify(chatMessageRepository, never()).save(chatMessage);
@@ -72,11 +71,11 @@ public class ChatMessageServiceTest {
   @DisplayName("ChatMessageService.createChatMessage failed when user not found")
   void createChatMessageFailedWhenUserNotFound(){
     // give
-    when(chatRoomService.findChatRoomById(chatMessageDTO.getChatRoomId())).thenReturn(Optional.of(chatRoom));
+    when(chatRoomService.findChatRoomById(chatRoom.getId())).thenReturn(Optional.of(chatRoom));
     when(userRepository.findById(user.getId())).thenReturn(Optional.empty());
 
     // when
-    chatMessageService.createChatMessage(chatMessageDTO, user.getId());
+    chatMessageService.createChatMessage(chatRoom.getId(), chatMessageDTO, user.getId());
 
     // then
     verify(chatMessageRepository, never()).save(chatMessage);
@@ -87,12 +86,12 @@ public class ChatMessageServiceTest {
   @DisplayName("ChatMessageService.createChatMessage failed when user has no profile")
   void createChatMessageFailedWhenUserHasNoProfile(){
     // give
-    when(chatRoomService.findChatRoomById(chatMessageDTO.getChatRoomId())).thenReturn(Optional.of(chatRoom));
+    when(chatRoomService.findChatRoomById(chatRoom.getId())).thenReturn(Optional.of(chatRoom));
     when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
     when(profileRepository.existsByUserId(user.getId())).thenReturn(false);
 
     // when
-    chatMessageService.createChatMessage(chatMessageDTO, user.getId());
+    chatMessageService.createChatMessage(chatRoom.getId(), chatMessageDTO, user.getId());
 
     // then
     verify(chatMessageRepository, never()).save(chatMessage);
@@ -103,13 +102,13 @@ public class ChatMessageServiceTest {
   @DisplayName("ChatMessageService.createChatMessage failed when user not in chatroom")
   void createChatMessageFailedWhenUserNotInChatRoom(){
     // give
-    when(chatRoomService.findChatRoomById(chatMessageDTO.getChatRoomId())).thenReturn(Optional.of(chatRoom));
+    when(chatRoomService.findChatRoomById(chatRoom.getId())).thenReturn(Optional.of(chatRoom));
     when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
     when(profileRepository.existsByUserId(user.getId())).thenReturn(true);
     when(chatRoomRepository.existsByIdAndUserId(chatRoom.getId(), user.getId())).thenReturn(false);
 
     // when
-    chatMessageService.createChatMessage(chatMessageDTO, user.getId());
+    chatMessageService.createChatMessage(chatRoom.getId(), chatMessageDTO, user.getId());
 
     // then
     verify(chatMessageRepository, never()).save(any(ChatMessage.class));
@@ -120,7 +119,7 @@ public class ChatMessageServiceTest {
   @DisplayName("ChatMessageService.createChatMessage success")
   void createChatMessageSuccess(){
     // give
-    when(chatRoomService.findChatRoomById(chatMessageDTO.getChatRoomId())).thenReturn(Optional.of(chatRoom));
+    when(chatRoomService.findChatRoomById(chatRoom.getId())).thenReturn(Optional.of(chatRoom));
     when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
     when(profileRepository.existsByUserId(user.getId())).thenReturn(true);
     when(chatRoomRepository.existsByIdAndUserId(chatRoom.getId(), user.getId())).thenReturn(true);
@@ -128,7 +127,7 @@ public class ChatMessageServiceTest {
     when(chatRoomService.updateChatRoomById(chatRoom, user.getId())).thenReturn(chatRoom);
 
     // when
-    chatMessageService.createChatMessage(chatMessageDTO, user.getId());
+    chatMessageService.createChatMessage(chatRoom.getId(), chatMessageDTO, user.getId());
 
     // then
     verify(chatMessageRepository, times(1)).save(any(ChatMessage.class));
