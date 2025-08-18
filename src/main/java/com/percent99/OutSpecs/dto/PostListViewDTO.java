@@ -18,6 +18,7 @@ public class PostListViewDTO {
     private User user;             // 템플릿의 post.user.username에 대응
     private PostType type;
     private LocalDateTime createdAt;
+    private PostTeamInformationDTO teamInfo;
     private Long viewCount;
     private long likeCount;
     private long commentCount;
