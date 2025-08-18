@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -18,6 +19,7 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
   void deleteAllByChatRoomIdAndUserId(@Param("chatRoomId") Long chatRoomId, @Param("userId") Long userId);
 
   Page<ChatMessage> findByChatRoomId(Long chatRoomId, Pageable pageable);
+  Page<ChatMessage> findByChatRoomIdAndCreatedAtBefore(Long chatRoomId, LocalDateTime beforeCreatedAt, Pageable pageable);
 
   @Query("DELETE FROM ChatMessage cm WHERE cm.sender.id = :userId")
   void deleteAllByUserId(@Param("userId") Long userId);
