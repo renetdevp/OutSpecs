@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 게시글 및 댓글 좋아요, 유저 팔로우, 팀 모집 신청/수락/거절 시 알림을 보내기 위한 service
@@ -71,5 +72,25 @@ public class NotificationService {
             case LIKE_COMMENT -> profile.getNickname() + "님이 댓글을 좋아했습니다.";
             default -> "새로운 알림이 도착했습니다.";
         };
+    }
+
+    public Notification findNotificationById(Long notificationId) {
+        return notificationRepository.findById(notificationId)
+                .orElseThrow(()-> new EntityNotFoundException("해당 알림이 없습니다."));
+    }
+
+    public List<Notification> getAllNotification(User receiver) {
+        profileRepository.findById(receiver.getId())
+                .orElseThrow(()-> new EntityNotFoundException("해당 유저의 프로필이 존재하지 않습니다."));
+        return notificationRepository.findByReceiverId(receiver);
+    }
+
+    public void deleteNotification(Long receiverId, Long id) {
+        Notification notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("해당 알림이 없습니다."));
+        if(!notification.getReceiverId().getId().equals(receiverId)) {
+            throw new IllegalArgumentException("알림을 받는 유저가 아닙니다.");
+        }
+        notificationRepository.deleteById(id);
     }
 }

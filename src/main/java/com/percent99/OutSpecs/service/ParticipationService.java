@@ -4,7 +4,6 @@ import com.percent99.OutSpecs.dto.ParticipationDTO;
 import com.percent99.OutSpecs.entity.*;
 import com.percent99.OutSpecs.repository.ParticipationRepository;
 import com.percent99.OutSpecs.repository.PostRepository;
-import com.percent99.OutSpecs.repository.ProfileRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -159,6 +158,12 @@ public class ParticipationService {
         return participationRepository.findByUserId(userId);
     }
 
+    /**
+     * 특정 사용자가 특정 게시글에 참여한 신청 정보를 조회한다
+     * @param userId 특정 사용자
+     * @param postId 특정 게시물
+     * @return 참여 신청 정보
+     */
     @Transactional(readOnly = true)
     public Participation getParticipationByUserId(Long userId, Long postId) {
         return participationRepository.findByUserIdAndPostId(userId, postId).orElse(null);

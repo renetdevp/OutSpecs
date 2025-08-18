@@ -1,8 +1,11 @@
 package com.percent99.OutSpecs.controller;
 
+import com.percent99.OutSpecs.dto.ParticipationDTO;
 import com.percent99.OutSpecs.dto.ProfileDTO;
 import com.percent99.OutSpecs.entity.*;
 import com.percent99.OutSpecs.security.CustomUserPrincipal;
+import com.percent99.OutSpecs.service.NotificationService;
+import com.percent99.OutSpecs.service.ParticipationService;
 import com.percent99.OutSpecs.service.ProfileService;
 import com.percent99.OutSpecs.service.ReactionService;
 import jakarta.validation.Valid;
@@ -30,6 +33,8 @@ public class ProfileController {
 
     private final ProfileService profileService;
     private final ReactionService reactionService;
+    private final NotificationService notificationService;
+    private final ParticipationService participationService;
 
     /**
      * 프로필 생성 폼을 보여줍니다.<br>
@@ -120,6 +125,7 @@ public class ProfileController {
         List<ProfileDTO> followProfiles = profileService.getFollowedUserProfiles(user);
         List<Post> likedPosts = reactionService.getLikedPosts(user);
         List<Post> bookmarkedPosts = reactionService.getBookmarkedPosts(user);
+        List<Notification> notifications = notificationService.getAllNotification(user);
 
         if(profile.isEmpty()){
             return "redirect:/users/profiles/new";
@@ -130,6 +136,7 @@ public class ProfileController {
         model.addAttribute("followProfiles", followProfiles);
         model.addAttribute("likedPosts", likedPosts);
         model.addAttribute("bookmarkedPosts", bookmarkedPosts);
+        model.addAttribute("notifications", notifications);
 
         List<String> stacks = Optional.ofNullable(p.getStacks())
                         .map(s -> Arrays.stream(s.split(","))
@@ -288,6 +295,28 @@ public class ProfileController {
         Long meId = principal.getUser().getId();
         User user = profileService.getUserById(meId);
         reactionService.deleteReaction(user, TargetType.USER, userId,  ReactionType.FOLLOW);
+        return "redirect:/users/profiles/" + meId;
+    }
+
+    @PostMapping("/{notificationId}/participation")
+    public String updateParticipationStatus(@AuthenticationPrincipal CustomUserPrincipal principal,
+                                            @PathVariable Long notificationId,
+                                            @ModelAttribute ParticipationDTO participationDTO) {
+        Long meId = principal.getUser().getId();
+        Notification notification = notificationService.findNotificationById(notificationId);
+        Participation participation = participationService.getParticipationByUserId(notification.getSenderId().getId(), notification.getTargetId());
+        if(participation != null) {
+            participationService.updateParticipation(participation.getId(), participationDTO);
+            notificationService.deleteNotification(meId, notificationId);
+        }
+        return "redirect:/users/profiles/" + meId;
+    }
+
+    @PostMapping("/{notificationId}/participation/delete")
+    public String deleteNotification(@AuthenticationPrincipal CustomUserPrincipal principal,
+                                            @PathVariable Long notificationId) {
+        Long meId = principal.getUser().getId();
+        notificationService.deleteNotification(meId, notificationId);
         return "redirect:/users/profiles/" + meId;
     }
 
