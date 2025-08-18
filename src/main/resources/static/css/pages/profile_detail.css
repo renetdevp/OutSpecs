@@ -176,5 +176,5 @@ body{
 .muted{color:var(--muted); font-size:13px}
 /* 알림 */
 .noti-list{display:flex; flex-direction:column; gap:10px}
-.noti-item{border:1px solid var(--border); background:#fff; border-radius:12px; padding:12px 14px}
+.noti-item{display:flex; gap:10px; border:1px solid var(--border); background:#fff; border-radius:12px; padding:12px 14px}
 .noti-time{font-size:12px; color:var(--muted); margin-left:6px}

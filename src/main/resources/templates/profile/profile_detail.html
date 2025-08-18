@@ -165,8 +165,20 @@
                     <section id="tab-noti" class="panel" role="tabpanel" aria-labelledby="btn-noti">
                         <div class="noti-list">
                             <div class="noti-item" th:each="n : ${notifications}">
-                                <span th:text="${n.message}">누군가 회원님의 글에 댓글을 남겼습니다.</span>
-                                <span class="noti-time" th:text="${#temporals.format(n.createdAt, 'MM월 dd일 HH:mm')}">08월 10일 12:22</span>
+                                <div>
+                                    <span th:text="${n.message}">누군가 회원님의 글에 댓글을 남겼습니다.</span>
+                                    <span class="noti-time" th:text="${#temporals.format(n.createdAt, 'MM월 dd일 HH:mm')}">08월 10일 12:22</span>
+                                </div>
+                                <div th:if="${n.targetType.name() == 'APPLY'}">
+                                    <form th:action="@{/users/profiles/{notificationId}/participation(notificationId=${n.id})}"
+                                          object="${participationDTO}" method="post">
+                                        <button type="submit" name="status" value="ACCEPTED">수락</button>
+                                        <button type="submit" name="status" value="REJECTED">거절</button>
+                                    </form>
+                                </div>
+                                <form th:action="@{/users/profiles/{notificationId}/participation/delete(notificationId=${n.id})}" method="post">
+                                    <button type="submit" class="delete-btn" title="취소" onclick="return confirm('알림을 삭제하시겠습니까?')">x</button>
+                                </form>
                             </div>
 
                             <!-- 알림이 없거나 notifications가 null일 때 -->
