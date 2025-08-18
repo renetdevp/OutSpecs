@@ -12,7 +12,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -232,5 +234,84 @@ public class PostQueryService {
             qnaDTO.setAnswerComplete(post.getPostQnA().getAnswerComplete());
             dto.setQnaInfo(qnaDTO);
         }
+    }
+
+    public PostType resolvePostType(String category){
+        if(category == null || category.isBlank()) return PostType.FREE;
+        String v = category.trim();
+
+        try{ return PostType.valueOf(v.toUpperCase());}
+        catch (IllegalArgumentException ignore){}
+
+        for (PostType t : PostType.values()){
+            if(t.pathPrefix().equalsIgnoreCase(v))return t;
+        }
+        return PostType.FREE;
+    }
+
+    @Transactional(readOnly = true)
+    public boolean existsByTypeAndTitleLike(PostType type, String title){
+        return postRepository.existsByTypeAndTitleContainingIgnoreCase(type,title);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostListViewDTO> search(PostType type, String q) {
+        String query = (q == null) ? "" : q.trim();
+        if (query.isEmpty()) return List.of();
+
+        List<Post> posts = postRepository.searchByOptionalTypeAndTitle(type, query);
+
+        if (posts.size() > 100) posts = posts.subList(0, 100);
+        return toViews(posts,  true, false);
+    }
+
+    /** 공통 변환: 배치 집계로 카운트 모으고 뷰 DTO 채움 */
+    private List<PostListViewDTO> toViews(List<Post> posts, boolean withCounts, boolean withImages) {
+        if (posts.isEmpty()) return List.of();
+
+        List<Long> ids = posts.stream().map(Post::getId).toList();
+
+        final Map<Long, Long> likeMap = withCounts
+                ? reactionRepository.countByPostIdsAndType(ids, TargetType.POST, ReactionType.LIKE)
+                .stream()
+                .collect(Collectors.toMap(ReactionRepository.CountByPostId::getPostId,
+                        ReactionRepository.CountByPostId::getCnt))
+                : Collections.emptyMap();
+
+        final Map<Long, Long> bookmarkMap = withCounts
+                ? reactionRepository.countByPostIdsAndType(ids, TargetType.POST, ReactionType.BOOKMARK)
+                .stream()
+                .collect(Collectors.toMap(ReactionRepository.CountByPostId::getPostId,
+                        ReactionRepository.CountByPostId::getCnt))
+                : Collections.emptyMap();
+
+        final Map<Long, Long> commentMap = withCounts
+                ? commentRepository.countCommentsInBatch(ids, CommentType.COMMENT)
+                .stream()
+                .collect(Collectors.toMap(CommentRepository.CountByPostId::getPostId,
+                        CommentRepository.CountByPostId::getCnt))
+                : Collections.emptyMap();
+
+        return posts.stream().map(p -> new PostListViewDTO(
+                p.getId(),
+                p.getTitle(),
+                summarize(p.getContent()),
+                p.getUser(),
+                p.getType(),
+                p.getCreatedAt(),
+                p.getViewCount() == null ? 0L : p.getViewCount(),
+                likeMap.getOrDefault(p.getId(), 0L),
+                commentMap.getOrDefault(p.getId(), 0L),
+                bookmarkMap.getOrDefault(p.getId(), 0L),
+                withImages ? safeImages(p) : null
+        )).toList();
+    }
+
+    private String summarize(String s) {
+        if (s == null) return null;
+        return s.length() > 160 ? s.substring(0, 160) + "…" : s;
+    }
+    private List<Image> safeImages(Post p) {
+        try { return p.getImages(); } catch (Exception e) { return null; }
     }
 }
