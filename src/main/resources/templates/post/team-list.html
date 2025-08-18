@@ -21,7 +21,7 @@
                     </div>
                     <div class="post-stats">
                         <img class="post-popular-icon" src="/images/like-fill.svg" alt="좋아요 아이콘">
-                        <span class="likes">153</span>
+                        <span class="likes" th:text="${post.likeCount}">153</span>
                     </div>
                 </a>
             </th:block>
@@ -60,7 +60,7 @@
                                         <img class="post-icon" src="/images/like.png" alt="좋아요 아이콘">
                                     </button>
                                 </form>
-                                <span>0</span>
+                                <span th:text="${post.likeCount}">0</span>
                             </div>
                             <div class="reaction-item">
                                 <img class="post-icon" src="/images/view.png" alt="조회수 아이콘">
@@ -68,7 +68,7 @@
                             </div>
                             <div class="reaction-item">
                                 <img class="post-icon" src="/images/comment.png" alt="댓글 아이콘">
-                                <span>0</span>
+                                <span th:text="${post.commentCount}">0</span>
                             </div>
                         </div>
                         <form th:action="@{/post/{postId}/team(postId=${post.id})}" th:object="${participationDTO}"
