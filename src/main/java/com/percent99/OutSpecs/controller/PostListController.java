@@ -71,5 +71,4 @@ public class PostListController {
         model.addAttribute("postType", "PLAY");
         return "post/list";
     }
-
 }
