@@ -3,6 +3,7 @@ package com.percent99.OutSpecs.controller;
 import com.percent99.OutSpecs.dto.PostListViewDTO;
 import com.percent99.OutSpecs.entity.PostType;
 import com.percent99.OutSpecs.entity.Profile;
+import com.percent99.OutSpecs.entity.User;
 import com.percent99.OutSpecs.security.CustomUserPrincipal;
 import com.percent99.OutSpecs.service.PostQueryService;
 import com.percent99.OutSpecs.service.ProfileService;
@@ -32,16 +33,36 @@ public class HomeController {
     @GetMapping
     public String showHome(@AuthenticationPrincipal CustomUserPrincipal principal,
                            Model model){
+
+        List<PostListViewDTO> likePopularFree = postQueryService.toViews(
+                postQueryService.getLikePosts(PostType.FREE, 5), true, false
+        );
+
+        List<PostListViewDTO> likePopularTeam = postQueryService.toViews(
+                postQueryService.getLikePosts(PostType.TEAM, 5), true, false
+        );
+
+        List<PostListViewDTO> likePopularQNA = postQueryService.toViews(
+                postQueryService.getLikePosts(PostType.QNA, 5), true, false
+        );
+
+        List<PostListViewDTO> likePopularPlay = postQueryService.toViews(
+                postQueryService.getLikePosts(PostType.PLAY, 5), true, false
+        );
+
         if(principal != null){
-            userService.findByUsername(principal.getUsername())
-                    .ifPresent(user -> model.addAttribute("user", user));
+             userService.findByUsername(principal.getUsername())
+                     .ifPresent(user -> model.addAttribute("user",user));
 
-            Profile profile = profileService
-                    .getProfileByUserId(principal.getUser().getId())
-                    .orElse(null);
+             Profile profile = profileService.getProfileByUserId(principal.getUser().getId())
+                     .orElse(null);
 
-            model.addAttribute("profile", profile);
+            model.addAttribute("profile",profile);
         }
+        model.addAttribute("free",likePopularFree);
+        model.addAttribute("team",likePopularTeam);
+        model.addAttribute("qna",likePopularQNA);
+        model.addAttribute("play",likePopularPlay);
         return "home";
     }
 
@@ -75,12 +96,18 @@ public class HomeController {
                          @RequestParam(required = false) PostType type,
                          @RequestParam String q,
                          Model model) {
+
+        User user = userService.getUserById(principal.getUser().getId());
+        if(user.getProfile() == null) {
+            return "redirect:/users/profiles/new";
+        }
+
         String queryStr = q.trim();
         List<PostListViewDTO> results = queryStr.isEmpty()
                 ? List.of()
                 : postQueryService.search(type, queryStr);
 
-        model.addAttribute("user", principal.getUser());
+        model.addAttribute("user", user);
         model.addAttribute("q", queryStr);
         model.addAttribute("type", type);
         model.addAttribute("results", results);
