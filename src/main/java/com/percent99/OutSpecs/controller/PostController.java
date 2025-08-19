@@ -87,10 +87,15 @@ public class PostController {
     }
 
     @GetMapping("/{postId}/edit")
-    public String editFreePostForm(@PathVariable Long postId, Model model) {
+    public String editPostForm(@AuthenticationPrincipal CustomUserPrincipal principal,
+                                   @PathVariable Long postId, Model model) {
+        User user = null;
+        if(principal != null) {
+            Long userId = principal.getUser().getId();
+            user = profileService.getUserById(userId); }
         PostDTO postDTO = postQueryService.getPostDTOById(postId);
         if (postDTO == null) {
-            return "redirect:/board";
+            return "redirect:/post/" + postId;
         }
         List<String> selectedTags = new ArrayList<>();
 
@@ -103,6 +108,7 @@ public class PostController {
         model.addAttribute("postDTO", postDTO);
         model.addAttribute("selectedTags", selectedTags);
         model.addAttribute("isEdit", true);
+        model.addAttribute("user", user);
         return "post/write";
     }
 
@@ -117,9 +123,11 @@ public class PostController {
     @PostMapping("/{postId}/delete")
     public String deletePost(@AuthenticationPrincipal CustomUserPrincipal principal,
                              @PathVariable Long postId) {
+        Post post = postQueryService.getPostById(postId);
+        String postType = post.getType().pathPrefix();
         Long userId = principal.getUser().getId();
         postService.deletedPost(userId, postId);
-        return "redirect:/board/";
+        return "redirect:/list/" + postType;
     }
 
     @PostMapping("/{postId}/comment")

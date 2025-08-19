@@ -129,12 +129,12 @@ public class PostQueryService {
     }
 
     /**
-     * QNA나 자유게시판에서 선택한 태그가 모두 들어있는 게시글을 조회한다.
+     * 특정 게시판 타입에서 선택한 태그가 모두 들어있는 게시글을 조회한다.
      * @param tags 원하는 태그
      * @return 태그별 게시글 목록
      */
-    public List<Post> getTagPosts(List<String> tags) {
-        return postRepository.findBasePostsByTags(tags, tags.size());
+    public List<Post> getTagPosts(PostType postType, List<String> tags) {
+        return postRepository.findPostsByTypeAndTags(postType, tags, tags.size());
     }
 
     /**

@@ -120,6 +120,17 @@
     max-width: 168px;
 }
 
+.filter-title-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.filter-title-container a{
+    font-size: 11px;
+    color: #333;
+}
+
 .tag-list {
     display: flex;
     flex-direction: column;
