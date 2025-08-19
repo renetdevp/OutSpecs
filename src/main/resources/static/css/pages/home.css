@@ -1,6 +1,5 @@
 @import url("/css/shared/header.css");
 
-
 :root{
   --primary:#3a35a5; /* 보라 */
   --text:#111;
@@ -14,13 +13,18 @@
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;color:var(--text);font-family:system-ui,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif}
 
-.home{display:block}
-
 .hero{
   height:320px;
   background:var(--primary);
+  display:flex;
+  justify-content:center;
 }
-
+.hero-inner{
+  min-width:900px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
 .board-section{
   max-width:980px;
   margin:28px auto 0;
@@ -126,9 +130,6 @@ html,body{margin:0;padding:0;color:var(--text);font-family:system-ui,Segoe UI,Ap
   .dash-grid{ grid-template-columns: 1fr; }
 }
 
-
-.hero{ background:#3a35a5; padding:56px 16px 36px; color:#fff; }
-.hero-inner{ max-width:980px; margin:0 auto; display:grid; gap:14px; }
 
 .quick-compose{
   width:min(860px, 100%);
