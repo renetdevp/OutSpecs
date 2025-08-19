@@ -50,7 +50,7 @@ public class ChatMessageService {
 
     if (!profileRepository.existsByUserId(userId)) return;
 
-    if (!chatRoomRepository.existsByIdAndUserId(chatRoom.getId(), userId)) return;
+    if (!chatRoom.getUser1().equals(user) && !chatRoom.getUser2().equals(user)) return;
 
     ChatMessage chatMessage = new ChatMessage();
 
@@ -259,12 +259,19 @@ public class ChatMessageService {
    * @param chatMessageDTO 전송하고자 하는 메시지
    */
   public void sendMessage(Long chatRoomId, Long userId, ChatMessageDTO chatMessageDTO){
-    if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return;
+    ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElse(null);
+    if (chatRoom==null) return;
+    Long user1Id = chatRoom.getUser1().getId(), user2Id = chatRoom.getUser2().getId();
+    if (!user1Id.equals(userId) && !user2Id.equals(userId)) return;
+    Long targetId = user1Id.equals(userId) ? user2Id : user1Id;
 
     chatMessageDTO.setSenderId(userId);
     chatMessageDTO.setCreatedAt(LocalDateTime.now());
 
-    messagingTemplate.convertAndSend("/queue/rooms/"+chatRoomId, chatMessageDTO);
+    chatMessageDTO.setChatRoomId(chatRoomId);
+
+    messagingTemplate.convertAndSend("/queue/users/"+targetId, chatMessageDTO);
+    messagingTemplate.convertAndSend("/queue/users/"+userId, chatMessageDTO);
   }
 
   public List<ChatRoomResponseDTO> loadChatMessagesIntoChatRoomResponseDTOList(List<ChatRoomResponseDTO> chatRoomResponseDTOList, Long userId){

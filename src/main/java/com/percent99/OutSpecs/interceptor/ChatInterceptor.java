@@ -30,18 +30,23 @@ public class ChatInterceptor implements ChannelInterceptor {
     StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
     if (StompCommand.SUBSCRIBE.equals(accessor.getCommand()) || StompCommand.SEND.equals(accessor.getCommand())){
-      try {
-        Long chatRoomId = Long.parseLong(accessor.getFirstNativeHeader("chatRoomId"));
-        Principal principal = accessor.getUser();
-        User user = userRepository.findByUsername(principal.getName()).orElse(null);
+//      try {
+//        Long chatRoomId = Long.parseLong(accessor.getFirstNativeHeader("chatRoomId"));
+//        Principal principal = accessor.getUser();
+//        User user = userRepository.findByUsername(principal.getName()).orElse(null);
+//
+//        if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, user.getId())){
+//          return null;
+//        }
+//      }catch (NullPointerException e){
+//        e.printStackTrace();
+//        return null;
+//      }
+      Long userId = Long.parseLong(accessor.getFirstNativeHeader("userId"));
+      Principal principal = accessor.getUser();
+      User user = userRepository.findByUsername(principal.getName()).orElse(null);
 
-        if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, user.getId())){
-          return null;
-        }
-      }catch (NullPointerException e){
-        e.printStackTrace();
-        return null;
-      }
+      if (user==null || !userId.equals(user.getId())) return null;
     }
 
     return message;
