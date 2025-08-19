@@ -1,6 +1,5 @@
 package com.percent99.OutSpecs.service;
 
-import com.percent99.OutSpecs.repository.ImageRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -28,8 +27,7 @@ public class S3Service {
     public S3Service(@Value("${aws.access-key-id}") String accessKey,
                             @Value("${aws.secret-access-key}") String secretKey,
                             @Value("${aws.region}") String region,
-                            @Value("${aws.s3.bucket-name}") String bucketName,
-                            ImageRepository imageRepository) {
+                            @Value("${aws.s3.bucket-name}") String bucketName) {
         this.bucketName = bucketName;
         this.region = region;
         AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
@@ -127,6 +125,6 @@ public class S3Service {
      * 고유한 파일명 생성
      */
     private String generateFileName(String originalFilename) {
-        return UUID.randomUUID().toString() + "-" + originalFilename;
+        return "trade-images/" + UUID.randomUUID().toString() + "-" + originalFilename;
     }
 }
