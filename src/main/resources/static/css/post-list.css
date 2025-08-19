@@ -6,6 +6,11 @@
     box-sizing: border-box;
 }
 
+pre {
+    font-family: inherit;
+    color: inherit;
+}
+
 .container {
     display: flex;
     flex-direction: column;

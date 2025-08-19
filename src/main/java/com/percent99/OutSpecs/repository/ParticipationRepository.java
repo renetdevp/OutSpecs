@@ -44,4 +44,5 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
      * @return 해당 유저가 해당 게시글에 신청한 신청현황
      */
     Optional<Participation> findByUserIdAndPostId(Long userId, Long postId);
+    boolean existsByUserIdAndPostId(Long userId, Long postId);
 }

@@ -15,6 +15,11 @@ textarea {
     resize: none;
 }
 
+pre {
+    font-family: inherit;
+    color: inherit;
+}
+
 .post {
     display: flex;
     flex-direction: column;
@@ -251,7 +256,7 @@ textarea {
     transform: scale(1.1);
 }
 
-.like-btn:disabled, .bookmark-btn:disabled {
+.like-btn:disabled, .bookmark-btn:disabled, button:disabled {
     cursor: none;
     pointer-events: none;
 }
