@@ -4,6 +4,7 @@ import com.percent99.OutSpecs.entity.Post;
 import com.percent99.OutSpecs.entity.PostStatus;
 import com.percent99.OutSpecs.entity.PostType;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -44,7 +45,7 @@ public interface PostRepository extends JpaRepository<Post,Long> {
      * @param pageable 조회할 게시글 개수
      * @return 해당 유형의 게시글 리스트
      */
-    List<Post> findByTypeOrderByCreatedAtDesc(PostType type, Pageable pageable);
+    Slice<Post> findByTypeOrderByCreatedAtDesc(PostType type, Pageable pageable);
 
     /**
      * 게시판 타입에 따라 조회수 높은 순 조회한다.
@@ -58,7 +59,7 @@ public interface PostRepository extends JpaRepository<Post,Long> {
      * 게시판 타입에 따라 좋아요 수 높은 순으로 조회한다.
      * @param type 조회할 게시글의 타입
      * @param pageable 조회할 게시글 개수
-     * @return 해당 유형의 좋아요 높은 게시글 리스트
+     * @return 해당 유형의 좋아요 높은 게시글 id 리스트
      */
     @Query("SELECT p FROM Post p, Reaction r "
             + "WHERE r.targetType = 'POST' AND r.reactionType = 'LIKE' AND r.targetId = p.id AND p.type = :type "
@@ -68,32 +69,41 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     /**
      * 채용공고 게시판에서 기술 스택을 선택하여 하나라도 포함되어 있는 게시글을 모두 조회한다.
      * @param techs 원하는 기술스택
-     * @return 기술스택을 하나라도 포함한 게시글 리스트
+     * @return 기술스택을 하나라도 포함한 게시글 id 리스트
      */
-    @Query("SELECT p FROM Post p JOIN p.postJob pj JOIN pj.techniques t "
+    @Query("SELECT p.id FROM Post p JOIN p.postJob pj JOIN pj.techniques t "
             + "WHERE p.type = 'RECRUIT' AND t.tech IN :techs ")
-    List<Post> findRecruitPostsByTechs(@Param("techs") List<String> techs);
+    List<Long> findRecruitPostsByTechs(@Param("techs") List<String> techs);
 
     /**
      * 특정 게시판 타입에서 선택한 태그가 모두 들어있는 게시글을 조회한다.
      * @param postType 조회할 게시판 타입
      * @param tags 원하는 태그
      * @param tagCount 태그 개수
-     * @return 원하는 태그가 모두 들어가 있는 게시글 리스트
+     * @return 원하는 태그가 모두 들어가 있는 게시글 id 리스트
      */
-    @Query("SELECT p FROM Post p JOIN p.postTags pt "
+    @Query("SELECT p.id FROM Post p JOIN p.postTags pt "
             + "WHERE p.type = :postType AND pt.tags IN :tags "
             + "GROUP BY p.id HAVING COUNT(DISTINCT pt.tags) = :tagCount")
-    List<Post> findPostsByTypeAndTags(@Param("postType") PostType postType, @Param("tags") List<String> tags, @Param("tagCount") long tagCount);
+    List<Long> findPostsByTypeAndTags(@Param("postType") PostType postType, @Param("tags") List<String> tags, @Param("tagCount") long tagCount);
 
     /**
      * 나가서놀기 게시판에서 선택한 장소가 포함된 게시글을 조회한다.
      * @param place 원하는 장소
      * @return 해당 장소의 게시글 리스트
      */
-    @Query("SELECT p FROM Post p JOIN p.postHangout ph "
+    @Query("SELECT p.id FROM Post p JOIN p.postHangout ph "
             + "WHERE p.type = 'PLAY' AND ph.placeName = :place")
-    List<Post> findHangoutPostsByPlace(@Param("place") String place);
+    List<Long> findHangoutPostsByPlace(@Param("place") String place);
+
+    /**
+     * ID 리스트로 Pageable 적용
+     * @param ids postId
+     * @param pageable
+     * @return slice post 값
+     */
+    Slice<Post> findByIdIn(List<Long> ids, Pageable pageable);
+
 
     /**
      * 팀모집 상태에 따른 게시글 조회

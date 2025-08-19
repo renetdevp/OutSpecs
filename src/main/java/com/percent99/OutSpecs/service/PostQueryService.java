@@ -7,11 +7,11 @@ import com.percent99.OutSpecs.repository.PostRepository;
 import com.percent99.OutSpecs.repository.ReactionRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -89,11 +89,11 @@ public class PostQueryService {
     /**
      * 게시판 타입에 따라 최신글 limit개를 조회한다.
      * @param type 게시판 타입
-     * @param limit 좋아요 가져올 개수
+     * @param size 좋아요 가져올 개수
      * @return 최신글 목록
      */
-    public List<Post> getRecentPosts(PostType type, int limit) {
-        Pageable pageable = PageRequest.of(0, limit);
+    public Slice<Post> getRecentPosts(PostType type, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
         return postRepository.findByTypeOrderByCreatedAtDesc(type, pageable);
     }
 
@@ -120,30 +120,46 @@ public class PostQueryService {
     }
 
     /**
-     * 채용공고 게시판의 기술스택 필터 조건에 맞는(하나라도 포함) 게시글을 모두 조회한다.
-     * @param techs 기술스택 리스트
-     * @return 스택 요구조건 별 게시글 목록
-     */
-    public List<Post> getTechPosts(List<String> techs) {
-        return postRepository.findRecruitPostsByTechs(techs);
-    }
-
-    /**
-     * 특정 게시판 타입에서 선택한 태그가 모두 들어있는 게시글을 조회한다.
+     * 특정 게시판 타입에서 선택한 태그가 들어있는 게시글을 조회한다.
+     * @param postType 게시글 타입
      * @param tags 원하는 태그
      * @return 태그별 게시글 목록
      */
-    public List<Post> getTagPosts(PostType postType, List<String> tags) {
-        return postRepository.findPostsByTypeAndTags(postType, tags, tags.size());
-    }
+    public Slice<Post> getFilteredPosts(PostType postType, List<String> tags, int page, int size) {
+        if (postType == null) {
+            throw new IllegalArgumentException("PostType은 null일 수 없습니다.");
+        }
+        Pageable pageable = PageRequest.of(page, size,  Sort.by(Sort.Direction.DESC, "createdAt"));
+        List<Long> postIds = null;
 
-    /**
-     * 나가서놀기 게시판에서 선택한 장소가 포함된 게시글을 조회한다.
-     * @param place 원하는 장소
-     * @return 해당 장소의 게시글 리스트
-     */
-    public List<Post> getPlacePosts(String place) {
-        return postRepository.findHangoutPostsByPlace(place);
+        switch (postType) {
+            case QNA :
+            case FREE:
+                if (tags == null || tags.isEmpty()) {
+                    throw new IllegalArgumentException("태그가 없습니다.");
+                }
+                postIds = postRepository.findPostsByTypeAndTags(postType, tags, tags.size());
+                break;
+            case PLAY:
+                if (tags == null || tags.isEmpty()) {
+                    throw new IllegalArgumentException("장소가 없습니다.");
+                }
+                postIds = postRepository.findHangoutPostsByPlace(tags.get(0));
+                break;
+            case RECRUIT:
+                if (tags == null || tags.isEmpty()) {
+                    throw new IllegalArgumentException("태그가 없습니다.");
+                }
+                postIds = postRepository.findRecruitPostsByTechs(tags);
+                break;
+            default: throw new IllegalStateException("알 수 없는 PostType: " + postType);
+        }
+
+        if (postIds == null || postIds.isEmpty()) {
+            return new SliceImpl<>(new ArrayList<>(), pageable, false); // 빈 Slice 반환
+        }
+        postIds = postIds.stream().distinct().collect(Collectors.toList());
+        return postRepository.findByIdIn(postIds, pageable);
     }
 
     /**
