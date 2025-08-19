@@ -97,6 +97,14 @@ pre {
     margin-top: 4px;
 }
 
+.post-teamInfo {
+    background: #3B38A0;
+    color: white;
+    padding: 2px 7px;
+    border-radius: 5px;
+    align-self: flex-start;
+}
+
 .post-date {
     font-size: 12px;
     font-weight: lighter;

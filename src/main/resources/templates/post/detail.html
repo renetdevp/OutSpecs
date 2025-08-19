@@ -50,7 +50,7 @@
     <div class="post-content">
       <div th:if="${post.images}">
         <div th:each="img : ${post.images}">
-          <img th:src="@{|/uploads/${img.fileName}|}" alt="첨부 이미지">
+          <img th:src="${img.imageUrl}" alt="첨부 이미지">
         </div>
       </div>
       <pre th:text="${post.content}">게시글 내용</pre>

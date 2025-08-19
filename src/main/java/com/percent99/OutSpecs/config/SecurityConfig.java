@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 
 /**
  * 애플리케이션의 보안 설정을 담당하는 Configuration 클래스
@@ -79,7 +80,8 @@ public class SecurityConfig {
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/scripts/**").permitAll()
                         .requestMatchers("/error").permitAll()
-                        .requestMatchers("/","/users/login", "/users/signup").permitAll()
+                        .requestMatchers("/","/users/login", "/users/signup","/list/**").permitAll()
+                        .requestMatchers(new RegexRequestMatcher("^/post/\\d+$", null)).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
