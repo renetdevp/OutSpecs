@@ -10,10 +10,8 @@ import com.percent99.OutSpecs.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -159,56 +157,33 @@ public class PostController {
 
     @PostMapping("/{postId}/like")
     public String addLikePost(@AuthenticationPrincipal CustomUserPrincipal principal,
-                              @PathVariable Long postId,
-                              RedirectAttributes redirectAttributes) {
-        try {
-            User user = principal.getUser();
-            reactionService.addReaction(user, TargetType.POST, postId, ReactionType.LIKE);
-        } catch (RuntimeException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        }
+                              @PathVariable Long postId) {
+        User user = principal.getUser();
+        reactionService.addReaction(user, TargetType.POST, postId, ReactionType.LIKE);
         return "redirect:/post/" + postId;
     }
 
     @PostMapping("/{postId}/bookmark")
     public String addBookMarkPost(@AuthenticationPrincipal CustomUserPrincipal principal,
-                                  @PathVariable Long postId,
-                                  RedirectAttributes redirectAttributes) {
-        try {
-            User user = principal.getUser();
-            reactionService.addReaction(user, TargetType.POST, postId, ReactionType.BOOKMARK);
-        } catch (RuntimeException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        }
+                                  @PathVariable Long postId) {
+        User user = principal.getUser();
+        reactionService.addReaction(user, TargetType.POST, postId, ReactionType.BOOKMARK);
         return "redirect:/post/" + postId;
     }
 
     @PostMapping("/{postId}/report")
     public String addReportPost(@AuthenticationPrincipal CustomUserPrincipal principal,
-                                @PathVariable Long postId,
-                                RedirectAttributes redirectAttributes) {
-        try {
-            User user = principal.getUser();
-            reactionService.addReaction(user, TargetType.POST, postId, ReactionType.REPORT);
-            redirectAttributes.addFlashAttribute("errorMessage", "신고가 접수되었습니다.");
-        } catch (RuntimeException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        }
+                                @PathVariable Long postId) {
+        User user = principal.getUser();
+        reactionService.addReaction(user, TargetType.POST, postId, ReactionType.REPORT);
         return "redirect:/post/" + postId;
     }
 
     @PostMapping("/{postId}/team")
     public String participationTeam(@AuthenticationPrincipal CustomUserPrincipal principal,
                                     @PathVariable Long postId,
-                                    @ModelAttribute ParticipationDTO dto,
-                                    RedirectAttributes redirectAttributes) {
-        try {
+                                    @ModelAttribute ParticipationDTO dto) {
             participationService.createParticipation(dto);
-            redirectAttributes.addFlashAttribute("errorMessage", "팀 신청이 완료되었습니다.");
-        } catch (RuntimeException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        }
-
         return "redirect:/post/" + postId;
     }
 }

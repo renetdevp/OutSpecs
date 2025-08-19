@@ -8,6 +8,7 @@
 <body>
 
 <div>
+    <!--댓글 섹션-->
     <div class="comment comment-item" th:if="${!#lists.isEmpty(comments) and comment.type.name() == 'COMMENT'}"
          th:each="comment : ${comments}" th:attr="data-comment-id=${comment.id}">
         <div class="comment-container">
@@ -49,6 +50,7 @@
             </div>
         </form>
 
+        <!--대댓글 섹션-->
         <button class="comment-btn comment-btn-toggle" type="button" th:if="${user != null and user.profile != null}"
                 th:onclick="'showReplyForm(' + ${comment.id} + ', this)'">
             답글달기
@@ -57,26 +59,38 @@
         <div class="comment-reply">
             <div class="comment-reply-list" th:each="reply : ${comments}"
                  th:if="${reply.type.name() == 'REPLY' and reply.parentId == comment.id}">
-                <div class="comment-info">
-                    <div class="comment-header">
-                        <a th:if="${user != null and user.profile != null}" th:href="@{/users/profiles/{id}(id=${reply.user.id})}"
-                                class="reply-author" th:text="${reply.user.profile.nickname}">대댓글 작성자</a>
-                        <span th:unless="${user != null and user.profile != null}"
-                                class="reply-author" th:text="${reply.user.profile.nickname}">대댓글 작성자</span>
-                        <span class="reply-date" th:text="${#temporals.format(reply.createdAt, 'yyyy-MM-dd HH:mm')}">작성시간</span>
+                <div class="comment-info-container">
+                    <div class="comment-info">
+                        <div class="comment-header">
+                            <a th:if="${user != null and user.profile != null}" th:href="@{/users/profiles/{id}(id=${reply.user.id})}"
+                               class="reply-author" th:text="${reply.user.profile.nickname}">대댓글 작성자</a>
+                            <span th:unless="${user != null and user.profile != null}"
+                                  class="reply-author" th:text="${reply.user.profile.nickname}">대댓글 작성자</span>
+                            <span class="reply-date" th:text="${#temporals.format(reply.createdAt, 'yyyy-MM-dd HH:mm')}">작성시간</span>
+                        </div>
+                        <p class="reply-content" th:text="${reply.content}">대댓글 내용</p>
                     </div>
-                    <p class="reply-content" th:text="${reply.content}">대댓글 내용</p>
-                </div>
-                <div class="reply-more" th:if="${user!= null and (user.id == reply.user.id or user.role.name() == 'ADMIN')}">
-                    <img class="comment-more-icon" src="/images/more-vertical.png" alt="더보기 아이콘"
-                         th:onclick="'toggleMoreMenu(event, \'reply-more-menu-' + ${reply.id} + '\')'">
-                    <div class="comment-more-menu" th:id="'reply-more-menu-' + ${reply.id}">
-                        <form th:action="@{/post/{postId}/comment/{commentId}(postId=${post.id}, commentId=${reply.id})}"
-                              method="post" style="display:inline;">
-                            <button th:if="${user.id == reply.user.id}" class="delete-btn" type="submit" onclick="return confirm('대댓글을 삭제하시겠습니까?')">삭제</button>
-                        </form>
+                    <div class="reply-more" th:if="${user!= null and (user.id == reply.user.id or user.role.name() == 'ADMIN')}">
+                        <img class="comment-more-icon" src="/images/more-vertical.png" alt="더보기 아이콘"
+                             th:onclick="'toggleMoreMenu(event, \'reply-more-menu-' + ${reply.id} + '\')'">
+                        <div class="comment-more-menu" th:id="'reply-more-menu-' + ${reply.id}">
+                            <button th:if="${user.id == reply.user.id}" type="button" class="edit-btn" onclick="editReply(this)">수정</button>
+                            <form th:action="@{/post/{postId}/comment/{commentId}(postId=${post.id}, commentId=${reply.id})}"
+                                  method="post" style="display:inline;">
+                                <button th:if="${user.id == reply.user.id}" class="delete-btn" type="submit" onclick="return confirm('대댓글을 삭제하시겠습니까?')">삭제</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
+
+                <form th:action="@{/post/{postId}/comment/{commentId}/edit(postId=${post.id}, commentId=${reply.id})}"
+                      method="post" class="reply-edit-form" style="display:none;">
+                    <textarea class="comment-input" name="content" th:text="${reply.content}" placeholder="대댓글 내용을 입력하세요" required maxlength="250"></textarea>
+                    <div class="comment-form-buttons">
+                        <button class="comment-btn" type="submit">수정 완료</button>
+                        <button class="comment-btn comment-cancel-btn" type="button" onclick="cancelReplyEdit(this)">취소</button>
+                    </div>
+                </form>
             </div>
 
             <form th:action="@{/post/{postId}/comment(postId=${post.id})}" th:object="${commentDTO}"
@@ -154,6 +168,7 @@
             </div>
         </form>
 
+        <!-- QNA 답변 댓글 섹션 -->
         <div class="comment comment-item" th:if="${!#lists.isEmpty(comments) and comment.type.name() == 'REPLY' and comment.parentId == answer.id}"
              th:each="comment : ${comments}" th:attr="data-comment-id=${comment.id}">
             <div class="comment-container">
