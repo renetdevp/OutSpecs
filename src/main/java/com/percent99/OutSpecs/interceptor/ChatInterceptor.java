@@ -18,7 +18,7 @@ public class ChatInterceptor implements ChannelInterceptor {
   private final UserRepository userRepository;
 
   /**
-   * 사용자가 채팅 채널을 subscribe하거나 채널에 메시지를 send할 때 사용자가 해당 채팅방에 존재하는 유저인지 확인하고, 존재하지 않는다면 null을 반환함으로써 거부
+   * 사용자가 채팅 채널을 subscribe할 때, 해당 사용자가 맞는지 검증하는 메소드
    * @param message
    * @param channel
    * @return
