@@ -298,7 +298,13 @@ public class ProfileService {
         if(imageUrl == null || !imageUrl.contains("/")){
             throw new IllegalArgumentException("올바른 이미지 URL이 아닙니다.");
         }
-        return imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
+        try{
+            var uri = java.net.URI.create(imageUrl);
+            String path = uri.getPath();
+            return path.startsWith("/") ? path.substring(1) : path;
+        } catch (Exception e){
+            throw new IllegalArgumentException("올바른 이미지 URL이 아닙니다.",e);
+        }
     }
 
     /**
