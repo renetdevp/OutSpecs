@@ -50,7 +50,7 @@ public class ChatMessageService {
 
     if (!profileRepository.existsByUserId(userId)) return;
 
-    if (!chatRoomRepository.existsByIdAndUserId(chatRoom.getId(), userId)) return;
+    if (!chatRoom.getUser1().equals(user) && !chatRoom.getUser2().equals(user)) return;
 
     ChatMessage chatMessage = new ChatMessage();
 
@@ -102,6 +102,11 @@ public class ChatMessageService {
     return chatMessageRepository.findByChatRoomId(chatRoomId, pageable);
   }
 
+  @Transactional(readOnly = true)
+  private Page<ChatMessage> findByChatRoomIdAndCreatedAtBefore(Long chatRoomId, LocalDateTime firstCreatedAt, Pageable pageable){
+    return chatMessageRepository.findByChatRoomIdAndCreatedAtBefore(chatRoomId, firstCreatedAt, pageable);
+  }
+
   /**
    * chatRoomId와 userId를 parameter로 받아 해당 채팅방의 최근 채팅 메시지를 최대 15개까지 반환하는 메소드.
    * @param chatRoomId 최근 채팅 메시지를 가져오고자 하는 채팅방의 id 값
@@ -109,11 +114,40 @@ public class ChatMessageService {
    * @return 해당 채팅방의 최근 채팅 메시지를 최대 15개까지 반환
    */
   public List<ChatMessageDTO> getChatMessageDTOByChatRoomId(Long chatRoomId, Long userId){
-    if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return List.of();
-
     Pageable defaultPageable = PageRequest.of(0, 15, Sort.by("createdAt").descending());
 
-    Page<ChatMessage> chatMessagePage = this.findByChatRoomId(chatRoomId, defaultPageable);
+    return this.getChatMessageDTOByChatRoomId(chatRoomId, userId, defaultPageable);
+  }
+
+  /**
+   * chatRoomId와 userId, pageable을 parameter로 받아 해당 채팅방의 채팅 메시지를 pageable에 따라 반환하는 메소드
+   * @param chatRoomId 채팅 메시지를 가져오고자 하는 채팅방의 id 값
+   * @param userId 채팅 메시지를 가져오고자 하는 사용자의 id 값
+   * @param pageable 채팅 메시지를 pagination하기 위한 pageable 객체
+   * @return 해당 채팅방의 채팅 메시지를 pageable 객체에 따라 pagination한 결과값
+   */
+  public List<ChatMessageDTO> getChatMessageDTOByChatRoomId(Long chatRoomId, Long userId, Pageable pageable){
+    if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return List.of();
+
+    Page<ChatMessage> chatMessagePage = this.findByChatRoomId(chatRoomId, pageable);
+
+    if (!chatMessagePage.hasContent()) return List.of();
+
+    return this.convertChatMessageListToDTOList(chatMessagePage.getContent());
+  }
+
+  /**
+   * chatRoomId, userId, firstCreatedAt, pageable을 parameter로 받아 해당 채팅방의 채팅 메시지 중 firstCreatedAt보다 먼저 생성된 채팅 메시지를 pageable에 따라 반환하는 메소드
+   * @param chatRoomId 채팅 메시지를 가져옥고자 하는 채팅방의 id 값
+   * @param userId 채팅 메시지를 가져오고자 하는 사용자의 id 값
+   * @param firstCreatedAt 어느 시점 이전의 채팅 메시지를 가져올 것인지에 대한 기준값
+   * @param pageable limit과 sorting을 위한 pageable 객체
+   * @return 해당 채팅방의 채팅 메시지 중 firstCreatedAt보다 먼저 생성된 채팅메시지를 pageable 객체에 따라 pagination한 결과값
+   */
+  public List<ChatMessageDTO> getChatMessageDTOByChatRoomId(Long chatRoomId, Long userId, LocalDateTime firstCreatedAt, Pageable pageable){
+    if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return List.of();
+
+    Page<ChatMessage> chatMessagePage = this.findByChatRoomIdAndCreatedAtBefore(chatRoomId, firstCreatedAt, pageable);
 
     if (!chatMessagePage.hasContent()) return List.of();
 
@@ -225,9 +259,19 @@ public class ChatMessageService {
    * @param chatMessageDTO 전송하고자 하는 메시지
    */
   public void sendMessage(Long chatRoomId, Long userId, ChatMessageDTO chatMessageDTO){
-    if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return;
+    ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElse(null);
+    if (chatRoom==null) return;
+    Long user1Id = chatRoom.getUser1().getId(), user2Id = chatRoom.getUser2().getId();
+    if (!user1Id.equals(userId) && !user2Id.equals(userId)) return;
+    Long targetId = user1Id.equals(userId) ? user2Id : user1Id;
 
-    messagingTemplate.convertAndSend("/queue/rooms/"+chatRoomId, chatMessageDTO);
+    chatMessageDTO.setSenderId(userId);
+    chatMessageDTO.setCreatedAt(LocalDateTime.now());
+
+    chatMessageDTO.setChatRoomId(chatRoomId);
+
+    messagingTemplate.convertAndSend("/queue/users/"+targetId, chatMessageDTO);
+    messagingTemplate.convertAndSend("/queue/users/"+userId, chatMessageDTO);
   }
 
   public List<ChatRoomResponseDTO> loadChatMessagesIntoChatRoomResponseDTOList(List<ChatRoomResponseDTO> chatRoomResponseDTOList, Long userId){

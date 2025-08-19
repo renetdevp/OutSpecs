@@ -92,8 +92,8 @@ public class ChatRoomServiceTest {
     when(profileRepository.existsByUserId(user1.getId())).thenReturn(true);
     when(profileRepository.existsByUserId(user2.getId())).thenReturn(true);
 
-    when(chatRoomRepository.existsByUser1AndUser2(user1, user2)).thenReturn(true);
-    when(chatRoomRepository.existsByUser1AndUser2(user2, user1)).thenReturn(true);
+    when(chatRoomRepository.existsByUser1IdAndUser2Id(user1.getId(), user2.getId())).thenReturn(true);
+    when(chatRoomRepository.existsByUser1IdAndUser2Id(user2.getId(), user1.getId())).thenReturn(true);
 
     // when
     Object result1 = chatRoomService.createChatRoom(user1.getId(), user2.getId());
@@ -114,8 +114,7 @@ public class ChatRoomServiceTest {
     when(profileRepository.existsByUserId(user1.getId())).thenReturn(true);
     when(profileRepository.existsByUserId(user2.getId())).thenReturn(true);
 
-    when(chatRoomRepository.existsByUser1AndUser2(user1, user2)).thenReturn(false);
-    when(chatRoomRepository.existsByUser1AndUser2(user2, user1)).thenReturn(false);
+    when(chatRoomRepository.existsByUser1IdAndUser2Id(user1.getId(), user2.getId())).thenReturn(false);
 
     when(chatRoomRepository.save(any(ChatRoom.class))).thenReturn(chatRoom);
 
@@ -127,49 +126,42 @@ public class ChatRoomServiceTest {
   }
 
   @Test
-  @DisplayName("ChatRoomService.findChatRoomByUsername failed")
-  void findChatRoomByUsernameFailed(){
+  @DisplayName("ChatRoomService.findChatRoomByUserId failed")
+  void findChatRoomByUserIdFailed(){
     // given & when
-    List<ChatRoom> result1 = chatRoomService.findChatRoomByUsername(null);
-    List<ChatRoom> result2 = chatRoomService.findChatRoomByUsername("");
+    List<ChatRoom> result1 = chatRoomService.findChatRoomByUserId(null);
 
     // then
     assertThat(result1).isEqualTo(List.of());
-    assertThat(result2).isEqualTo(List.of());
   }
 
   @Test
-  @DisplayName("ChatRoomService.findChatRoomByUsername success")
-  void findChatRoomByUsernameSuccess(){
+  @DisplayName("ChatRoomService.findChatRoomByUserId success")
+  void findChatRoomByUserIdSuccess(){
     // given
-    when(chatRoomRepository.findByUsername(user1.getUsername())).thenReturn(List.of(chatRoom));
+    when(chatRoomRepository.findAllByUserId(user1.getId())).thenReturn(List.of(chatRoom));
 
     // when
-    List<ChatRoom> result = chatRoomService.findChatRoomByUsername(user1.getUsername());
+    List<ChatRoom> result = chatRoomService.findChatRoomByUserId(user1.getId());
 
     // then
     assertThat(result).isEqualTo(List.of(chatRoom));
   }
 
   @Test
-  @DisplayName("ChatRoomService.getChatRoomResponseDTOListByUsername failed")
-  void getChatRoomResponseDTOListByUsernameFailed(){
+  @DisplayName("ChatRoomService.getChatRoomResponseDTOListByUserId failed")
+  void getChatRoomResponseDTOListByUserIdFailed(){
     // given
-    String nullUsername = null;
-    String blankUsername = "";
 
-    when(chatRoomRepository.findByUsername(user1.getUsername())).thenReturn(List.of());
+    when(chatRoomRepository.findAllByUserId(user1.getId())).thenReturn(List.of());
 
     // when
-    List<ChatRoomResponseDTO> result1 = chatRoomService.getChatRoomResponseDTOListByUsername(nullUsername);
-    List<ChatRoomResponseDTO> result2 = chatRoomService.getChatRoomResponseDTOListByUsername(blankUsername);
-    List<ChatRoomResponseDTO> result3 = chatRoomService.getChatRoomResponseDTOListByUsername(user1.getUsername());
+    List<ChatRoomResponseDTO> result1 = chatRoomService.getChatRoomResponseDTOListByUserId(null);
+    List<ChatRoomResponseDTO> result2 = chatRoomService.getChatRoomResponseDTOListByUserId(user1.getId());
 
     // then
     assertThat(result1).isEqualTo(List.of());
     assertThat(result2).isEqualTo(List.of());
-    verify(chatRoomRepository, times(1)).findByUsername(user1.getUsername());
-    assertThat(result3).isEqualTo(List.of());
   }
 
   @Test
@@ -193,6 +185,21 @@ public class ChatRoomServiceTest {
 
     // then
     assertThat(result).isEqualTo(Optional.of(chatRoom));
+  }
+
+  @Test
+  @DisplayName("ChatRoomService.getChatRoomResponseDTOById failed")
+  void getChatRoomResponseDTOByIdFailed(){
+    // given
+    when(chatRoomService.findChatRoomById(chatRoom.getId())).thenReturn(Optional.empty());
+
+    // when
+    ChatRoomResponseDTO result1 = chatRoomService.getChatRoomResponseDTOById(null);
+    ChatRoomResponseDTO result2 = chatRoomService.getChatRoomResponseDTOById(chatRoom.getId());
+
+    // then
+    assertThat(result1).isNull();
+    assertThat(result2).isNull();
   }
 
   @Test

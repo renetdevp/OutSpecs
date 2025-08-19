@@ -12,4 +12,5 @@ public class ChatMessageDTO {
   private Long senderId;
   @NotBlank private String content;
   private LocalDateTime createdAt;
+  private Long chatRoomId;
 }
