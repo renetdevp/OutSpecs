@@ -112,13 +112,12 @@ public class PostController {
     @GetMapping("/{postId}/edit")
     public String editPostForm(@AuthenticationPrincipal CustomUserPrincipal principal,
                                    @PathVariable Long postId, Model model) {
-        User user = profileService.getUserById(userId);        
+        User user = profileService.getUserById(principal.getUser().getId());
         PostDTO postDTO = postQueryService.getPostDTOById(postId);
         if (postDTO == null) {
             return "redirect:/post/" + postId;
         }
         List<String> selectedTags = new ArrayList<>();
-        User user = profileService.getUserById(principal.getUser().getId());
 
         if (postDTO.getTagsInfo() != null && postDTO.getTagsInfo().getTags() != null) {
             selectedTags = Arrays.asList(postDTO.getTagsInfo().getTags().split(","));
