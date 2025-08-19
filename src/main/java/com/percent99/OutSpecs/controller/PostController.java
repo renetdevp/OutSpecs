@@ -33,6 +33,7 @@ public class PostController {
     private final ReactionService reactionService;
     private final ParticipationService participationService;
     private final ProfileService profileService;
+    private final UserService userService;
 
     @GetMapping("/write")
     public String postForm(@AuthenticationPrincipal CustomUserPrincipal principal,
@@ -90,10 +91,7 @@ public class PostController {
     public String detailPost(@AuthenticationPrincipal CustomUserPrincipal principal,
                              @PathVariable Long postId, Model model,
                              @ModelAttribute("errorMessage") String errorMessage) {
-        User user = null;
-        if(principal != null) {
-            Long userId = principal.getUser().getId();
-            user = profileService.getUserById(userId); }
+        User user = userService.getUserById(principal.getUser().getId());
         Post post = postQueryService.getPostAndIncreaseViewCount(postId);
         List<Comment> comments = commentService.getCommentsByPostId(postId);
         List<Participation> participations = participationService.getParticipationByPostId(postId);
@@ -112,13 +110,12 @@ public class PostController {
     @GetMapping("/{postId}/edit")
     public String editPostForm(@AuthenticationPrincipal CustomUserPrincipal principal,
                                    @PathVariable Long postId, Model model) {
-        User user = profileService.getUserById(userId);        
+        User user = profileService.getUserById(principal.getUser().getId());
         PostDTO postDTO = postQueryService.getPostDTOById(postId);
         if (postDTO == null) {
             return "redirect:/post/" + postId;
         }
         List<String> selectedTags = new ArrayList<>();
-        User user = profileService.getUserById(principal.getUser().getId());
 
         if (postDTO.getTagsInfo() != null && postDTO.getTagsInfo().getTags() != null) {
             selectedTags = Arrays.asList(postDTO.getTagsInfo().getTags().split(","));
