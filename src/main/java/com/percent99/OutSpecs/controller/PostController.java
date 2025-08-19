@@ -36,11 +36,16 @@ public class PostController {
                            @RequestParam(required = false) PostType type,
                            @RequestParam(required = false) String title,
                            Model model) {
-        User user = null;
-        if(principal != null) {
-            Long userId = principal.getUser().getId();
-            user = profileService.getUserById(userId); }
-        if(user.getProfile() == null) { return "redirect:/users/profiles/new"; }
+        if(principal == null){
+            return "redirect:/users/login";
+        }
+        User user = profileService.getUserById(principal.getUser().getId());
+        if(user == null) {
+            throw new IllegalStateException("사용자 정보를 찾을 수 없습니다.");
+        }
+        if(user.getProfile() == null) {
+            return "redirect:/users/profiles/new";
+        }
 
         List<String> selectedTags = new ArrayList<>();
 
@@ -125,6 +130,16 @@ public class PostController {
     @PostMapping("/{postId}/comment")
     public String addCommentPost(@AuthenticationPrincipal CustomUserPrincipal principal,
                                  @PathVariable Long postId, @ModelAttribute CommentDTO dto) {
+        if(principal == null){
+            return "redirect:/users/login";
+        }
+        User user = profileService.getUserById(principal.getUser().getId());
+        if(user == null) {
+            throw new IllegalStateException("사용자 정보를 찾을 수 없습니다.");
+        }
+        if(user.getProfile() == null) {
+            return "redirect:/users/profiles/new";
+        }
         dto.setUserId(principal.getUser().getId());
         commentService.createComment(dto);
         return "redirect:/post/" + postId;
@@ -134,6 +149,16 @@ public class PostController {
     public String deleteCommentPost(@AuthenticationPrincipal CustomUserPrincipal principal,
                                     @PathVariable Long postId,
                                     @PathVariable Long commentId) {
+        if(principal == null){
+            return "redirect:/users/login";
+        }
+        User user = profileService.getUserById(principal.getUser().getId());
+        if(user == null) {
+            throw new IllegalStateException("사용자 정보를 찾을 수 없습니다.");
+        }
+        if(user.getProfile() == null) {
+            return "redirect:/users/profiles/new";
+        }
         Long userId = principal.getUser().getId();
         commentService.deletedComment(userId, commentId);
         return "redirect:/post/" + postId;
@@ -144,6 +169,16 @@ public class PostController {
                                   @PathVariable Long postId,
                                   @PathVariable Long commentId,
                                   @ModelAttribute CommentDTO dto) {
+        if(principal == null){
+            return "redirect:/users/login";
+        }
+        User user = profileService.getUserById(principal.getUser().getId());
+        if(user == null) {
+            throw new IllegalStateException("사용자 정보를 찾을 수 없습니다.");
+        }
+        if(user.getProfile() == null) {
+            return "redirect:/users/profiles/new";
+        }
         dto.setUserId(principal.getUser().getId());
         commentService.updateComment(commentId, dto);
         return "redirect:/post/" + postId;
