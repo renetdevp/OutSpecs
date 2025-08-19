@@ -51,6 +51,35 @@ function cancelEdit(button) {
     editForm.style.display = 'none';
 }
 
+// 대댓글 수정 함수
+function editReply(button) {
+    const replyItem = button.closest('.comment-reply-list');
+    const content = replyItem.querySelector('.reply-content');
+    const editForm = replyItem.querySelector('.reply-edit-form');
+    const moreMenu = button.closest('.reply-more-menu');
+
+    if (content && editForm) {
+        content.style.display = 'none';
+        editForm.style.display = 'block';
+    }
+
+    if (moreMenu) {
+        moreMenu.style.display = 'none';
+    }
+}
+
+// 대댓글 수정 취소 함수
+function cancelReplyEdit(button) {
+    const replyItem = button.closest('.comment-reply-list');
+    const content = replyItem.querySelector('.reply-content');
+    const editForm = replyItem.querySelector('.reply-edit-form');
+
+    if (content && editForm) {
+        content.style.display = 'block';
+        editForm.style.display = 'none';
+    }
+}
+
 // 댓글 답글 폼 표시 함수
 function showReplyForm(commentId, toggleButton) {
     const replyForm = document.getElementById('reply-form-' + commentId);

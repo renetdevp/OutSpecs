@@ -75,15 +75,16 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     List<Post> findRecruitPostsByTechs(@Param("techs") List<String> techs);
 
     /**
-     * QNA나 자유게시판에서 선택한 태그가 모두 들어있는 게시글을 조회한다.
+     * 특정 게시판 타입에서 선택한 태그가 모두 들어있는 게시글을 조회한다.
+     * @param postType 조회할 게시판 타입
      * @param tags 원하는 태그
      * @param tagCount 태그 개수
      * @return 원하는 태그가 모두 들어가 있는 게시글 리스트
      */
     @Query("SELECT p FROM Post p JOIN p.postTags pt "
-            + "WHERE p.type IN ('QNA', 'FREE') AND pt.tags IN :tags "
+            + "WHERE p.type = :postType AND pt.tags IN :tags "
             + "GROUP BY p.id HAVING COUNT(DISTINCT pt.tags) = :tagCount")
-    List<Post> findBasePostsByTags(@Param("tags") List<String> tags, @Param("tagCount") long tagCount);
+    List<Post> findPostsByTypeAndTags(@Param("postType") PostType postType, @Param("tags") List<String> tags, @Param("tagCount") long tagCount);
 
     /**
      * 나가서놀기 게시판에서 선택한 장소가 포함된 게시글을 조회한다.

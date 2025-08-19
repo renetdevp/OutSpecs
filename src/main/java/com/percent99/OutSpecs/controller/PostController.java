@@ -110,11 +110,12 @@ public class PostController {
     }
 
     @GetMapping("/{postId}/edit")
-    public String editFreePostForm(@AuthenticationPrincipal CustomUserPrincipal principal,
+    public String editPostForm(@AuthenticationPrincipal CustomUserPrincipal principal,
                                    @PathVariable Long postId, Model model) {
+        User user = profileService.getUserById(userId);        
         PostDTO postDTO = postQueryService.getPostDTOById(postId);
         if (postDTO == null) {
-            return "post/detail";
+            return "redirect:/post/" + postId;
         }
         List<String> selectedTags = new ArrayList<>();
         User user = profileService.getUserById(principal.getUser().getId());
@@ -130,6 +131,7 @@ public class PostController {
         model.addAttribute("postDTO", postDTO);
         model.addAttribute("selectedTags", selectedTags);
         model.addAttribute("isEdit", true);
+        model.addAttribute("user", user);
         return "post/write";
     }
 
@@ -164,9 +166,12 @@ public class PostController {
     @PostMapping("/{postId}/delete")
     public String deletePost(@AuthenticationPrincipal CustomUserPrincipal principal,
                              @PathVariable Long postId) {
+        Post post = postQueryService.getPostById(postId);
+        String postType = post.getType().pathPrefix();
         Long userId = principal.getUser().getId();
         postService.deletedPost(userId, postId);
-        return "home";
+
+        return "redirect:/list/" + postType;
     }
 
     @PostMapping("/{postId}/comment")
@@ -228,56 +233,33 @@ public class PostController {
 
     @PostMapping("/{postId}/like")
     public String addLikePost(@AuthenticationPrincipal CustomUserPrincipal principal,
-                              @PathVariable Long postId,
-                              RedirectAttributes redirectAttributes) {
-        try {
-            User user = principal.getUser();
-            reactionService.addReaction(user, TargetType.POST, postId, ReactionType.LIKE);
-        } catch (RuntimeException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        }
+                              @PathVariable Long postId) {
+        User user = principal.getUser();
+        reactionService.addReaction(user, TargetType.POST, postId, ReactionType.LIKE);
         return "redirect:/post/" + postId;
     }
 
     @PostMapping("/{postId}/bookmark")
     public String addBookMarkPost(@AuthenticationPrincipal CustomUserPrincipal principal,
-                                  @PathVariable Long postId,
-                                  RedirectAttributes redirectAttributes) {
-        try {
-            User user = principal.getUser();
-            reactionService.addReaction(user, TargetType.POST, postId, ReactionType.BOOKMARK);
-        } catch (RuntimeException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        }
+                                  @PathVariable Long postId) {
+        User user = principal.getUser();
+        reactionService.addReaction(user, TargetType.POST, postId, ReactionType.BOOKMARK);
         return "redirect:/post/" + postId;
     }
 
     @PostMapping("/{postId}/report")
     public String addReportPost(@AuthenticationPrincipal CustomUserPrincipal principal,
-                                @PathVariable Long postId,
-                                RedirectAttributes redirectAttributes) {
-        try {
-            User user = principal.getUser();
-            reactionService.addReaction(user, TargetType.POST, postId, ReactionType.REPORT);
-            redirectAttributes.addFlashAttribute("errorMessage", "신고가 접수되었습니다.");
-        } catch (RuntimeException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        }
+                                @PathVariable Long postId) {
+        User user = principal.getUser();
+        reactionService.addReaction(user, TargetType.POST, postId, ReactionType.REPORT);
         return "redirect:/post/" + postId;
     }
 
     @PostMapping("/{postId}/team")
     public String participationTeam(@AuthenticationPrincipal CustomUserPrincipal principal,
                                     @PathVariable Long postId,
-                                    @ModelAttribute ParticipationDTO dto,
-                                    RedirectAttributes redirectAttributes) {
-        try {
+                                    @ModelAttribute ParticipationDTO dto) {
             participationService.createParticipation(dto);
-            redirectAttributes.addFlashAttribute("errorMessage", "팀 신청이 완료되었습니다.");
-        } catch (RuntimeException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        }
-
         return "redirect:/post/" + postId;
     }
 }

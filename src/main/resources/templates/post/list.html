@@ -8,7 +8,7 @@
 </head>
 <body>
     <header th:replace="~{fragments/header :: header}"></header>
-    <div class="container">
+    <div class="container" th:data-post-type="${postType.pathPrefix}">
       <section class="popular-section">
         <div class="list-title">인기게시글</div>
         <div class="popular-posts">
@@ -29,19 +29,27 @@
       </section>
 
       <div class="content-wrapper">
-        <div class="tech-tags" th:if="${postType == 'PLAY'}">
-          <div class="list-title">장소</div>
+        <div class="tech-tags" th:if="${postType.name() == 'PLAY'}">
+          <div class="filter-title-container">
+            <div class="list-title">장소</div>
+            <a th:href="@{/list/{postType}(postType=${postType.pathPrefix})}">초기화</a>
+          </div>
           <div th:with="opts=${T(java.util.List).of('서울특별시','강원도','경기도','충청도','전라도','경상도')}">
             <div class="tag-list">
-              <div class="tag-item" th:each="opt : ${opts}" th:text="${opt}">서울특별시</div>
+              <div th:if="${postType.name() == 'PLAY'}" class="tag-item" th:each="opt : ${opts}" th:text="${opt}" th:data-tag="${opt}"
+                   th:classappend="${selectedTags != null and selectedTags.contains(opt)} ? ' active' : ''">서울특별시</div>
             </div>
           </div>
         </div>
-        <div class="tech-tags" th:if="${postType != 'PLAY'}">
-          <div class="list-title">태그</div>
+        <div class="tech-tags" th:if="${postType.name() != 'PLAY'}">
+          <div class="filter-title-container">
+            <div class="list-title">태그</div>
+            <a th:href="@{/list/{postType}(postType=${postType.pathPrefix})}">초기화</a>
+          </div>
           <div th:with="opts=${T(java.util.List).of('Java','Spring','React','Vue','Python','AI','SQL', 'C++','C','JavaScript','HTML','CSS')}">
             <div class="tag-list">
-              <div class="tag-item" th:each="opt : ${opts}" th:text="${opt}">Java</div>
+              <div th:if="${postType.name() != 'PLAY'}" class="tag-item" th:each="opt : ${opts}" th:text="${opt}" th:data-tag="${opt}"
+                   th:classappend="${selectedTags != null and selectedTags.contains(opt)} ? ' active' : ''">Java</div>
             </div>
           </div>
         </div>
@@ -84,7 +92,7 @@
                       <img th:src="@{|/uploads/${img.fileName}|}" alt="첨부 이미지">
                     </div>
                   </div>
-                  <div th:text="${post.content}">게시글 내용</div>
+                  <pre th:text="${post.content}">게시글 내용</pre>
                 </a>
 
                 <div class="post-reaction">
@@ -124,10 +132,19 @@
 
     <script>
       // 태그 클릭 이벤트
+      const container = document.querySelector('.container');
+      const postTypePath = container.dataset.postType;
+
       document.querySelectorAll('.tag-item').forEach(tag => {
           tag.addEventListener('click', function() {
-              document.querySelectorAll('.tag-item').forEach(t => t.classList.remove('active'));
-              this.classList.add('active');
+            if(postTypePath === 'play') {
+                document.querySelectorAll('.tag-item').forEach(t => t.classList.remove('active'));
+            }
+            this.classList.toggle('active');
+            const activeTags= Array.from(document.querySelectorAll('.tag-item.active'))
+                                    .map(t => t.dataset.tag);
+            const query = activeTags.map(t => `tags=${encodeURIComponent(t)}`).join('&');
+            window.location.href = '/list/' + postTypePath + '/filter' + (query ? `?${query}` : '');
           });
       });
 

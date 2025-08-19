@@ -170,6 +170,17 @@ public class ParticipationService {
     }
 
     /**
+     * 특정 사용자가 특정 게시글에 참여신청을 했는지 정보
+     * @param userId 특정 사용자
+     * @param postId 특정 게시물
+     * @return 참여 신청 여부
+     */
+    @Transactional(readOnly = true)
+    public boolean existParticipationByUserId(Long userId, Long postId) {
+        return participationRepository.existsByUserIdAndPostId(userId, postId);
+    }
+
+    /**
      * ID로 Participation 정보를 삭제한다.
      * @param id 삭제할 Participation의 ID
      */
