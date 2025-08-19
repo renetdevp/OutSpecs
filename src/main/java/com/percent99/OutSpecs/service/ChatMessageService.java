@@ -253,8 +253,8 @@ public class ChatMessageService {
   }
 
   /**
-   * /queue/rooms/${chatRoomId} 채널에 메시지를 전송하는 메소드
-   * @param chatRoomId 메시지를 전송할 채널
+   * chatRoomId 채팅방에 속한 사용자에게 메시지를 전송하는 메소드
+   * @param chatRoomId 메시지를 전송할 채팅방
    * @param userId 메시지를 전송하고자 하는 사용자의 id 값
    * @param chatMessageDTO 전송하고자 하는 메시지
    */
