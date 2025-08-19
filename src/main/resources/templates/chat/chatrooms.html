@@ -1,0 +1,53 @@
+<!doctype html>
+  <html lang="ko" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>채팅방 | OutSpecs</title>
+    <link rel="stylesheet" th:href="@{/css/shared/header.css}">
+    <link rel="stylesheet" th:href="@{/css/pages/chatrooms.css}">
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+    <script th:inline="javascript">
+      /*<![CDATA[*/
+      const chatRooms = [[${chatrooms}]];
+      const USER_ID = [[${userId}]];
+      /*]]>*/
+    </script>
+    <script th:src="@{/js/chatrooms.js}"></script>
+  </head>
+  <body>
+    <header th:replace="~{fragments/header :: header}"></header>
+
+    <main class="main-container">
+      <div class="content">
+        <div class="chatroom-page-title" th:text="${'USER' + userId + ' 채팅방'}"></div>
+        <div class="chatroom-page-content">
+          <div class="chatroom-container">
+
+            <article class="chatroom" th:each="chatroom: ${chatrooms}" th:data-chatroom-id="${chatroom.chatRoomId}">
+              <div class="chatroom-info-profile-image">
+                <div th:if="${chatroom.user1Id == userId}">
+                  <img th:src="@{${chatroom.user1ImageUrl}}" alt="profileImage" th:if="${chatroom.user1ImageUrl != null}" class="target-image">
+                  <img th:src="@{/images/user_default_img.svg}" alt="defaultProfileImage" th:if="${chatroom.user1ImageUrl == null}" class="target-image">
+                </div>
+                <div th:if="${chatroom.user2Id == userId}">
+                  <img th:src="@{${chatroom.user2ImageUrl}}" alt="profileImage" th:if="${chatroom.user2ImageUrl != null}" class="target-image">
+                  <img th:src="@{/images/user_default_img.svg}" alt="defaultProfileImage" th:if="${chatroom.user2ImageUrl == null}" class="target-image">
+                </div>
+              </div>
+
+              <div class="chatroom-info">
+                <div th:text="${chatroom.user1Nickname}" class="target-nickname" th:if="${chatroom.user1Id != userId}"></div>
+                <div th:text="${chatroom.user2Nickname}" class="target-nickname" th:if="${chatroom.user2Id != userId}"></div>
+                <div th:text="${chatroom.chatRoomLastMessage}" class="last-message"></div>
+              </div>
+
+              <div class="chatroom-info-updated-at"></div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
