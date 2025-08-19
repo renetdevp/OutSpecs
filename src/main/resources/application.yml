@@ -44,11 +44,11 @@ spring:
 
 
 aws:
-  access-key-id: YOUR_ACCESS_KEY
-  secret-access-key: YOUR_SECRET_KEY
-  region: ap-northeast-2
+  access-key-id: ${AWS_ACCESS_KEY_ID}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY}
+  region: ${AWS_REGION}
   s3:
-    bucket-name: my-java-app-files-2024
+    bucket-name: ${AWS_S3_BUCKET_NAME}
 
 alan:
   BASE_URL: ${ALAN_BASE_URL}
