@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,6 +41,8 @@ public class AlanService {
   private Map<String, String> sendRequest(String content, Long userId){
     if (userService.getUserById(userId).getAiRateLimit() <= 0) return null;
 
+    content = URLEncoder.encode(content, StandardCharsets.UTF_8);
+
     String url = UriComponentsBuilder.fromUriString(baseUrl)
             .queryParam("content", content)
             .queryParam("client_id", alanClientId)
@@ -61,7 +65,7 @@ public class AlanService {
   }
 
   private Map<String, String> getRecommend(String placeName, Long userId){
-    String content = String.format("%s 지역의 명소를 5곳, 맛집을 5곳 추천", placeName);
+    String content = String.format("%s 지역의 명소를 5곳, 맛집을 5곳 추천 { name: 장소 이름, description: 장소 설명 } 형태로", placeName);
 
     return this.sendRequest(content, userId);
   }
