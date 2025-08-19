@@ -44,7 +44,8 @@
               <option value="">게시판을 선택하세요</option>
               <option value="FREE">자유게시판</option>
               <option value="TEAM">팀모집</option>
-              <option value="RECRUIT">채용공고</option>
+              <option value="RECRUIT"
+                      th:if="${user.role.name() == 'ENTUSER'}">채용공고</option>
               <option value="PLAY">나가서놀기</option>
               <option value="QNA">QnA</option>
             </select>
@@ -104,11 +105,11 @@
             <div class="input-wrapper">
               <div class="radio-group">
                 <div class="radio-item">
-                  <input type="radio" id="teamStatus1" th:field="*{teamInfo.status}" value="OPEN">
+                  <input type="radio" id="teamStatus1" th:field="*{teamInfo.status}" value="OPEN" required>
                   <label for="teamStatus1">모집중</label>
                 </div>
                 <div class="radio-item">
-                  <input type="radio" id="teamStatus2" th:field="*{teamInfo.status}" value="CLOSED">
+                  <input type="radio" id="teamStatus2" th:field="*{teamInfo.status}" value="CLOSED" required>
                   <label for="teamStatus2">모집완료</label>
                 </div>
               </div>

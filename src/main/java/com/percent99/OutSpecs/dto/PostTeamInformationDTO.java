@@ -12,6 +12,6 @@ import lombok.Setter;
 @Setter
 public class PostTeamInformationDTO {
 
-    private PostStatus status;
+    private PostStatus status = PostStatus.OPEN;
     private Integer capacity;
 }
