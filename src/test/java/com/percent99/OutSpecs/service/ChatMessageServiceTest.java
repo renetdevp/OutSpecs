@@ -102,10 +102,11 @@ public class ChatMessageServiceTest {
   @DisplayName("ChatMessageService.createChatMessage failed when user not in chatroom")
   void createChatMessageFailedWhenUserNotInChatRoom(){
     // give
+    chatRoom.setUser1(new User());
+    chatRoom.setUser2(new User());
     when(chatRoomService.findChatRoomById(chatRoom.getId())).thenReturn(Optional.of(chatRoom));
     when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
     when(profileRepository.existsByUserId(user.getId())).thenReturn(true);
-    when(chatRoomRepository.existsByIdAndUserId(chatRoom.getId(), user.getId())).thenReturn(false);
 
     // when
     chatMessageService.createChatMessage(chatRoom.getId(), chatMessageDTO, user.getId());
@@ -119,10 +120,10 @@ public class ChatMessageServiceTest {
   @DisplayName("ChatMessageService.createChatMessage success")
   void createChatMessageSuccess(){
     // give
+    chatRoom.setUser1(user);
     when(chatRoomService.findChatRoomById(chatRoom.getId())).thenReturn(Optional.of(chatRoom));
     when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
     when(profileRepository.existsByUserId(user.getId())).thenReturn(true);
-    when(chatRoomRepository.existsByIdAndUserId(chatRoom.getId(), user.getId())).thenReturn(true);
     when(chatMessageRepository.save(any(ChatMessage.class))).thenReturn(chatMessage);
     when(chatRoomService.updateChatRoomById(chatRoom, user.getId())).thenReturn(chatRoom);
 
