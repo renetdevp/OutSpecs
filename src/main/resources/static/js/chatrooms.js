@@ -26,6 +26,7 @@ stompClient.onStompError = (frame) => {
 };
 
 const chatMessageCursors = {};
+const DEFAULT_USER_PROFILE_URL = '/images/user_default_image.svg';
 
 function subscribeTo(chatRoomId){
   stompClient.subscribe(`/queue/rooms/${chatRoomId}`, (msg) => {
@@ -254,15 +255,8 @@ function insertNewChatRoom(chatRoomId){
   newChatRoom.className = 'chatroom';
   newChatRoom.setAttribute('data-chatroom-id', chatRoomId);
 
-  const newProfileImage = document.createElement('div');
-  newProfileImage.className = 'chatroom-info-profile-image';
-  const img = document.createElement('img');
-  img.className = 'target-image';
-  img.src = '/images/user_default_image.svg';
-  newProfileImage.insertAdjacentElement('afterbegin', img);
-
-  const newChatRoomInfo = document.createElement('div');
-  newChatRoomInfo.className = 'chatroom-info';
+  const newProfileImage = createChatRoomProfileImage(null);
+  const newChatRoomInfo = createChatRoomInfo();
 
   const newUpdatedAt = document.createElement('div');
   newUpdatedAt.className = 'chatroom-info-updated-at';
@@ -270,6 +264,35 @@ function insertNewChatRoom(chatRoomId){
   newChatRoom.insertAdjacentElement('beforeend', newProfileImage);
   newChatRoom.insertAdjacentElement('beforeend', newChatRoomInfo);
   newChatRoom.insertAdjacentElement('beforeend', newUpdatedAt);
+}
+
+function createChatRoomProfileImage(profileImgUrl){
+  const newProfileImage = document.createElement('div');
+  newProfileImage.className = 'chatroom-info-profile-image';
+
+  const img = document.createElement('img');
+  img.className = 'target-image';
+  img.src = !profileImgUrl ? DEFAULT_USER_PROFILE_URL : profileImgUrl;
+
+  newProfileImage.insertAdjacentElement('afterbegin', img);
+
+  return newProfileImage;
+}
+
+function createChatRoomInfo(){
+  const newChatRoomInfo = document.createElement('div');
+  newChatRoomInfo.className = 'chatroom-info';
+
+  const targetNickname = document.createElement('div');
+  targetNickname.className = 'target-nickname';
+
+  const lastMessage = document.createElement('div');
+  lastMessage.className = 'last-message';
+
+  newChatRoomInfo.insertAdjacentElement('beforeend', targetNickname);
+  newChatRoomInfo.insertAdjacentElement('beforeend', lastMessage);
+
+  return newChatRoomInfo;
 }
 
 window.addEventListener('load', (e) => {
