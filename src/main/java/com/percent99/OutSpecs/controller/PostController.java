@@ -10,6 +10,7 @@ import com.percent99.OutSpecs.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -28,13 +29,19 @@ public class PostController {
     private final CommentService commentService;
     private final ReactionService reactionService;
     private final ParticipationService participationService;
+    private final ProfileService profileService;
 
     @GetMapping("/write")
     public String postForm(@AuthenticationPrincipal CustomUserPrincipal principal,
                            @RequestParam(required = false) PostType type,
                            @RequestParam(required = false) String title,
                            Model model) {
-        User user = principal.getUser();
+        User user = null;
+        if(principal != null) {
+            Long userId = principal.getUser().getId();
+            user = profileService.getUserById(userId); }
+        if(user.getProfile() == null) { return "redirect:/users/profiles/new"; }
+
         List<String> selectedTags = new ArrayList<>();
 
         PostDTO dto = new PostDTO();
@@ -60,8 +67,11 @@ public class PostController {
     public String detailPost(@AuthenticationPrincipal CustomUserPrincipal principal,
                              @PathVariable Long postId, Model model,
                              @ModelAttribute("errorMessage") String errorMessage) {
+        User user = null;
+        if(principal != null) {
+            Long userId = principal.getUser().getId();
+            user = profileService.getUserById(userId); }
         Post post = postQueryService.getPostAndIncreaseViewCount(postId);
-        User user = principal.getUser();
         List<Comment> comments = commentService.getCommentsByPostId(postId);
         List<Participation> participations = participationService.getParticipationByPostId(postId);
         PostResponseDTO reactions = postQueryService.getPostReactionDetail(postId, user);
@@ -147,7 +157,6 @@ public class PostController {
             User user = principal.getUser();
             reactionService.addReaction(user, TargetType.POST, postId, ReactionType.LIKE);
         } catch (RuntimeException e) {
-            System.out.println("Exception message = " + e.getMessage());
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/post/" + postId;

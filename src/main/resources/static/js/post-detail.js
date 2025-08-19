@@ -18,9 +18,11 @@ function toggleMoreMenu(event, menuId) {
 // 게시글 신고 함수
 function reportPost() {
     if (confirm('이 게시글을 신고하시겠습니까?')) {
+        const postDiv = document.querySelector('.post');
+        const postId = postDiv.dataset.postId;
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = '/post/' + window.postId + '/report';
+        form.action = '/post/' + postId + '/report';
         document.body.appendChild(form);
         form.submit();
     }

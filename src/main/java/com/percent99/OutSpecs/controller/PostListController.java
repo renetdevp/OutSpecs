@@ -4,6 +4,7 @@ import com.percent99.OutSpecs.dto.PostListViewDTO;
 import com.percent99.OutSpecs.entity.*;
 import com.percent99.OutSpecs.security.CustomUserPrincipal;
 import com.percent99.OutSpecs.service.PostQueryService;
+import com.percent99.OutSpecs.service.ProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -18,11 +19,15 @@ import java.util.List;
 public class PostListController {
 
     private final PostQueryService postQueryService;
+    private final ProfileService profileService;
 
     @GetMapping("/free")
     public String freePostList(@AuthenticationPrincipal CustomUserPrincipal principal,
                                Model model) {
-        User user = principal.getUser();
+        User user = null;
+        if(principal != null) {
+            Long userId = principal.getUser().getId();
+            user = profileService.getUserById(userId); }
 
         List<PostListViewDTO> popular = postQueryService.toViews(
                 postQueryService.getViewCountPosts(PostType.FREE, 10), true,false);
@@ -40,7 +45,10 @@ public class PostListController {
     @GetMapping("/qna")
     public String qnaPostList(@AuthenticationPrincipal CustomUserPrincipal principal,
                                Model model) {
-        User user = principal.getUser();
+        User user = null;
+        if(principal != null) {
+            Long userId = principal.getUser().getId();
+            user = profileService.getUserById(userId); }
 
         List<PostListViewDTO> popular = postQueryService.toViews(
                 postQueryService.getViewCountPosts(PostType.QNA, 10), true,false);
@@ -57,7 +65,10 @@ public class PostListController {
     @GetMapping("/team")
     public String teamPostList(@AuthenticationPrincipal CustomUserPrincipal principal,
                               Model model, @ModelAttribute("errorMessage") String errorMessage) {
-        User user = principal.getUser();
+        User user = null;
+        if(principal != null) {
+            Long userId = principal.getUser().getId();
+            user = profileService.getUserById(userId); }
 
         List<PostListViewDTO> popular = postQueryService.toViews(
                 postQueryService.getViewCountPosts(PostType.TEAM, 10), true,false);
@@ -75,7 +86,10 @@ public class PostListController {
     @GetMapping("/recruit")
     public String recruitPostList(@AuthenticationPrincipal CustomUserPrincipal principal,
                                Model model) {
-        User user = principal.getUser();
+        User user = null;
+        if(principal != null) {
+            Long userId = principal.getUser().getId();
+            user = profileService.getUserById(userId); }
 
         List<PostListViewDTO> popular = postQueryService.toViews(
                 postQueryService.getViewCountPosts(PostType.RECRUIT, 10), true,false);
@@ -92,7 +106,10 @@ public class PostListController {
     @GetMapping("/play")
     public String playPostList(@AuthenticationPrincipal CustomUserPrincipal principal,
                                Model model) {
-        User user = principal.getUser();
+        User user = null;
+        if(principal != null) {
+            Long userId = principal.getUser().getId();
+            user = profileService.getUserById(userId); }
 
         List<PostListViewDTO> popular = postQueryService.toViews(
                 postQueryService.getViewCountPosts(PostType.PLAY, 10), true,false);

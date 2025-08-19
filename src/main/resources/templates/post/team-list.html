@@ -30,7 +30,7 @@
 
     <div class="content-wrapper">
         <main class="main-content">
-            <a class="write-btn" th:href="@{/post/write}">글쓰기</a>
+            <a class="write-btn" th:if="${user != null}" th:href="@{/post/write}">글쓰기</a>
             <div class="post-list">
                 <article class="post-item post-team-item" th:each="post : ${recentPosts}">
                     <div class="post-header">
@@ -38,7 +38,7 @@
                         <div class="write-btn" th:if="${post.teamInfo.status.name() == 'CLOSED'}">모집완료</div>
                         <div class="post-title-container post-team-title" th:text="${post.teamInfo.capacity}"></div>
 
-                        <div class="more-menu-container">
+                        <div class="more-menu-container" th:if="${user != null and user.id != post.user.id}">
                             <img class="more-icon" src="/images/more-vertical.png" alt="더보기 아이콘"
                                  th:onclick="|toggleMoreMenu(event, 'post-more-menu-${post.id}')|">
                             <div class="more-menu"  th:id="|post-more-menu-${post.id}|">
@@ -56,7 +56,7 @@
                         <div class="post-reaction-count">
                             <div class="reaction-item">
                                 <form th:action="@{/post/{postId}/like(postId=${post.id})}" method="post" style="display: inline;">
-                                    <button type="submit" class="like-btn">
+                                    <button type="submit" class="like-btn"  th:disabled="${user == null or user.id == post.user.id}">
                                         <img class="post-icon" src="/images/like.png" alt="좋아요 아이콘">
                                     </button>
                                 </form>
@@ -72,7 +72,7 @@
                             </div>
                         </div>
                         <form th:action="@{/post/{postId}/team(postId=${post.id})}" th:object="${participationDTO}"
-                              method="post" style="display: inline;">
+                              th:if="${user != null and user.id != post.user.id}" method="post" style="display: inline;">
                             <input type="hidden" name="userId" th:value="${user.id}" />
                             <input type="hidden" name="postId" th:value="${post.id}" />
                             <button type="submit" class="write-btn">신청하기</button>
@@ -88,11 +88,6 @@
 <div class="ai-chat">
     AI<br>챗봇
 </div>
-<script th:inline="javascript" th:if="${!#strings.isEmpty(errorMessage)}">
-    /*<![CDATA[*/
-        alert([[${errorMessage}]]);
-    /*]]>*/
-</script>
 <script>
     // 태그 클릭 이벤트
     document.querySelectorAll('.tag-item').forEach(tag => {

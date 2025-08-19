@@ -47,19 +47,29 @@
         </div>
 
         <main class="main-content">
-          <a class="write-btn" th:href="@{/post/write}">글쓰기</a>
+          <a class="write-btn" th:if="${user != null}" th:href="@{/post/write}">글쓰기</a>
           <div class="post-list">
             <article class="post-item" th:each="post : ${recentPosts}">
                 <div class="post-header">
-                  <img class="post-user-image" src="/images/profileImage.png" alt="프로필 이미지">
+                  <a th:if="${user != null and user.profile != null}"
+                     class="post-user-image-link" th:href="@{/users/profiles/{id}(id=${post.user.id})}">
+                    <img class="post-user-image" src="/images/profileImage.png" alt="프로필 이미지">
+                  </a>
+                  <img th:unless="${user != null and user.profile != null}"
+                       class="post-user-image" src="/images/profileImage.png" alt="프로필 이미지">
                   <div class="post-title-container">
                     <div class="post-title-info">
-                      <div class="post-user-nickname" th:text="${post.user.username}">사용자명</div>
+                      <a th:if="${user != null and user.profile != null}"
+                         th:href="@{/users/profiles/{id}(id=${post.user.id})}"
+                         class="post-user-nickname" th:text="${post.user.profile.nickname}">사용자명</a>
+                      <div th:unless="${user != null and user.profile != null}"
+                         th:href="@{/users/profiles/{id}(id=${post.user.id})}"
+                         class="post-user-nickname" th:text="${post.user.profile.nickname}">사용자명</div>
                       <div class="post-title" th:text="${post.title}">게시글 제목</div>
                     </div>
                     <div class="post-date" th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</div>
                   </div>
-                  <div class="more-menu-container">
+                  <div class="more-menu-container" th:if="${user != null and user.id != post.user.id and user.profile != null}">
                     <img class="more-icon" src="/images/more-vertical.png" alt="더보기 아이콘"
                          th:onclick="|toggleMoreMenu(event, 'post-more-menu-${post.id}')|">
                     <div class="more-menu"  th:id="|post-more-menu-${post.id}|">
@@ -81,7 +91,7 @@
                   <div class="post-reaction-count">
                     <div class="reaction-item">
                       <form th:action="@{/post/{postId}/like(postId=${post.id})}" method="post" style="display: inline;">
-                        <button type="submit" class="like-btn">
+                        <button type="submit" class="like-btn" th:disabled="${user == null or user.id == post.user.id or user.profile == null}">
                           <img class="post-icon" src="/images/like.png" alt="좋아요 아이콘">
                         </button>
                       </form>
@@ -97,7 +107,7 @@
                     </div>
                   </div>
                   <form th:action="@{/post/{postId}/bookmark(postId=${post.id})}" method="post" style="display: inline;">
-                    <button type="submit" class="bookmark-btn">
+                    <button type="submit" class="bookmark-btn" th:disabled="${user == null or user.id == post.user.id or user.profile == null}">
                       <img class="post-icon"  src="/images/bookmark.png" alt="북마크 아이콘">
                     </button>
                   </form>
@@ -108,7 +118,7 @@
       </div>
     </div>
 
-    <div class="ai-chat">
+    <div class="ai-chat" th:if="${user != null}">
       AI<br>챗봇
     </div>
 
