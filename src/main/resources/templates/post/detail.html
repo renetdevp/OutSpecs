@@ -14,10 +14,10 @@
     <div class="post-header">
       <a th:if="${user != null and user.profile != null}"
          class="post-user-image-link" th:href="@{/users/profiles/{id}(id=${post.user.id})}">
-        <img class="post-user-image" src="/images/profileImage.png" alt="프로필 이미지">
+        <img class="post-user-image" th:src="${post.user.profile.imageUrl}" alt="프로필 이미지">
       </a>
       <img th:unless="${user != null and user.profile != null}"
-           class="post-user-image" src="/images/profileImage.png" alt="프로필 이미지">
+           class="post-user-image" th:src="${post.user.profile.imageUrl}" alt="프로필 이미지">
       <div class="post-title-container">
         <div class="post-title-info">
           <a th:if="${user != null and user.profile != null}" th:href="@{/users/profiles/{id}(id=${post.user.id})}"
@@ -56,7 +56,7 @@
           <img th:src="${img.imageUrl}" alt="첨부 이미지">
         </div>
       </div>
-      <pre th:text="${post.content}">게시글 내용</pre>
+      <div th:text="${post.content}">게시글 내용</div>
     </div>
     <div class="post-tags">
       <div th:if="${post.type.name() == 'RECRUIT'}">

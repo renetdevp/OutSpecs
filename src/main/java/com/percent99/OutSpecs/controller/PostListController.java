@@ -32,7 +32,7 @@ public class PostListController {
 
         PostType postType = parsePostType(type);
         User user = getCurrentUser(principal);
-
+      
         List<PostListViewDTO> popular = postQueryService.toViews(
                 postQueryService.getLikePosts(postType, 10), true, false);
         Slice<Post> recentSlice = postQueryService.getRecentPosts(postType, page, size);

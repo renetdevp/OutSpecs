@@ -7,216 +7,129 @@
     <link rel="stylesheet" href="/css/pages/home.css">
 </head>
 <body>
-<header th:replace="~{fragments/header :: header}"></header>
-<main class="home">
-
-    <!-- 히어로(상단 보라색 영역) -->
-    <section class="hero">
-        <div class="hero-inner">
-
-            <!-- 퀵 작성 -->
-            <form class="quick-compose" th:action="@{/compose/route}" method="get">
-                <select id="composeCategory" name="category" aria-label="카테고리 선택">
-                    <option value="free">자유</option>
-                    <option value="qna">QnA</option>
-                    <option value="team">팀모집</option>
-                    <option value="recruit">채용공고</option>
-                    <option value="play">나가서놀기</option>
-                    <option value="ai-play">AI랑 나가서 놀기</option>
-                </select>
-                <input id="composeTitle" name="title" type="text" placeholder="무엇을 공유할까요? (제목 한 줄)" aria-label="제목 입력" />
-                <button type="submit" class="btn primary">작성하기</button>
-            </form>
-
-            <!-- 트렌딩 태그 (더미) -->
-            <nav class="trending-tags" aria-label="트렌딩 태그">
-                <a href="/tag/spring">#spring</a>
-                <a href="/tag/jpa">#jpa</a>
-                <a href="/tag/docker">#docker</a>
-                <a href="/tag/oauth2">#oauth2</a>
-                <a href="/tag/websocket">#websocket</a>
-                <a href="/tag/mysql">#mysql</a>
-            </nav>
-        </div>
-    </section>
-
-    <!-- 2x2 대시보드 그리드 -->
-    <section class="dash-grid">
-        <!-- 자유게시판 -->
-        <div class="board-tile">
-            <h2 class="section-title">자유 게시판 인기 게시글</h2>
-            <div class="card">
-                <div class="rank-list">
-                    <a class="rank-item" href="/boards/free/1">
-                        <span class="rank-badge">1</span>
-                        <span class="rank-title">좋아요 1위 게시물 제목</span>
-                        <span class="rank-date">2025.08.10</span>
-                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>153</span></span>
-                    </a>
-                    <a class="rank-item" href="/boards/free/2">
-                        <span class="rank-badge">2</span>
-                        <span class="rank-title">좋아요 2위 게시물 제목</span>
-                        <span class="rank-date">2025.08.10</span>
-                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>149</span></span>
-                    </a>
-                    <a class="rank-item" href="/boards/free/3">
-                        <span class="rank-badge">3</span>
-                        <span class="rank-title">좋아요 3위 게시물 제목</span>
-                        <span class="rank-date">2025.08.10</span>
-                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>141</span></span>
-                    </a>
-                    <a class="rank-item" href="/boards/free/4">
-                        <span class="rank-badge">4</span>
-                        <span class="rank-title">좋아요 4위 게시물 제목</span>
-                        <span class="rank-date">2025.08.10</span>
-                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>137</span></span>
-                    </a>
-                    <a class="rank-item" href="/boards/free/5">
-                        <span class="rank-badge">5</span>
-                        <span class="rank-title">좋아요 5위 게시물 제목</span>
-                        <span class="rank-date">2025.08.10</span>
-                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>133</span></span>
-                    </a>
+    <header th:replace="~{fragments/header :: header}"></header>
+    <main class="home">
+        <!-- 히어로(상단 보라색 영역) -->
+        <section class="hero">
+            <div class="hero-inner">
+                <!-- 퀵 작성 -->
+                <form class="quick-compose" th:action="@{/compose/route}" method="get">
+                    <select id="composeCategory" name="category" aria-label="카테고리 선택">
+                        <option value="free">자유</option>
+                        <option value="qna">QnA</option>
+                        <option value="team">팀모집</option>
+                        <option value="recruit">채용공고</option>
+                        <option value="play">나가서놀기</option>
+                        <option value="ai-play">AI랑 나가서 놀기</option>
+                    </select>
+                    <input id="composeTitle" name="title" type="text" placeholder="무엇을 공유할까요? (제목 한 줄)" aria-label="제목 입력" />
+                    <button type="submit" class="btn primary">작성하기</button>
+                </form>
+            </div>
+        </section>
+        <!-- 2x2 대시보드 그리드 -->
+        <section class="dash-grid">
+            <!-- 자유게시판 -->
+            <div class="board-tile">
+                <h2 class="section-title">자유 게시판 인기 게시글</h2>
+                <div class="card">
+                    <div class="rank-list">
+                        <a class="rank-item"
+                           th:each="p, stat : ${free}"
+                           th:href="@{/post/{id}(id=${p.id})}">
+                            <span class="rank-badge" th:text="${stat.index + 1}">1</span>
+                            <span class="rank-title" th:text="${p.title}">제목</span>
+                            <span class="rank-date" th:text="${#temporals.format(p.createdAt, 'yyyy.MM.dd')}">2025.08.10</span>
+                            <span class="rank-like">
+                                <img class="heart" src="/css/images/like_icon.svg" alt="좋아요">
+                                <span th:text="${p.likeCount}">0</span>
+                            </span>
+                        </a>
+                        <!-- 비어있을 때 -->
+                        <div class="rank-empty" th:if="${#lists.isEmpty(free)}">게시글이 없습니다.</div>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- QnA -->
-        <div class="board-tile">
-            <h2 class="section-title">QnA 인기 게시글</h2>
-            <div class="card">
-                <div class="rank-list">
-                    <a class="rank-item" href="/boards/qna/1">
-                        <span class="rank-badge">1</span>
-                        <span class="rank-title">QnA 1위 게시물 제목</span>
-                        <span class="rank-date">2025.08.10</span>
-                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>153</span></span>
-                    </a>
-                    <a class="rank-item" href="/boards/qna/2">
-                        <span class="rank-badge">2</span>
-                        <span class="rank-title">QnA 2위 게시물 제목</span>
-                        <span class="rank-date">2025.08.10</span>
-                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>146</span></span>
-                    </a>
-                    <a class="rank-item" href="/boards/qna/3">
-                        <span class="rank-badge">3</span>
-                        <span class="rank-title">QnA 3위 게시물 제목</span>
-                        <span class="rank-date">2025.08.10</span>
-                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>138</span></span>
-                    </a>
-                    <a class="rank-item" href="/boards/qna/4">
-                        <span class="rank-badge">4</span>
-                        <span class="rank-title">QnA 4위 게시물 제목</span>
-                        <span class="rank-date">2025.08.10</span>
-                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>130</span></span>
-                    </a>
-                    <a class="rank-item" href="/boards/qna/5">
-                        <span class="rank-badge">5</span>
-                        <span class="rank-title">QnA 5위 게시물 제목</span>
-                        <span class="rank-date">2025.08.10</span>
-                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>125</span></span>
-                    </a>
+            <!-- QnA -->
+            <div class="board-tile">
+                <h2 class="section-title">QnA 인기 게시글</h2>
+                <div class="card">
+                    <div class="rank-list">
+                        <a class="rank-item"
+                           th:each="p, stat : ${qna}"
+                           th:href="@{/post/{id}(id=${p.id})}">
+                            <span class="rank-badge" th:text="${stat.index + 1}">1</span>
+                            <span class="rank-title" th:text="${p.title}">제목</span>
+                            <span class="rank-date" th:text="${#temporals.format(p.createdAt, 'yyyy.MM.dd')}">2025.08.10</span>
+                            <span class="rank-like">
+                                <img class="heart" src="/css/images/like_icon.svg" alt="좋아요">
+                                <span th:text="${p.likeCount}">0</span>
+                            </span>
+                        </a>
+                        <div class="rank-empty" th:if="${#lists.isEmpty(qna)}">게시글이 없습니다.</div>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- 팀모집 -->
-        <div class="board-tile">
-            <h2 class="section-title">팀모집 인기 게시글</h2>
-            <div class="card">
-                <div class="rank-list">
-                    <a class="rank-item" href="/boards/team/1">
-                        <span class="rank-badge">1</span>
-                        <span class="rank-title">팀모집 1위 게시물 제목</span>
-                        <span class="rank-date">2025.08.10</span>
-                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>88</span></span>
-                    </a>
-                    <a class="rank-item" href="/boards/team/2">
-                        <span class="rank-badge">2</span>
-                        <span class="rank-title">팀모집 2위 게시물 제목</span>
-                        <span class="rank-date">2025.08.10</span>
-                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>77</span></span>
-                    </a>
-                    <a class="rank-item" href="/boards/team/3">
-                        <span class="rank-badge">3</span>
-                        <span class="rank-title">팀모집 3위 게시물 제목</span>
-                        <span class="rank-date">2025.08.10</span>
-                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>69</span></span>
-                    </a>
-                    <a class="rank-item" href="/boards/team/4">
-                        <span class="rank-badge">4</span>
-                        <span class="rank-title">팀모집 4위 게시물 제목</span>
-                        <span class="rank-date">2025.08.10</span>
-                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>65</span></span>
-                    </a>
-                    <a class="rank-item" href="/boards/team/5">
-                        <span class="rank-badge">5</span>
-                        <span class="rank-title">팀모집 5위 게시물 제목</span>
-                        <span class="rank-date">2025.08.10</span>
-                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>60</span></span>
-                    </a>
+            <!-- 팀모집 -->
+            <div class="board-tile">
+                <h2 class="section-title">팀모집 인기 게시글</h2>
+                <div class="card">
+                    <div class="rank-list">
+                        <a class="rank-item"
+                           th:each="p, stat : ${team}"
+                           th:href="@{/post/{id}(id=${p.id})}">
+                            <span class="rank-badge" th:text="${stat.index + 1}">1</span>
+                            <span class="rank-title" th:text="${p.title}">제목</span>
+                            <span class="rank-date" th:text="${#temporals.format(p.createdAt, 'yyyy.MM.dd')}">2025.08.10</span>
+                            <span class="rank-like">
+                                <img class="heart" src="/css/images/like_icon.svg" alt="좋아요">
+                                <span th:text="${p.likeCount}">0</span>
+                            </span>
+                        </a>
+                        <div class="rank-empty" th:if="${#lists.isEmpty(team)}">게시글이 없습니다.</div>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- 즐겨찾기(북마크) -->
-        <div class="board-tile">
-            <h2 class="section-title">즐겨찾기 인기 게시글</h2>
-            <div class="card">
-                <div class="rank-list">
-                    <a class="rank-item" href="/bookmarks/1">
-                        <span class="rank-badge">1</span>
-                        <span class="rank-title">즐겨찾기 1위 게시물 제목</span>
-                        <span class="rank-date">2025.08.10</span>
-                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>146</span></span>
-                    </a>
-                    <a class="rank-item" href="/bookmarks/2">
-                        <span class="rank-badge">2</span>
-                        <span class="rank-title">즐겨찾기 2위 게시물 제목</span>
-                        <span class="rank-date">2025.08.10</span>
-                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>130</span></span>
-                    </a>
-                    <a class="rank-item" href="/bookmarks/3">
-                        <span class="rank-badge">3</span>
-                        <span class="rank-title">즐겨찾기 3위 게시물 제목</span>
-                        <span class="rank-date">2025.08.10</span>
-                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>119</span></span>
-                    </a>
-                    <a class="rank-item" href="/bookmarks/4">
-                        <span class="rank-badge">4</span>
-                        <span class="rank-title">즐겨찾기 4위 게시물 제목</span>
-                        <span class="rank-date">2025.08.10</span>
-                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>108</span></span>
-                    </a>
-                    <a class="rank-item" href="/bookmarks/5">
-                        <span class="rank-badge">5</span>
-                        <span class="rank-title">즐겨찾기 5위 게시물 제목</span>
-                        <span class="rank-date">2025.08.10</span>
-                        <span class="rank-like"><img class="heart" src="/css/images/like_icon.svg" alt="좋아요"><span>97</span></span>
-                    </a>
+            <!-- 나가서놀기 -->
+            <div class="board-tile">
+                <h2 class="section-title">나가서놀기 인기 게시글</h2>
+                <div class="card">
+                    <div class="rank-list">
+                        <a class="rank-item"
+                           th:each="p, stat : ${play}"
+                           th:href="@{/post/{id}(id=${p.id})}">
+                            <span class="rank-badge" th:text="${stat.index + 1}">1</span>
+                            <span class="rank-title" th:text="${p.title}">제목</span>
+                            <span class="rank-date" th:text="${#temporals.format(p.createdAt, 'yyyy.MM.dd')}">2025.08.10</span>
+                            <span class="rank-like">
+                                <img class="heart" src="/css/images/like_icon.svg" alt="좋아요">
+                                <span th:text="${p.likeCount}">0</span>
+                            </span>
+                        </a>
+                        <div class="rank-empty" th:if="${#lists.isEmpty(play)}">게시글이 없습니다.</div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
-</main>
-<script>
-    // 카테고리에 따라 새 글 작성 경로 라우팅 (더미)
-    function goCompose(e){
-      e.preventDefault();
-      const cat = document.getElementById('composeCategory').value;
-      const title = document.getElementById('composeTitle').value.trim();
-      const map = {
-        free: '/boards/free/new',
-        qna:  '/boards/qna/new',
-        team: '/boards/team/new',
-        jobs: '/jobs/new'
-      };
-      const url = map[cat] || '/posts/new';
-      // 제목을 query로 넘겨 초안에 미리 채워도 됨
-      const q = title ? ('?title=' + encodeURIComponent(title)) : '';
-      window.location.href = url + q;
-      return false;
-    }
-</script>
+        </section>
+    </main>
+    <script>
+        // 카테고리에 따라 새 글 작성 경로 라우팅 (더미)
+        function goCompose(e){
+          e.preventDefault();
+          const cat = document.getElementById('composeCategory').value;
+          const title = document.getElementById('composeTitle').value.trim();
+          const map = {
+            free: '/boards/free/new',
+            qna:  '/boards/qna/new',
+            team: '/boards/team/new',
+            jobs: '/jobs/new'
+          };
+          const url = map[cat] || '/posts/new';
+          // 제목을 query로 넘겨 초안에 미리 채워도 됨
+          const q = title ? ('?title=' + encodeURIComponent(title)) : '';
+          window.location.href = url + q;
+          return false;
+        }
+    </script>
 </body>
 </html>
