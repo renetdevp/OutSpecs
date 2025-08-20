@@ -15,7 +15,7 @@
                 <div class="avatar">
                     <img th:src="${profile.imageUrl != null
                          ? profile.imageUrl
-                         :'/css/images/profile_icon.svg'}"
+                         :'/images/profile_icon.svg'}"
                           alt="프로필 이미지" class="avatar-img">
                 </div>
                 <div class="name" th:text="${profile.nickname}">User1</div>
@@ -69,19 +69,19 @@
             <div class="tabs" th:if="${isMine}">
                 <nav class="tab-nav" role="tablist" aria-label="프로필 탭">
                     <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab-following" data-tab="following" id="btn-following" title="팔로우한 목록">
-                        <img th:src="@{/css/images/follow_icon.svg}">
+                        <img th:src="@{/images/follow_icon.svg}">
                         팔로우
                     </button>
                     <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-likes" data-tab="likes" id="btn-likes" title="좋아요한 목록">
-                        <img th:src="@{/css/images/like_icon.svg}">
+                        <img th:src="@{/images/profile_like_icon.svg}">
                         좋아요
                     </button>
                     <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-bookmarks" data-tab="bookmarks" id="btn-bookmarks" title="북마크한 목록">
-                        <img th:src="@{/css/images/bookmark_icon.svg}">
+                        <img th:src="@{/images/profile_bookmark_icon.svg}">
                         북마크
                     </button>
                     <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-noti" data-tab="noti" id="btn-noti" title="알림">
-                        <img th:src="@{/css/images/bell_icon.svg}">
+                        <img th:src="@{/images/bell_icon.svg}">
                         알림
                     </button>
                 </nav>
@@ -91,7 +91,7 @@
                         <div class="grid">
                             <!-- 팔로우한 사용자들 -->
                             <div class="user-card" th:each="u : ${followProfiles}">
-                                <img th:src="${u.imageUrl != null ? u.imageUrl : '/css/images/profile_icon.svg'}" alt="" />
+                                <img th:src="${u.imageUrl != null ? u.imageUrl : '/images/profile_icon.svg'}" alt="" />
                                 <div class="user-meta">
                                     <div class="post-meta">
                                         <span class="id" th:text="${u.nickname}">user01</span>

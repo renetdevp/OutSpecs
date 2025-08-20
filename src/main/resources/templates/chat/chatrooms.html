@@ -24,25 +24,22 @@
         <div class="chatroom-page-title" th:text="${user.profile.nickname +' 채팅방'}"></div>
         <div class="chatroom-page-content">
           <div class="chatroom-container">
-
             <article class="chatroom" th:each="chatroom: ${chatrooms}" th:data-chatroom-id="${chatroom.chatRoomId}">
               <div class="chatroom-info-profile-image">
-                <div th:if="${chatroom.user1Id == userId}">
-                  <img th:src="@{${chatroom.user1ImageUrl}}" alt="profileImage" th:if="${chatroom.user1ImageUrl != null}" class="target-image">
-                  <img th:src="@{/images/user_default_img.svg}" alt="defaultProfileImage" th:if="${chatroom.user1ImageUrl == null}" class="target-image">
-                </div>
-                <div th:if="${chatroom.user2Id == userId}">
-                  <img th:src="@{${chatroom.user2ImageUrl}}" alt="profileImage" th:if="${chatroom.user2ImageUrl != null}" class="target-image">
-                  <img th:src="@{/images/user_default_img.svg}" alt="defaultProfileImage" th:if="${chatroom.user2ImageUrl == null}" class="target-image">
-                </div>
+                  <!-- 상대가 user1인 경우 -->
+                  <img th:if="${chatroom.user1Id != userId}"
+                       th:src="${chatroom.user1ImageUrl != null} ? @{${chatroom.user1ImageUrl}} : @{/images/user_default_img.svg}"
+                       alt="profileImage" class="target-image"/>
+                  <!-- 상대가 user2인 경우 -->
+                  <img th:if="${chatroom.user2Id != userId}"
+                       th:src="${chatroom.user2ImageUrl != null} ? @{${chatroom.user2ImageUrl}} : @{/images/user_default_img.svg}"
+                       alt="profileImage" class="target-image"/>
               </div>
-
               <div class="chatroom-info">
                 <div th:text="${chatroom.user1Nickname}" class="target-nickname" th:if="${chatroom.user1Id != userId}"></div>
                 <div th:text="${chatroom.user2Nickname}" class="target-nickname" th:if="${chatroom.user2Id != userId}"></div>
                 <div th:text="${chatroom.chatRoomLastMessage}" class="last-message"></div>
               </div>
-
               <div class="chatroom-info-updated-at"></div>
             </article>
           </div>

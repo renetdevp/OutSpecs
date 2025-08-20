@@ -39,6 +39,10 @@ public class ChatController {
     Long userId = customUserPrincipal.getUser().getId();
     User user = userService.getUserById(userId);
 
+    if(user.getProfile() == null){
+        return "redirect:/";
+    }
+
     List<ChatRoomResponseDTO> chatRoomResponseDTOList = chatRoomService.getChatRoomResponseDTOListByUserId(userId);
     chatRoomResponseDTOList = chatMessageService.loadChatMessagesIntoChatRoomResponseDTOList(chatRoomResponseDTOList, userId);
 

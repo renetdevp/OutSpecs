@@ -14,10 +14,16 @@
     <div class="post-header">
       <a th:if="${user != null and user.profile != null}"
          class="post-user-image-link" th:href="@{/users/profiles/{id}(id=${post.user.id})}">
-        <img class="post-user-image" th:src="${post.user.profile.imageUrl}" alt="프로필 이미지">
+          <img th:src="${post.user.profile.imageUrl != null
+                         ? post.user.profile.imageUrl
+                         :'/images/profile_icon.svg'}"
+               alt="프로필 이미지" class="post-user-image">
       </a>
       <img th:unless="${user != null and user.profile != null}"
-           class="post-user-image" th:src="${post.user.profile.imageUrl}" alt="프로필 이미지">
+           class="post-user-image"
+           th:src="${post.user.profile.imageUrl != null
+                         ? post.user.profile.imageUrl
+                         :'/images/profile_icon.svg'}" alt="프로필 이미지">
       <div class="post-title-container">
         <div class="post-title-info">
           <a th:if="${user != null and user.profile != null}" th:href="@{/users/profiles/{id}(id=${post.user.id})}"
@@ -29,12 +35,14 @@
         <div class="post-date" th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</div>
       </div>
       <div class="more-menu-container" th:if="${user != null and user.profile != null and user.id != post.user.id}">
-        <img class="more-icon" src="/images/more-vertical.png" alt="더보기 아이콘" onclick="toggleMoreMenu(event, 'post-more-menu')">
+        <img class="more-icon" src="/images/post_more_vertical.svg" alt="더보기 아이콘" onclick="toggleMoreMenu(event, 'post-more-menu')">
         <div class="more-menu" id="post-more-menu">
-          <button type="button" class="report-btn" id="report-button">
-            <span th:if="${!reactions.isReported}">신고</span>
-            <span th:if="${reactions.isReported}">신고 취소</span>
-          </button>
+            <form th:action="@{/post/{postId}/report(postId=${post.id})}" method="post">
+              <button type="submit" class="report-btn" id="report-button">
+                <span th:if="${!reactions.isReported}">신고</span>
+                <span th:if="${reactions.isReported}">신고 취소</span>
+              </button>
+            </form>
         </div>
       </div>
     </div>
@@ -73,24 +81,24 @@
         <div class="reaction-item">
           <form th:action="@{/post/{postId}/like(postId=${post.id})}" method="post" style="display: inline;">
             <button type="submit" class="like-btn" th:disabled="${user == null or user.id == post.user.id or user.profile == null}">
-              <img class="post-icon" th:if="${!reactions.isLiked}" src="/images/like.png" alt="좋아요 아이콘">
-              <img class="post-icon" th:if="${reactions.isLiked}" src="/images/like-fill.svg" alt="좋아요 아이콘">
+              <img class="post-icon" th:if="${!reactions.isLiked}" src="/images/post_like_icon.svg" alt="좋아요 아이콘">
+              <img class="post-icon" th:if="${reactions.isLiked}" src="/images/post_like_fill.svg" alt="좋아요 아이콘">
             </button>
           </form>
           <span th:text="${reactions.likesCount}">0</span>
         </div>
         <div class="reaction-item">
-          <img class="post-icon" src="/images/view.png" alt="조회수 아이콘">
+          <img class="post-icon" src="/images/post_view_icon.svg" alt="조회수 아이콘">
           <span th:text="${post.viewCount}">0</span>
         </div>
         <div class="reaction-item">
-          <img class="post-icon" src="/images/comment.png" alt="댓글 아이콘">
+          <img class="post-icon" src="/images/comment.svg" alt="댓글 아이콘">
           <span th:text="${reactions.commentsCount}">0</span>
         </div>
       </div>
       <form th:action="@{/post/{postId}/bookmark(postId=${post.id})}" method="post" style="display: inline;">
         <button type="submit" class="bookmark-btn" th:disabled="${user == null or user.id == post.user.id or user.profile == null}">
-          <img class="post-icon" th:if="${!reactions.isBookmarked}" src="/images/bookmark.png" alt="북마크 아이콘">
+          <img class="post-icon" th:if="${!reactions.isBookmarked}" src="/images/bookmark.svg" alt="북마크 아이콘">
           <img class="post-icon" th:if="${reactions.isBookmarked}" src="/images/bookmark-fill.svg" alt="북마크 아이콘">
         </button>
       </form>

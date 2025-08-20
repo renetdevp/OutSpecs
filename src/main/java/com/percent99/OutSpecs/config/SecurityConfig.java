@@ -9,10 +9,10 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 
 /**
@@ -75,19 +75,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain (HttpSecurity http) throws Exception{
         http
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .ignoringRequestMatchers("/chats/**"))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/scripts/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/","/users/login", "/users/signup","/list/**").permitAll()
                         .requestMatchers(new RegexRequestMatcher("^/post/\\d+$", null)).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
-                )
-                .headers(headers -> headers
-                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin    // H2 콘솔 내 <frame> 렌더링 허용
-                        )
                 )
                 .formLogin(form -> form
                         .loginPage("/users/login")

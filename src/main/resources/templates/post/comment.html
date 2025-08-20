@@ -14,10 +14,15 @@
         <div class="comment-container">
             <a th:if="${user != null and user.profile != null}"
                class="post-user-image-link" th:href="@{/users/profiles/{id}(id=${post.user.id})}">
-                <img class="user-image" src="/images/profileImage.png" alt="댓글 작성자 이미지">
+                <img class="user-image"
+                     th:src="${comment.user.profile.imageUrl != null
+                               ? comment.user.profile.imageUrl
+                               : '/images/profile_icon.svg'}" alt="댓글 작성자 이미지">
             </a>
             <img th:unless="${user != null and user.profile != null}"
-                 class="user-image" src="/images/profileImage.png" alt="댓글 작성자 이미지">
+                 class="user-image" th:src="${comment.user.profile.imageUrl != null
+                               ? comment.user.profile.imageUrl
+                               : '/images/profile_icon.svg'}" alt="댓글 작성자 이미지">
             <div class="comment-info">
                 <div class="comment-header">
                     <a th:if="${user != null and user.profile != null}" th:href="@{/users/profiles/{id}(id=${comment.user.id})}"
@@ -29,7 +34,7 @@
                 <div class="comment-content" th:text="${comment.content}">댓글 내용</div>
             </div>
             <div class="comment-more" th:if="${user != null and (user.id == comment.user.id or user.role.name() == 'ADMIN')}">
-                <img class="comment-more-icon" src="/images/more-vertical.png" alt="더보기 아이콘"
+                <img class="comment-more-icon" src="/images/post_more_vertical.svg" alt="더보기 아이콘"
                      th:onclick="'toggleMoreMenu(event, \'comment-more-menu-' + ${comment.id} + '\')'">
                 <div class="comment-more-menu" th:id="'comment-more-menu-' + ${comment.id}">
                     <button th:if="${user.id == comment.user.id}" type="button" class="edit-btn" onclick="editComment(this)">수정</button>
@@ -71,7 +76,7 @@
                         <p class="reply-content" th:text="${reply.content}">대댓글 내용</p>
                     </div>
                     <div class="reply-more" th:if="${user!= null and (user.id == reply.user.id or user.role.name() == 'ADMIN')}">
-                        <img class="comment-more-icon" src="/images/more-vertical.png" alt="더보기 아이콘"
+                        <img class="comment-more-icon" src="/images/post_more_vertical.svg" alt="더보기 아이콘"
                              th:onclick="'toggleMoreMenu(event, \'reply-more-menu-' + ${reply.id} + '\')'">
                         <div class="comment-more-menu" th:id="'reply-more-menu-' + ${reply.id}">
                             <button th:if="${user.id == reply.user.id}" type="button" class="edit-btn" onclick="editReply(this)">수정</button>
@@ -131,10 +136,16 @@
         <div class="post-header">
             <a th:if="${user != null and user.profile != null}"
                class="post-user-image-link" th:href="@{/users/profiles/{id}(id=${post.user.id})}">
-                <img class="post-user-image" src="/images/profileImage.png" alt="답변 작성자 이미지">
+                <img class="post-user-image"
+                     th:src="${answer.user.profile.imageUrl != null
+                      ? answer.user.profile.imageUrl
+                      : '/images/profile_icon.svg'}" alt="답변 작성자 이미지">
             </a>
             <img th:unless="${user != null and user.profile != null}"
-                 class="post-user-image" src="/images/profileImage.png" alt="답변 작성자 이미지">
+                 class="post-user-image"
+                    th:src="${answer.user.profile.imageUrl != null
+                      ? answer.user.profile.imageUrl
+                      : '/images/profile_icon.svg'}" alt="답변 작성자 이미지">
             <div class="answer-user-container">
                 <div class="post-title-info">
                     <a th:if="${user != null and user.profile != null}" th:href="@{/users/profiles/{id}(id=${answer.user.id})}"
@@ -145,7 +156,7 @@
                 <div class="post-date" th:text="${#temporals.format(answer.createdAt, 'yyyy-MM-dd HH:mm')}">작성시간</div>
             </div>
             <div class="more-menu-container" th:if="${user != null and (user.id == answer.user.id or user.role.name() == 'ADMIN')}">
-                <img class="more-icon" src="/images/more-vertical.png" alt="더보기 아이콘"
+                <img class="more-icon" src="/images/post_more_vertical.svg" alt="더보기 아이콘"
                      th:onclick="'toggleMoreMenu(event, \'answer-more-menu-' + ${answer.id} + '\')'">
                 <div class="more-menu" th:id="'answer-more-menu-' + ${answer.id}">
                     <button th:if="${user.id == answer.user.id}" type="button" class="edit-btn" onclick="editAnswer(this)">수정</button>
@@ -174,10 +185,16 @@
             <div class="comment-container">
                 <a th:if="${user != null and user.profile != null}"
                    class="post-user-image-link" th:href="@{/users/profiles/{id}(id=${post.user.id})}">
-                    <img class="user-image" src="/images/profileImage.png" alt="댓글 작성자 이미지">
+                    <img class="user-image"
+                         th:src="${user.profile.imageUrl != null
+                            ? user.profile.imageUrl
+                            : '/images/profile_icon.svg'}" alt="댓글 작성자 이미지">
                 </a>
                 <img th:unless="${user != null and user.profile != null}"
-                     class="user-image" src="/images/profileImage.png" alt="댓글 작성자 이미지">
+                     class="user-image"
+                        th:src="${user.profile.imageUrl != null
+                            ? user.profile.imageUrl
+                            : '/images/profile_icon.svg'}" alt="댓글 작성자 이미지">
                 <div class="comment-info">
                     <div class="comment-header">
                         <a th:if="${user != null and user.profile != null}" th:href="@{/users/profiles/{id}(id=${comment.user.id})}"
@@ -189,7 +206,7 @@
                     <div class="comment-content" th:text="${comment.content}">댓글 내용</div>
                 </div>
                 <div class="comment-more" th:if="${user!= null and (user.id == comment.user.id or user.role.name() == 'ADMIN')}">
-                    <img class="comment-more-icon" src="/images/more-vertical.png" alt="더보기 아이콘"
+                    <img class="comment-more-icon" src="/images/post_more_vertical.svg" alt="더보기 아이콘"
                          th:onclick="'toggleMoreMenu(event, \'comment-more-menu-' + ${comment.id} + '\')'">
                     <div class="comment-more-menu" th:id="'comment-more-menu-' + ${comment.id}">
                         <button th:if="${user.id == comment.user.id}" type="button" class="edit-btn" onclick="editComment(this)">수정</button>
@@ -229,7 +246,10 @@
 
     <div class="new-answer-form" th:if="${user != null and user.profile != null}">
         <div class="post-header">
-            <img class="post-user-image" src="/images/profileImage.png" alt="내 프로필 이미지">
+            <img class="post-user-image"
+                 th:src="${user.profile.imageUrl != null
+                    ? user.profile.imageUrl
+                    : '/images/profile_icon.svg'}" alt="내 프로필 이미지">
             <div class="answer-user-container">
                 <div class="post-title-info">
                     <div class="post-user-nickname" th:text="${user.profile.nickname}">내 닉네임</div>

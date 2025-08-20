@@ -20,7 +20,7 @@
                         <div class="post-date" th:text="${#temporals.format(post.createdAt, 'yyyy.MM.dd')}">2025.08.10</div>
                     </div>
                     <div class="post-stats">
-                        <img class="post-popular-icon" src="/images/like-fill.svg" alt="좋아요 아이콘">
+                        <img class="post-popular-icon" src="/images/post_like_fill.svg" alt="좋아요 아이콘">
                         <span class="likes" th:text="${post.likeCount}">153</span>
                     </div>
                 </a>
@@ -49,15 +49,15 @@
                     <div class="post-reaction">
                         <div class="post-reaction-count">
                             <div class="reaction-item">
-                                <img class="post-icon" src="/images/like-fill.svg" alt="좋아요 아이콘">
+                                <img class="post-icon" src="/images/post_like_fill.svg" alt="좋아요 아이콘">
                                 <span th:text="${post.likeCount}">0</span>
                             </div>
                             <div class="reaction-item">
-                                <img class="post-icon" src="/images/view.png" alt="조회수 아이콘">
+                                <img class="post-icon" src="/images/post_view_icon.svg" alt="조회수 아이콘">
                                 <span th:text="${post.viewCount}">0</span>
                             </div>
                             <div class="reaction-item">
-                                <img class="post-icon" src="/images/comment.png" alt="댓글 아이콘">
+                                <img class="post-icon" src="/images/comment.svg" alt="댓글 아이콘">
                                 <span th:text="${post.commentCount}">0</span>
                             </div>
                         </div>

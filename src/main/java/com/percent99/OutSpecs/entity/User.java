@@ -34,7 +34,7 @@ public class User {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false , columnDefinition = "ENUM('ENTUSER','USER','ADMIN')")
+    @Column(nullable = false)
     private UserRoleType role;
 
     @Column(name = "provider_id")

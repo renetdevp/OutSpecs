@@ -15,28 +15,6 @@ function toggleMoreMenu(event, menuId) {
     menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
 }
 
-// 게시글 신고 함수
-function reportPost() {
-    const postDiv = document.querySelector('.post');
-    const postId = postDiv.dataset.postId;
-
-    const reportBtn = document.getElementById('report-button');
-    const isReported = reportBtn.querySelector('span').innerText.includes('취소');
-
-    const message = isReported
-            ? '이 게시글 신고를 취소하시겠습니까?'
-            : '이 게시글을 신고하시겠습니까?';
-
-    if (confirm(message)) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/post/' + postId + '/report';
-        document.body.appendChild(form);
-        form.submit();
-    }
-    document.getElementById('post-more-menu').style.display = 'none';
-}
-
 // 댓글 수정 함수
 function editComment(button) {
     const commentItem = button.closest('.comment-item');

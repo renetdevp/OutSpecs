@@ -22,7 +22,7 @@
                 <div class="post-date" th:text="${#temporals.format(post.createdAt, 'yyyy.MM.dd')}">2025.08.10</div>
               </div>
               <div class="post-stats">
-                <img class="post-popular-icon" src="/images/like-fill.svg" alt="좋아요 아이콘">
+                <img class="post-popular-icon" src="/images/post_like_fill.svg" alt="좋아요 아이콘">
                 <span class="likes" th:text="${post.likeCount}">0</span>
               </div>
             </a>
@@ -63,10 +63,16 @@
                 <div class="post-header">
                   <a th:if="${user != null and user.profile != null}"
                      class="post-user-image-link" th:href="@{/users/profiles/{id}(id=${post.user.id})}">
-                    <img class="post-user-image" th:src="${post.user.profile.imageUrl}" alt="프로필 이미지">
+                    <img class="post-user-image"
+                         th:src="${post.user.profile.imageUrl != null
+                            ? post.user.profile.imageUrl
+                            : '/images/profile_icon.svg'}" alt="프로필 이미지">
                   </a>
                   <img th:unless="${user != null and user.profile != null}"
-                       class="post-user-image" th:src="${post.user.profile.imageUrl}" alt="프로필 이미지">
+                       class="post-user-image"
+                        th:src="${post.user.profile.imageUrl != null
+                            ? post.user.profile.imageUrl
+                            : '/images/profile_icon.svg'}" alt="프로필 이미지">
                   <div class="post-title-container">
                     <div class="post-title-info">
                       <a th:if="${user != null and user.profile != null}"
@@ -93,15 +99,15 @@
                 <div class="post-reaction">
                   <div class="post-reaction-count">
                     <div class="reaction-item">
-                      <img class="post-icon" src="/images/like-fill.svg" alt="좋아요 아이콘">
+                      <img class="post-icon" src="/images/post_like_fill.svg" alt="좋아요 아이콘">
                       <span th:text="${post.likeCount}">0</span>
                     </div>
                     <div class="reaction-item">
-                      <img class="post-icon" src="/images/view.png" alt="조회수 아이콘">
+                      <img class="post-icon" src="/images/post_view_icon.svg" alt="조회수 아이콘">
                       <span th:text="${post.viewCount}">0</span>
                     </div>
                     <div class="reaction-item">
-                      <img class="post-icon" src="/images/comment.png" alt="댓글 아이콘">
+                      <img class="post-icon" src="/images/comment.svg" alt="댓글 아이콘">
                       <span th:text="${post.commentCount}">0</span>
                     </div>
                   </div>
