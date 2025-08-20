@@ -35,8 +35,8 @@ public class ChatController {
   private final UserService userService;
 
   @GetMapping
-  public String chatRoomList(@AuthenticationPrincipal CustomUserPrincipal principal, Model model){
-    Long userId = principal.getUser().getId();
+  public String chatRoomList(@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal, Model model){
+    Long userId = customUserPrincipal.getUser().getId();
     User user = userService.getUserById(userId);
 
     List<ChatRoomResponseDTO> chatRoomResponseDTOList = chatRoomService.getChatRoomResponseDTOListByUserId(userId);
@@ -61,10 +61,7 @@ public class ChatController {
   @GetMapping("/{chatRoomId}")
   @ResponseBody
   public ChatRoomResponseDTO getChatRoomInfo(@PathVariable("chatRoomId") Long chatRoomId,
-                                             @AuthenticationPrincipal CustomUserPrincipal principal,
-                                             Model model){
-    User user = userService.getUserById(principal.getUser().getId());
-    model.addAttribute("user",user);
+                                             @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal){
     return chatRoomService.getChatRoomResponseDTOById(chatRoomId);
   }
 
