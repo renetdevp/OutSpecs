@@ -29,7 +29,7 @@ public class ChatMessage {
   @JoinColumn(name = "sender_id", nullable = false)
   private User sender;
 
-  @Column(name = "content", nullable = false, length = 255)
+  @Column(name = "content", nullable = false, length = 2048)
   private String content;
 
   @Column(name = "created_at", nullable = false)
