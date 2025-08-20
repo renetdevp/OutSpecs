@@ -175,6 +175,7 @@ public class ChatMessageService {
     result.setSenderId(chatMessage.getSender().getId());
     result.setContent(chatMessage.getContent());
     result.setCreatedAt(chatMessage.getCreatedAt());
+    result.setChatRoomId(chatMessage.getChatRoom().getId());
 
     return result;
   }
