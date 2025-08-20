@@ -119,6 +119,9 @@
 .profile-menu .logout {
   width:100%; background:transparent; border:0; text-align:left; cursor:pointer;
 }
+.profile-menu .chat {
+  width:100%; background:transparent; border:0; text-align:left; cursor:pointer;
+}
 
 @media (max-width: 1024px){
     .header__left-menu {

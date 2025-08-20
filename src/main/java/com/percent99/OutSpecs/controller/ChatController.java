@@ -2,17 +2,12 @@ package com.percent99.OutSpecs.controller;
 
 import com.percent99.OutSpecs.dto.ChatMessageDTO;
 import com.percent99.OutSpecs.dto.ChatRoomResponseDTO;
-import com.percent99.OutSpecs.entity.ChatRoom;
-import com.percent99.OutSpecs.entity.Profile;
 import com.percent99.OutSpecs.entity.User;
-import com.percent99.OutSpecs.entity.UserRoleType;
-import com.percent99.OutSpecs.repository.ChatRoomRepository;
-import com.percent99.OutSpecs.repository.ProfileRepository;
-import com.percent99.OutSpecs.repository.UserRepository;
 import com.percent99.OutSpecs.security.CustomUserPrincipal;
 import com.percent99.OutSpecs.service.AlanService;
 import com.percent99.OutSpecs.service.ChatMessageService;
 import com.percent99.OutSpecs.service.ChatRoomService;
+import com.percent99.OutSpecs.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -22,7 +17,6 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -38,22 +32,19 @@ public class ChatController {
   private final ChatRoomService chatRoomService;
   private final ChatMessageService chatMessageService;
   private final AlanService alanService;
-
-  // for test
-  private final PasswordEncoder passwordEncoder;
-  private final ProfileRepository profileRepository;
-  private final UserRepository userRepository;
-  private final ChatRoomRepository chatRoomRepository;
+  private final UserService userService;
 
   @GetMapping
-  public String chatRoomList(@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal, Model model){
-    Long userId = customUserPrincipal.getUser().getId();
+  public String chatRoomList(@AuthenticationPrincipal CustomUserPrincipal principal, Model model){
+    Long userId = principal.getUser().getId();
+    User user = userService.getUserById(userId);
 
     List<ChatRoomResponseDTO> chatRoomResponseDTOList = chatRoomService.getChatRoomResponseDTOListByUserId(userId);
     chatRoomResponseDTOList = chatMessageService.loadChatMessagesIntoChatRoomResponseDTOList(chatRoomResponseDTOList, userId);
 
     model.addAttribute("chatrooms", chatRoomResponseDTOList);
     model.addAttribute("userId", userId);
+    model.addAttribute("user", user);
 
     return "chat/chatrooms";
   }
@@ -69,9 +60,11 @@ public class ChatController {
 
   @GetMapping("/{chatRoomId}")
   @ResponseBody
-  public ChatRoomResponseDTO getChatRoomInfo(@PathVariable("chatRoomId") Long chatRoomId, @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal){
-    Long userId = customUserPrincipal.getUser().getId();
-
+  public ChatRoomResponseDTO getChatRoomInfo(@PathVariable("chatRoomId") Long chatRoomId,
+                                             @AuthenticationPrincipal CustomUserPrincipal principal,
+                                             Model model){
+    User user = userService.getUserById(principal.getUser().getId());
+    model.addAttribute("user",user);
     return chatRoomService.getChatRoomResponseDTOById(chatRoomId);
   }
 

@@ -34,7 +34,6 @@ public class PostListController {
         List<PostListViewDTO> recent = postQueryService.toViews(
                 postQueryService.getRecentPosts(PostType.FREE, 20), true, false);
 
-
         model.addAttribute("user", user);
         model.addAttribute("popularPosts", popular);
         model.addAttribute("recentPosts", recent);
@@ -96,7 +95,8 @@ public class PostListController {
 
         List<PostListViewDTO> popular = postQueryService.toViews(
                 postQueryService.getViewCountPosts(PostType.QNA, 10), true,false);
-        List<PostListViewDTO> recent = postQueryService.toViews(postQueryService.getTagPosts(PostType.QNA ,tags), true, false);
+        List<PostListViewDTO> recent = postQueryService.toViews(
+                postQueryService.getTagPosts(PostType.QNA ,tags), true, false);
 
         model.addAttribute("user", user);
         model.addAttribute("popularPosts", popular);
@@ -159,7 +159,8 @@ public class PostListController {
 
         List<PostListViewDTO> popular = postQueryService.toViews(
                 postQueryService.getViewCountPosts(PostType.RECRUIT, 10), true,false);
-        List<PostListViewDTO> recent = postQueryService.toViews(postQueryService.getTechPosts(tags), true, false);
+        List<PostListViewDTO> recent = postQueryService.toViews(
+                postQueryService.getTechPosts(tags), true, false);
 
         model.addAttribute("user", user);
         model.addAttribute("popularPosts", popular);

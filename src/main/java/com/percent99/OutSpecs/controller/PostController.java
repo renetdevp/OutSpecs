@@ -33,6 +33,7 @@ public class PostController {
     private final ReactionService reactionService;
     private final ParticipationService participationService;
     private final ProfileService profileService;
+    private final UserService userService;
 
     @GetMapping("/write")
     public String postForm(@AuthenticationPrincipal CustomUserPrincipal principal,
@@ -90,10 +91,7 @@ public class PostController {
     public String detailPost(@AuthenticationPrincipal CustomUserPrincipal principal,
                              @PathVariable Long postId, Model model,
                              @ModelAttribute("errorMessage") String errorMessage) {
-        User user = null;
-        if(principal != null) {
-            Long userId = principal.getUser().getId();
-            user = profileService.getUserById(userId); }
+        User user = userService.getUserById(principal.getUser().getId());
         Post post = postQueryService.getPostAndIncreaseViewCount(postId);
         List<Comment> comments = commentService.getCommentsByPostId(postId);
         List<Participation> participations = participationService.getParticipationByPostId(postId);

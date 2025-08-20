@@ -44,6 +44,10 @@
                 </div>
 
                 <div class="follow" th:if="${!isMine and meId != null}">
+                    <form th:action="@{/chats}" method="POST" role="none">
+                        <input type="hidden" th:value="${profile.userId}" name="targetId">
+                        <button type="submit" class="menu-item chat" role="menuitem">채팅하기</button>
+                    </form>
                     <form th:action="@{/users/profiles/{userId}/follow(userId=${profile.userId})}"
                           method="post"
                           th:attr="onsubmit=${isFollowing}
@@ -54,7 +58,6 @@
                     </form>
                 </div>
             </div>
-
             <div class="actions" th:if="${isMine}">
                 <a class="btn btn-primary" th:href="@{/users/profiles/{userId}/edit(userId=${profile.userId})}">수정하기</a>
                 <form th:action="@{/users/profiles/{userId}/delete(userId=${profile.userId})}"

@@ -26,7 +26,9 @@
             <div class="profile-dropdown" th:if="${user != null}">
                 <button id="avatarBtn" type="button" class="avatar-btn" aria-haspopup="menu" aria-expanded="false">
                     <img class="profile-avatar-img"
-                         th:src="${(Profile != null and Profile.imageUrl != null) ? Profile.imageUrl : '/css/images/profile_icon.svg'}"
+                         th:src="${(user.profile != null and user.profile.imageUrl != null)
+                                                ? user.profile.imageUrl
+                                                : '/css/images/profile_icon.svg'}"
                          alt="오픈프로필">
                     <span class="avatar-caret" aria-hidden="true">▾</span>
                 </button>
@@ -35,7 +37,9 @@
                        th:href="${Profile != null} ? @{/users/profiles/{userId}(userId=${Profile.userId})} : @{/users/profiles/new}">
                         내 프로필
                     </a>
-                    <a role="menuitem" th:if="${user != null}" >채팅하기</a>
+                    <form th:action="@{/chats}" method="get" role="none" th:if="${user != null}">
+                        <button type="submit" class="menu-item chat" role="menuitem">채팅하기</button>
+                    </form>
                     <form th:action="@{/logout}" method="post" role="none">
                         <button type="submit" class="menu-item logout" role="menuitem">로그아웃</button>
                     </form>
