@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+  <html lang="ko" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>챗봇-테스트 | OutSpecs</title>
+    <link rel="stylesheet" th:href="@{/css/pages/chatbot.css}">
+    <script th:src="@{/js/chatbot.js}"></script>
+  </head>
+  <body>
+    <div class="chatbot-container" th:fragment="chatbot" th:if="${user != null}">
+      <div class="chat-message-container">
+      </div>
+      <input type="text" name="question" class="question-input" placeholder="enter를 눌러 메시지를 입력하세요">
+    </div>
+  </body>
+</html>

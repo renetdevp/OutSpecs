@@ -17,15 +17,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // AI 챗봇 클릭 이벤트 (AI 챗봇 요소가 존재하는 경우에만)
-    const aiChat = document.querySelector('.ai-chat');
-    if (aiChat) {
-        aiChat.addEventListener('click', function() {
-            // AI 챗봇 열기
-            console.log('AI 챗봇 클릭됨');
-        });
-    }
-
     // 무한스크롤
     let page = 0;
     const size = 5;
@@ -70,4 +61,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }, { threshold: 1, rootMargin: '100px' });
 
     observer.observe(sentinel);
+
+  function toggleChatBotContainer(e){
+    const chatbotContainer = document.querySelector('.chatbot-container');
+
+    if (chatbotContainer.style.display !== 'flex'){
+      chatbotContainer.style.display = 'flex';
+      e.currentTarget.textContent = 'X';
+    }else {
+      chatbotContainer.style.display = 'none';
+      e.currentTarget.textContent = 'AI 챗봇';
+    }
+  }
+
+  // AI 챗봇 클릭 이벤트
+  document.querySelector('.ai-chat')?.addEventListener('click', toggleChatBotContainer);
 });

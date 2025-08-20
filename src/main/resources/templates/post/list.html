@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>outspecs - 게시판</title>
   <link rel="stylesheet" th:href="@{/css/post/list.css}">
+  <link rel="stylesheet" th:href="@{/css/pages/chatbot.css}" th:if="${user != null}">
+  <script th:src="@{/js/chatbot.js}" th:if="${user != null}"></script>
 </head>
 <body>
     <header th:replace="~{fragments/header :: header}"></header>
@@ -118,5 +120,6 @@
       AI<br>챗봇
     </div>
   <script src="/js/post-list.js"></script>
+    <div class="ai-chat" th:replace="~{fragments/chatbot :: chatbot}"></div>
 </body>
 </html>
