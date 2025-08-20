@@ -82,6 +82,11 @@ body {
   font-weight: 600;
 }
 
+.chatroom-info > .last-message {
+  height: 20px;
+  overflow: hidden;
+}
+
 .chatroom > .chatroom-info-updated-at {
   margin-left: auto;
 }
@@ -127,9 +132,11 @@ body {
 }
 
 .chat-message > .chat-message-content {
+  flex: 1 1 0;
   border-radius: 20px;
   padding: 5px 10px;
   font-size: 1rem;
+  overflow-wrap: anywhere;
 }
 
 .chat-message[self=true] > .chat-message-content {

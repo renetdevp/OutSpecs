@@ -55,7 +55,10 @@ function insertChatMessage(parent, senderId, content, createdAt, position){
 
   newChat.className = 'chat-message';
   newChat.setAttribute('self', USER_ID === senderId);
-  newChat.textContent = getDString({ hour: 'numeric', minute: 'numeric' }, createdAt);
+
+  const newCreatedAt = document.createElement('span');
+  newCreatedAt.textContent = getDString({ hour: 'numeric', minute: 'numeric' }, createdAt);
+  newChat.insertAdjacentElement('beforeend', newCreatedAt);
 
   const newChatContent = document.createElement('span');
   newChatContent.className = 'chat-message-content';
