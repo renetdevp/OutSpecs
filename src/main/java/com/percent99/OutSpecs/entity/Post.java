@@ -37,7 +37,7 @@ public class Post {
     private User user;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "ENUM('QNA','TEAM','PLAY','AIPLAY','FREE', 'RECRUIT')")
+    @Column(nullable = false)
     private PostType type;
 
     @Column(nullable = false)

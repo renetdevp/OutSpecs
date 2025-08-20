@@ -26,7 +26,7 @@ public class Comment {
   private User user;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "type", nullable = false, columnDefinition = "ENUM('COMMENT', 'ANSWER', 'REPLY')")
+  @Column(name = "type", nullable = false)
   private CommentType type;
 
   @Column(name = "parent_id", nullable = false)

@@ -34,6 +34,6 @@ public class Participation {
     private LocalDateTime appliedAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "ENUM('PENDING','ACCEPTED','REJECTED')")
+    @Column(nullable = false)
     private ParticipationStatus status;
 }

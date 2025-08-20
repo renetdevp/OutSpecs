@@ -27,7 +27,7 @@ public class Notification {
     private User senderId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "target_type", nullable = false, columnDefinition = "ENUM('APPLY', 'ACCEPTED', 'REJECTED', 'FOLLOW', 'LIKE_POST', 'LIKE_COMMENT')")
+    @Column(name = "target_type", nullable = false)
     private NotificationType targetType;
 
     @Column(name = "target_id", nullable = false)

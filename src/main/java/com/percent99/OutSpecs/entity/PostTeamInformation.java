@@ -30,7 +30,7 @@ public class PostTeamInformation {
     private Post post;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "ENUM('OPEN', 'CLOSED')")
+    @Column(nullable = false)
     private PostStatus status;
 
     @Column(nullable = false)
