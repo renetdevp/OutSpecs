@@ -3,6 +3,7 @@ package com.percent99.OutSpecs.controller;
 import com.percent99.OutSpecs.dto.ChatMessageDTO;
 import com.percent99.OutSpecs.dto.ChatRoomResponseDTO;
 import com.percent99.OutSpecs.entity.User;
+import com.percent99.OutSpecs.repository.ProfileRepository;
 import com.percent99.OutSpecs.security.CustomUserPrincipal;
 import com.percent99.OutSpecs.service.AlanService;
 import com.percent99.OutSpecs.service.ChatMessageService;
@@ -33,15 +34,14 @@ public class ChatController {
   private final ChatMessageService chatMessageService;
   private final AlanService alanService;
   private final UserService userService;
+  private final ProfileRepository profileRepository;
 
   @GetMapping
   public String chatRoomList(@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal, Model model){
     Long userId = customUserPrincipal.getUser().getId();
     User user = userService.getUserById(userId);
 
-    if(user.getProfile() == null){
-        return "redirect:/";
-    }
+    if (!profileRepository.existsByUserId(userId)) return "redirect:/users/profiles/new";
 
     List<ChatRoomResponseDTO> chatRoomResponseDTOList = chatRoomService.getChatRoomResponseDTOListByUserId(userId);
     chatRoomResponseDTOList = chatMessageService.loadChatMessagesIntoChatRoomResponseDTOList(chatRoomResponseDTOList, userId);
