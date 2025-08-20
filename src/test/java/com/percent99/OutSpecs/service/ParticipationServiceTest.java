@@ -42,6 +42,7 @@ class ParticipationServiceTest {
     private ParticipationService participationService;
 
     private User user;
+    private User postOwner;
     private Post post;
     private PostTeamInformation teamInfo;
     private ParticipationDTO dto;
@@ -52,12 +53,16 @@ class ParticipationServiceTest {
         user = new User();
         user.setId(1L);
 
+        postOwner = new User();
+        postOwner.setId(2L); // 다른 사용자로 설정
+
         teamInfo = new PostTeamInformation();
         teamInfo.setCapacity(5);
+        teamInfo.setStatus(PostStatus.OPEN);
 
         post = new Post();
         post.setId(100L);
-        post.setUser(new User());
+        post.setUser(postOwner);
         post.setTeamInfo(teamInfo);
 
         dto = new ParticipationDTO();
@@ -127,11 +132,43 @@ class ParticipationServiceTest {
     }
 
     @Test
+    @DisplayName("createParticipation - 자신의 게시글에 신청 시 예외 발생")
+    void cannotApplyToOwnPost() {
+        // given
+        User sameUser = new User();
+        sameUser.setId(1L);
+        post.setUser(sameUser);
+
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        given(postRepository.findById(100L)).willReturn(Optional.of(post));
+
+        // when & then
+        assertThatThrownBy(() -> participationService.createParticipation(dto))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("자신의 팀모집에는 신청할 수 없습니다");
+    }
+
+    @Test
+    @DisplayName("createParticipation - 모집 완료된 게시글에 신청 시 예외 발생")
+    void cannotApplyToClosedPost() {
+        // given
+        teamInfo.setStatus(PostStatus.CLOSED);
+        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+        given(postRepository.findById(100L)).willReturn(Optional.of(post));
+
+        // when & then
+        assertThatThrownBy(() -> participationService.createParticipation(dto))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("모집이 완료되었습니다");
+    }
+
+    @Test
     @DisplayName("createParticipation - 모집 인원 초과 시 예외 발생")
     void capacityExceeded() {
         // given
         given(userRepository.findById(1L)).willReturn(Optional.of(user));
         given(postRepository.findById(100L)).willReturn(Optional.of(post));
+        // 용량(5) + 5 = 10 이상일 때 예외 발생
         given(participationRepository.countByPostId(100L)).willReturn(11L);
 
         // when & then
@@ -185,7 +222,7 @@ class ParticipationServiceTest {
     }
 
     /**
-     *  updateParticipation Test
+     * updateParticipation Test
      */
     @Test
     @DisplayName("updateParticipation - ACCEPTED 상태로 변경 시 모집완료 처리 및 알림 발송")
@@ -195,13 +232,14 @@ class ParticipationServiceTest {
         given(postRepository.findById(post.getId())).willReturn(Optional.of(post));
         given(participationRepository.save(any(Participation.class))).willAnswer(invocation -> invocation.getArgument(0));
 
-        // 모집완료를 위해 용량 다 채우기
+        // 모집완료를 위해 용량 다 채우기 (현재 + 1 = 전체 용량)
         List<Participation> acceptedList = new ArrayList<>();
-        for (int i = 0; i < post.getTeamInfo().getCapacity(); i++) {
+        for (int i = 0; i < post.getTeamInfo().getCapacity() - 1; i++) {
             Participation p = new Participation();
             p.setStatus(ParticipationStatus.ACCEPTED);
             acceptedList.add(p);
         }
+        acceptedList.add(participation);
         given(participationRepository.findByPostId(post.getId())).willReturn(acceptedList);
 
         // when
@@ -234,6 +272,21 @@ class ParticipationServiceTest {
         then(notificationService).should().sendNotification(eq(post.getUser()), eq(user), eq(NotificationType.REJECTED), anyLong());
     }
 
+    @Test
+    @DisplayName("updateParticipation - 존재하지 않는 참여 정보 수정 시 예외 발생")
+    void updateParticipationNotFound() {
+        // given
+        given(participationRepository.findById(1L)).willReturn(Optional.empty());
+
+        // when & then
+        ParticipationDTO updateDto = new ParticipationDTO();
+        updateDto.setStatus(ParticipationStatus.ACCEPTED);
+
+        assertThatThrownBy(() -> participationService.updateParticipation(1L, updateDto))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("발견되지않았습니다");
+    }
+
     /**
      * deleteParticipation Test
      */
@@ -261,5 +314,117 @@ class ParticipationServiceTest {
 
         // then
         then(participationRepository).should().deleteById(1L);
+    }
+
+    /**
+     * Business Logic Tests
+     */
+    @Test
+    @DisplayName("countAcceptedParticipation - 수락된 참가자 수 계산")
+    void countAcceptedParticipation() {
+        // given
+        List<Participation> participations = new ArrayList<>();
+
+        Participation accepted1 = new Participation();
+        accepted1.setStatus(ParticipationStatus.ACCEPTED);
+        participations.add(accepted1);
+
+        Participation accepted2 = new Participation();
+        accepted2.setStatus(ParticipationStatus.ACCEPTED);
+        participations.add(accepted2);
+
+        Participation pending = new Participation();
+        pending.setStatus(ParticipationStatus.PENDING);
+        participations.add(pending);
+
+        given(participationRepository.findByPostId(100L)).willReturn(participations);
+
+        // when
+        int count = participationService.countAcceptedParticipation(100L);
+
+        // then
+        assertThat(count).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("existParticipationByUserId - 참여 신청 여부 확인")
+    void existParticipationByUserId() {
+        // given
+        given(participationRepository.existsByUserIdAndPostId(1L, 100L)).willReturn(true);
+
+        // when
+        boolean exists = participationService.existParticipationByUserId(1L, 100L);
+
+        // then
+        assertThat(exists).isTrue();
+    }
+
+    @Test
+    @DisplayName("getParticipationByUserId - 사용자별 참여 정보 조회")
+    void getParticipationByUserId() {
+        // given
+        given(participationRepository.findByUserIdAndPostId(1L, 100L))
+                .willReturn(Optional.of(participation));
+
+        // when
+        Participation result = participationService.getParticipationByUserId(1L, 100L);
+
+        // then
+        assertThat(result).isEqualTo(participation);
+    }
+
+    @Test
+    @DisplayName("getParticipationByUserId - 존재하지 않을 때 null 반환")
+    void getParticipationByUserIdNotFound() {
+        // given
+        given(participationRepository.findByUserIdAndPostId(1L, 100L))
+                .willReturn(Optional.empty());
+
+        // when
+        Participation result = participationService.getParticipationByUserId(1L, 100L);
+
+        // then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    @DisplayName("getAllParticipationByUserId - 사용자의 모든 참여 정보 조회")
+    void getAllParticipationByUserId() {
+        // given
+        List<Participation> participations = List.of(participation);
+        given(participationRepository.findByUserId(1L)).willReturn(participations);
+
+        // when
+        List<Participation> result = participationService.getAllParticipationByUserId(1L);
+
+        // then
+        assertThat(result).isEqualTo(participations);
+    }
+
+    @Test
+    @DisplayName("getParticipationByPostId - 게시글의 모든 참여 정보 조회")
+    void getParticipationByPostId() {
+        // given
+        List<Participation> participations = List.of(participation);
+        given(participationRepository.findByPostId(100L)).willReturn(participations);
+
+        // when
+        List<Participation> result = participationService.getParticipationByPostId(100L);
+
+        // then
+        assertThat(result).isEqualTo(participations);
+    }
+
+    @Test
+    @DisplayName("countParticipation - 전체 신청자 수 계산")
+    void countParticipation() {
+        // given
+        given(participationRepository.countByPostId(100L)).willReturn(3L);
+
+        // when
+        int count = participationService.countParticipation(100L);
+
+        // then
+        assertThat(count).isEqualTo(3);
     }
 }
