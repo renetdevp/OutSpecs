@@ -1,0 +1,59 @@
+.chatbot-container {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  position: fixed;
+  bottom: 100px;
+  right: 30px;
+  width: 300px;
+  height: 500px;
+  background-color: #fff;
+  border: solid 2px #000;
+}
+
+.chatbot-container > .chat-message-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  gap: 5px;
+  width: 100%;
+  padding: 10px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.chat-message-container > .chat-message {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+}
+
+.chat-message-container > .chat-message[self=true] {
+  flex-direction: row-reverse;
+  align-self: flex-end;
+}
+
+.chat-message > .chat-message-content {
+  max-width: 70%;
+  padding: 5px;
+  background-color: #3b38a0;
+  border-radius: 10px;
+  color: #fff;
+  overflow-wrap: anywhere;
+}
+
+.chat-message > .chat-message-timestamp {
+  font-size: .9rem;
+}
+
+.chatbot-container > .question-input {
+  width: 100%;
+  height: 40px;
+  border: none;
+  border-top: solid 1px #000;
+}
+
+.chatbot-container > .question-input:focus {
+  outline: none;
+}
