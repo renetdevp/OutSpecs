@@ -4,13 +4,8 @@ const stompClient = new StompJs.Client({
 });
 
 stompClient.onConnect = (frame) => {
-  // for (let chatroom of chatRooms){
-  //   const { chatRoomId } = chatroom;
-
-  //   subscribeTo(chatRoomId);
-  // }
-  stompClient.subscribe(`/queue/users/${USER_ID}`, (msg) => {
-    onMessage(msg);
+  stompClient.subscribe(`/queue/users/${USER_ID}`, async (msg) => {
+    await onMessage(msg);
   }, { userId: USER_ID });
 };
 
@@ -26,22 +21,14 @@ stompClient.onStompError = (frame) => {
 };
 
 const chatMessageCursors = {};
-const DEFAULT_USER_PROFILE_URL = '/images/user_default_image.svg';
+const DEFAULT_USER_PROFILE_URL = '/images/user_default_img.svg';
 
-function subscribeTo(chatRoomId){
-  stompClient.subscribe(`/queue/rooms/${chatRoomId}`, (msg) => {
-    onMessage(chatRoomId, msg);
-  }, { chatRoomId, });
-}
-
-// function onMessage(chatRoomId, msg){
-//   const { senderId, content, createdAt } = JSON.parse(msg.body);
-function onMessage(msg){
+async function onMessage(msg){
   const { chatRoomId, senderId, content, createdAt } = JSON.parse(msg.body);
   let chatMessagesElem = document.querySelector(`.chat-message-container-${chatRoomId} > .chat-messages`);
 
-  //
   if (!chatMessagesElem){
+    await insertNewChatRoom(chatRoomId);
     insertChatMessageContainer(chatRoomId);
     chatMessagesElem = document.querySelector(`.chat-message-container-${chatRoomId} > .chat-messages`);
   }
@@ -148,13 +135,6 @@ function messageInputOnKeyDown(chatRoomId, e){
 
   e.target.value = '';
 
-  // stompClient.publish({
-  //   destination: `/app/chats/${chatRoomId}`,
-  //   body: JSON.stringify({ content: msg }),
-  //   headers: {
-  //     'chatRoomId': chatRoomId
-  //   },
-  // });
   stompClient.publish({
     destination: `/app/chats/${chatRoomId}`,
     body: JSON.stringify({ content: msg }),
@@ -250,13 +230,25 @@ function disableMessageInput(){
  * 새로운 .chatroom을 추가하는 함수
  * @param {number} chatRoomId 
  */
-function insertNewChatRoom(chatRoomId){
+async function insertNewChatRoom(chatRoomId){
+  const chatRoomInfo = await fetchChatRoomInfo(chatRoomId);
+
   const newChatRoom = document.createElement('article');
   newChatRoom.className = 'chatroom';
   newChatRoom.setAttribute('data-chatroom-id', chatRoomId);
 
-  const newProfileImage = createChatRoomProfileImage(null);
-  const newChatRoomInfo = createChatRoomInfo();
+  let targetImgUrl, targetNickname, lastMessage;
+  if (USER_ID === chatRoomInfo?.user1Id){
+    targetImgUrl = chatRoomInfo?.user2ImageUrl;
+    targetNickname = chatRoomInfo?.user2Nickname;
+  }else if (USER_ID === chatRoomInfo?.user2Id){
+    targetImgUrl = chatRoomInfo?.user1ImageUrl;
+    targetNickname = chatRoomInfo?.user2Nickname;
+  }
+  lastMessage = chatRoomInfo?.chatRoomLastMessage;
+
+  const newProfileImage = createChatRoomProfileImage(targetImgUrl);
+  const newChatRoomInfo = createChatRoomInfo(targetNickname, lastMessage);
 
   const newUpdatedAt = document.createElement('div');
   newUpdatedAt.className = 'chatroom-info-updated-at';
@@ -264,6 +256,28 @@ function insertNewChatRoom(chatRoomId){
   newChatRoom.insertAdjacentElement('beforeend', newProfileImage);
   newChatRoom.insertAdjacentElement('beforeend', newChatRoomInfo);
   newChatRoom.insertAdjacentElement('beforeend', newUpdatedAt);
+
+  newChatRoom.addEventListener('click', chatRoomOnClick);
+
+  document.querySelector('.chatroom-page-content > .chatroom-container').insertAdjacentElement('afterbegin', newChatRoom);
+}
+
+/**
+ * 새로운 .chatroom 추가를 위한 채팅방 정보 요청
+ * @param {number} chatRoomId 
+ */
+async function fetchChatRoomInfo(chatRoomId){
+  const url = `/chats/${chatRoomId}`;
+
+  const res = await fetch(url);
+
+  if (!res.ok) return null;
+
+  const jsonData = await res.json();
+
+  console.log(jsonData);
+
+  return jsonData;
 }
 
 function createChatRoomProfileImage(profileImgUrl){
@@ -279,18 +293,20 @@ function createChatRoomProfileImage(profileImgUrl){
   return newProfileImage;
 }
 
-function createChatRoomInfo(){
+function createChatRoomInfo(targetNickname, lastMessage){
   const newChatRoomInfo = document.createElement('div');
   newChatRoomInfo.className = 'chatroom-info';
 
-  const targetNickname = document.createElement('div');
-  targetNickname.className = 'target-nickname';
+  const targetNicknameElem = document.createElement('div');
+  targetNicknameElem.className = 'target-nickname';
+  targetNicknameElem.textContent = targetNickname;
 
-  const lastMessage = document.createElement('div');
-  lastMessage.className = 'last-message';
+  const lastMessageElem = document.createElement('div');
+  lastMessageElem.className = 'last-message';
+  lastMessageElem.textContent = lastMessage;
 
-  newChatRoomInfo.insertAdjacentElement('beforeend', targetNickname);
-  newChatRoomInfo.insertAdjacentElement('beforeend', lastMessage);
+  newChatRoomInfo.insertAdjacentElement('beforeend', targetNicknameElem);
+  newChatRoomInfo.insertAdjacentElement('beforeend', lastMessageElem);
 
   return newChatRoomInfo;
 }
