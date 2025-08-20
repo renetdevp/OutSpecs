@@ -65,7 +65,7 @@ public class AlanService {
   }
 
   private Map<String, String> getRecommend(String placeName, Long userId){
-    String content = String.format("%s 지역의 명소를 5곳, 맛집을 5곳 추천 { name: 장소 이름, description: 장소 설명 } 형태로", placeName);
+    String content = String.format("%s 지역의 명소 5곳, 맛집 5곳을 출력해. { 'place': [{ name: 명소 이름, description: 설명 }], 'food': [{ name: 맛집 이름, description: 설명 }] }의 json 형태로 출력해", placeName);
 
     return this.sendRequest(content, userId);
   }
