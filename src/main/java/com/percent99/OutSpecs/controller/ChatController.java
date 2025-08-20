@@ -66,6 +66,10 @@ public class ChatController {
   @ResponseBody
   public ChatRoomResponseDTO getChatRoomInfo(@PathVariable("chatRoomId") Long chatRoomId,
                                              @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal){
+    Long userId = customUserPrincipal.getUser().getId();
+
+    if (!chatRoomService.isChatRoomParticipant(chatRoomId, userId)) return null;
+
     return chatRoomService.getChatRoomResponseDTOById(chatRoomId);
   }
 
