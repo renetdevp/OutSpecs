@@ -9,7 +9,7 @@
     <header th:fragment="header" class="header__area">
         <div class="header__left">
             <a th:href="@{/}">
-                <img class="header__left-logo"  th:src="@{/css/images/logo.svg}" alt="메인으로 돌아가기">
+                <img class="header__left-logo"  th:src="@{/images/logo.svg}" alt="메인으로 돌아가기">
             </a>
             <div class="header__left-menu">
                 <a class="header__btn--left" th:href="@{/list/free}" >자유게시판</a>
@@ -20,15 +20,12 @@
             </div>
         </div>
         <div class="header__right">
-            <a class="alert-btn" >
-                <img th:src="@{/css/images/alert_icon.svg}" th:if="${user != null}" alt="알림 아이콘">
-            </a>
             <div class="profile-dropdown" th:if="${user != null}">
                 <button id="avatarBtn" type="button" class="avatar-btn" aria-haspopup="menu" aria-expanded="false">
                     <img class="profile-avatar-img"
                          th:src="${(user.profile != null and user.profile.imageUrl != null)
                                                 ? user.profile.imageUrl
-                                                : '/css/images/profile_icon.svg'}"
+                                                : '/images/profile_icon.svg'}"
                          alt="오픈프로필">
                     <span class="avatar-caret" aria-hidden="true">▾</span>
                 </button>

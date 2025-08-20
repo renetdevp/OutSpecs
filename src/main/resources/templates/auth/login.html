@@ -10,7 +10,7 @@
     <header th:replace="~{fragments/header :: header}"></header>
     <main class="auth-wrapper">
         <section class="auth-card">
-            <img class="auth-logo" th:src="@{/css/images/logo.svg}" alt="OutSpecs 로고" />
+            <img class="auth-logo" th:src="@{/images/logo.svg}" alt="OutSpecs 로고" />
 
             <!-- 전역 배너: 로그인 실패 / 로그아웃 성공 -->
             <div class="banner error" role="alert" th:if="${loginError}" th:text="${loginError}">
@@ -36,7 +36,7 @@
 
                 <!-- GOOGLE LOGIN BUTTON -->
                 <a class="google-btn" th:href="@{/oauth2/authorization/google}">
-                    <img th:src="@{/css/images/google_icon.svg}" alt="구글 로그인">
+                    <img th:src="@{/images/google_icon.svg}" alt="구글 로그인">
                     Google 계정으로 계속하기
                 </a>
 
