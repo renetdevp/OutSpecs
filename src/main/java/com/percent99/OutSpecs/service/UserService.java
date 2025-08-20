@@ -4,14 +4,17 @@ import com.percent99.OutSpecs.entity.Profile;
 import com.percent99.OutSpecs.entity.User;
 import com.percent99.OutSpecs.dto.UserDTO;
 import com.percent99.OutSpecs.entity.UserRoleType;
+import com.percent99.OutSpecs.repository.ProfileRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 /**
@@ -24,6 +27,13 @@ public class UserService {
     private final UserRepository userRepository;
     private final S3Service s3Service;
     private final PasswordEncoder passwordEncoder;
+    private final ProfileRepository profileRepository;
+
+    @Value("${chatbot.CHATBOT_USERNAME}")
+    private String CHATBOT_USERNAME;
+
+    @Value("${chatbot.CHATBOT_PASSWORD}")
+    private String CHATBOT_PASSWORD;
 
     /**
      * 유저정보 조회
@@ -51,6 +61,10 @@ public class UserService {
 
         if(userDTO.getProviderId() != null && !userDTO.getProviderId().isBlank()) {
            throw new IllegalArgumentException("폼 회원가입에서는 구글 로그인을 사용할 수 없습니다.");
+        }
+
+        if (userDTO.getUsername().equals(CHATBOT_USERNAME)){
+          throw new IllegalArgumentException("예약된 사용자 이름입니다.");
         }
 
         if (userRepository.existsByUsername(userDTO.getUsername())) {
@@ -123,5 +137,54 @@ public class UserService {
         String s3Key = profile != null ? profile.getS3Key() : null;
         userRepository.delete(user);
         return s3Key;
+    }
+
+    @Transactional
+    private User createChatbotUser(){
+      User user = new User();
+
+      user.setUsername(CHATBOT_USERNAME);
+      user.setPassword(passwordEncoder.encode(CHATBOT_PASSWORD));
+      user.setRole(UserRoleType.CHATBOT);
+      user.setAiRateLimit(0);
+      user.setCreatedAt(LocalDateTime.now());
+
+      return userRepository.save(user);
+    }
+
+    @Transactional
+    private void createChatbotUserProfile(Long chatbotUserId){
+        User chatbotUser = userRepository.findById(chatbotUserId).orElse(null);
+
+        Profile chatbotUserProfile = new Profile();
+
+        chatbotUserProfile.setUser(chatbotUser);
+        chatbotUserProfile.setStacks("C");
+        chatbotUserProfile.setExperience("CHATBOT");
+        chatbotUserProfile.setSelfInfo("CHATBOT");
+        chatbotUserProfile.setAllowCompanyAccess(false);
+        chatbotUserProfile.setNickname("CHATBOT");
+        chatbotUserProfile.setCreatedAt(LocalDateTime.now());
+
+        profileRepository.save(chatbotUserProfile);
+    }
+
+  /**
+   * CHATBOT 사용자가 이미 있다면 그 userId를, CHATBOT 사용자가 없다면 새 CHATBOT 사용자를 생성해 그 userId를 반환하는 메소드
+   * @return
+   */
+  @Transactional
+    public Long getOrCreateChatbotUserId(){
+        User chatbotUser = userRepository.findByRole(UserRoleType.CHATBOT).orElse(null);
+
+        if (chatbotUser == null){
+            chatbotUser = this.createChatbotUser();
+        }
+
+        if (!profileRepository.existsByUserId(chatbotUser.getId())){
+          this.createChatbotUserProfile(chatbotUser.getId());
+        }
+
+        return chatbotUser.getId();
     }
 }
