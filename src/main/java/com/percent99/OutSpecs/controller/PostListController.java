@@ -6,6 +6,7 @@ import com.percent99.OutSpecs.security.CustomUserPrincipal;
 import com.percent99.OutSpecs.service.PostQueryService;
 import com.percent99.OutSpecs.service.ProfileService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Slice;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,195 +22,82 @@ public class PostListController {
     private final PostQueryService postQueryService;
     private final ProfileService profileService;
 
-    @GetMapping("/free")
-    public String freePostList(@AuthenticationPrincipal CustomUserPrincipal principal,
-                               Model model) {
-        User user = null;
-        if(principal != null) {
-            Long userId = principal.getUser().getId();
-            user = profileService.getUserById(userId); }
+    @GetMapping("/{type}")
+    public String postList(@PathVariable String type,
+                           @AuthenticationPrincipal CustomUserPrincipal principal,
+                           @RequestParam(defaultValue = "0") int page,
+                           @RequestParam(defaultValue = "5") int size,
+                           @RequestParam(defaultValue = "false") boolean fragment,
+                           Model model) {
 
+        PostType postType = parsePostType(type);
+        User user = getCurrentUser(principal);
+      
         List<PostListViewDTO> popular = postQueryService.toViews(
-                postQueryService.getViewCountPosts(PostType.FREE, 10), true,false);
-        List<PostListViewDTO> recent = postQueryService.toViews(
-                postQueryService.getRecentPosts(PostType.FREE, 20), true, false);
+                postQueryService.getLikePosts(postType, 10), true, false);
+        Slice<Post> recentSlice = postQueryService.getRecentPosts(postType, page, size);
+        List<PostListViewDTO> recent = postQueryService.toViews(recentSlice.getContent(), true, false);
 
         model.addAttribute("user", user);
         model.addAttribute("popularPosts", popular);
         model.addAttribute("recentPosts", recent);
-        model.addAttribute("postType", PostType.FREE);
-        return "post/list";
+        model.addAttribute("hasNext", recentSlice.hasNext());
+        model.addAttribute("postType", postType);
+
+        if(fragment) {
+            return type.equals("team") ? "post/team-list :: postListFragment" : "post/list :: postListFragment";
+        }
+
+        return type.equals("team") ? "post/team-list" : "post/list";
     }
 
-    @GetMapping("/free/filter")
-    public String freeFilterList(@RequestParam(required = false) List<String> tags,
-                                 @AuthenticationPrincipal CustomUserPrincipal principal,
-                                 Model model) {
-        if(tags == null) return "redirect:/list/free";
-        User user = null;
-        if(principal != null) {
-            Long userId = principal.getUser().getId();
-            user = profileService.getUserById(userId); }
+
+    @GetMapping("/{type}/filter")
+    public String filterList(@PathVariable String type,
+                             @RequestParam(required = false) List<String> tags,
+                             @RequestParam(defaultValue = "0") int page,
+                             @RequestParam(defaultValue = "5") int size,
+                             @RequestParam(defaultValue = "false") boolean fragment,
+                             @AuthenticationPrincipal CustomUserPrincipal principal,
+                             Model model) {
+
+        PostType postType = parsePostType(type);
+        if (tags == null) {
+            return "redirect:/list/" + type;
+        }
+        User user = getCurrentUser(principal);
 
         List<PostListViewDTO> popular = postQueryService.toViews(
-                postQueryService.getViewCountPosts(PostType.FREE, 10), true,false);
-        List<PostListViewDTO> recent = postQueryService.toViews(postQueryService.getTagPosts(PostType.FREE, tags), true, false);
+                postQueryService.getLikePosts(postType, 10), true, false);
+        Slice<Post> recentSlice = postQueryService.getFilteredPosts(postType, tags, page, size);
+        List<PostListViewDTO> recent = postQueryService.toViews(recentSlice.getContent(), true, false);
 
         model.addAttribute("user", user);
         model.addAttribute("popularPosts", popular);
         model.addAttribute("recentPosts", recent);
-        model.addAttribute("postType", PostType.FREE);
+        model.addAttribute("hasNext", recentSlice.hasNext());
+        model.addAttribute("postType", postType);
         model.addAttribute("selectedTags", tags);
-        return "post/list";
+
+        return fragment ? "post/list :: postListFragment" : "post/list";
     }
 
-    @GetMapping("/qna")
-    public String qnaPostList(@AuthenticationPrincipal CustomUserPrincipal principal,
-                               Model model) {
-        User user = null;
-        if(principal != null) {
-            Long userId = principal.getUser().getId();
-            user = profileService.getUserById(userId); }
-
-        List<PostListViewDTO> popular = postQueryService.toViews(
-                postQueryService.getViewCountPosts(PostType.QNA, 10), true,false);
-        List<PostListViewDTO> recent = postQueryService.toViews(
-                postQueryService.getRecentPosts(PostType.QNA, 20), true, false);
-
-        model.addAttribute("user", user);
-        model.addAttribute("popularPosts",popular);
-        model.addAttribute("recentPosts", recent);
-        model.addAttribute("postType", PostType.QNA);
-        return "post/list";
+    // 헬퍼 메서드들
+    private PostType parsePostType(String pathPrefix) {
+        for (PostType postType : PostType.values()) {
+            if (postType.pathPrefix().equals(pathPrefix)) {
+                return postType;
+            }
+        }
+        throw new IllegalArgumentException("Invalid post type path: " + pathPrefix);
     }
 
-    @GetMapping("/qna/filter")
-    public String qnaFilterList(@RequestParam(required = false) List<String> tags,
-                                 @AuthenticationPrincipal CustomUserPrincipal principal,
-                                 Model model) {
-        if(tags == null) return "redirect:/list/qna";
-        User user = null;
-        if(principal != null) {
-            Long userId = principal.getUser().getId();
-            user = profileService.getUserById(userId); }
-
-        List<PostListViewDTO> popular = postQueryService.toViews(
-                postQueryService.getViewCountPosts(PostType.QNA, 10), true,false);
-        List<PostListViewDTO> recent = postQueryService.toViews(
-                postQueryService.getTagPosts(PostType.QNA ,tags), true, false);
-
-        model.addAttribute("user", user);
-        model.addAttribute("popularPosts", popular);
-        model.addAttribute("recentPosts", recent);
-        model.addAttribute("postType", PostType.QNA);
-        model.addAttribute("selectedTags", tags);
-        return "post/list";
-    }
-
-    @GetMapping("/team")
-    public String teamPostList(@AuthenticationPrincipal CustomUserPrincipal principal,
-                              Model model, @ModelAttribute("errorMessage") String errorMessage) {
-        User user = null;
-        if(principal != null) {
-            Long userId = principal.getUser().getId();
-            user = profileService.getUserById(userId); }
-
-        List<PostListViewDTO> popular = postQueryService.toViews(
-                postQueryService.getViewCountPosts(PostType.TEAM, 10), true,false);
-        List<PostListViewDTO> recent = postQueryService.toViews(
-                postQueryService.getRecentPosts(PostType.TEAM, 20), true, false);
-
-        model.addAttribute("user", user);
-        model.addAttribute("popularPosts", popular);
-        model.addAttribute("recentPosts", recent);
-        model.addAttribute("postType", PostType.TEAM);
-        model.addAttribute("errorMessage", errorMessage);
-        return "post/team-list";
-    }
-
-    @GetMapping("/recruit")
-    public String recruitPostList(@AuthenticationPrincipal CustomUserPrincipal principal,
-                               Model model) {
-        User user = null;
-        if(principal != null) {
-            Long userId = principal.getUser().getId();
-            user = profileService.getUserById(userId); }
-
-        List<PostListViewDTO> popular = postQueryService.toViews(
-                postQueryService.getViewCountPosts(PostType.RECRUIT, 10), true,false);
-        List<PostListViewDTO> recent = postQueryService.toViews(
-                postQueryService.getRecentPosts(PostType.RECRUIT, 20), true, false);
-
-        model.addAttribute("user", user);
-        model.addAttribute("popularPosts", popular);
-        model.addAttribute("recentPosts", recent);
-        model.addAttribute("postType", PostType.RECRUIT);
-        return "post/list";
-    }
-
-    @GetMapping("/recruit/filter")
-    public String recruitFilterList(@RequestParam(required = false) List<String> tags,
-                                @AuthenticationPrincipal CustomUserPrincipal principal,
-                                Model model) {
-        if(tags == null) return "redirect:/list/recruit";
-        User user = null;
-        if(principal != null) {
-            Long userId = principal.getUser().getId();
-            user = profileService.getUserById(userId); }
-
-        List<PostListViewDTO> popular = postQueryService.toViews(
-                postQueryService.getViewCountPosts(PostType.RECRUIT, 10), true,false);
-        List<PostListViewDTO> recent = postQueryService.toViews(
-                postQueryService.getTechPosts(tags), true, false);
-
-        model.addAttribute("user", user);
-        model.addAttribute("popularPosts", popular);
-        model.addAttribute("recentPosts", recent);
-        model.addAttribute("postType", PostType.RECRUIT);
-        model.addAttribute("selectedTags", tags);
-        return "post/list";
-    }
-
-    @GetMapping("/play")
-    public String playPostList(@AuthenticationPrincipal CustomUserPrincipal principal,
-                               Model model) {
-        User user = null;
-        if(principal != null) {
-            Long userId = principal.getUser().getId();
-            user = profileService.getUserById(userId); }
-
-        List<PostListViewDTO> popular = postQueryService.toViews(
-                postQueryService.getViewCountPosts(PostType.PLAY, 10), true,false);
-        List<PostListViewDTO> recent = postQueryService.toViews(
-                postQueryService.getRecentPosts(PostType.PLAY, 20), true, false);
-
-        model.addAttribute("user", user);
-        model.addAttribute("popularPosts", popular);
-        model.addAttribute("recentPosts", recent);
-        model.addAttribute("postType", PostType.PLAY);
-        return "post/list";
-    }
-
-    @GetMapping("/play/filter")
-    public String playFilterList(@RequestParam(required = false) String tags,
-                                @AuthenticationPrincipal CustomUserPrincipal principal,
-                                Model model) {
-        if(tags == null) return "redirect:/list/play";
-        User user = null;
-        if(principal != null) {
-            Long userId = principal.getUser().getId();
-            user = profileService.getUserById(userId); }
-
-        List<PostListViewDTO> popular = postQueryService.toViews(
-                postQueryService.getViewCountPosts(PostType.PLAY, 10), true,false);
-        List<PostListViewDTO> recent = postQueryService.toViews(postQueryService.getPlacePosts(tags), true, false);
-
-        model.addAttribute("user", user);
-        model.addAttribute("popularPosts", popular);
-        model.addAttribute("recentPosts", recent);
-        model.addAttribute("postType", PostType.PLAY);
-        model.addAttribute("selectedTags", tags);
-        return "post/list";
+    private User getCurrentUser(CustomUserPrincipal principal) {
+        if (principal == null) {
+            return null;
+        }
+        Long userId = principal.getUser().getId();
+        return profileService.getUserById(userId);
     }
 
 }

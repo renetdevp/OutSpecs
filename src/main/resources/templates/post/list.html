@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>outspecs - 게시판</title>
-  <link rel="stylesheet" th:href="@{/css/post-list.css}">
+  <link rel="stylesheet" th:href="@{/css/post/list.css}">
 </head>
 <body>
     <header th:replace="~{fragments/header :: header}"></header>
@@ -56,7 +56,7 @@
 
         <main class="main-content">
           <a class="write-btn" th:if="${user != null}" th:href="@{/post/write}">글쓰기</a>
-          <div class="post-list">
+          <div class="post-list" th:fragment="postListFragment">
             <article class="post-item" th:each="post : ${recentPosts}">
                 <div class="post-header">
                   <a th:if="${user != null and user.profile != null}"
@@ -77,13 +77,6 @@
                     </div>
                     <div class="post-date" th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</div>
                   </div>
-                  <div class="more-menu-container" th:if="${user != null and user.id != post.user.id and user.profile != null}">
-                    <img class="more-icon" src="/images/more-vertical.png" alt="더보기 아이콘"
-                         th:onclick="|toggleMoreMenu(event, 'post-more-menu-${post.id}')|">
-                    <div class="more-menu"  th:id="|post-more-menu-${post.id}|">
-                      <button type="button" class="report-btn" th:onclick="|reportPost(${post.id})|">신고</button>
-                    </div>
-                  </div>
                 </div>
 
                 <a class="post-content" th:href="@{/post/{id}(id=${post.id})}">
@@ -98,11 +91,7 @@
                 <div class="post-reaction">
                   <div class="post-reaction-count">
                     <div class="reaction-item">
-                      <form th:action="@{/post/{postId}/like(postId=${post.id})}" method="post" style="display: inline;">
-                        <button type="submit" class="like-btn" th:disabled="${user == null or user.id == post.user.id or user.profile == null}">
-                          <img class="post-icon" src="/images/like.png" alt="좋아요 아이콘">
-                        </button>
-                      </form>
+                      <img class="post-icon" src="/images/like-fill.svg" alt="좋아요 아이콘">
                       <span th:text="${post.likeCount}">0</span>
                     </div>
                     <div class="reaction-item">
@@ -114,11 +103,10 @@
                       <span th:text="${post.commentCount}">0</span>
                     </div>
                   </div>
-                  <form th:action="@{/post/{postId}/bookmark(postId=${post.id})}" method="post" style="display: inline;">
-                    <button type="submit" class="bookmark-btn" th:disabled="${user == null or user.id == post.user.id or user.profile == null}">
-                      <img class="post-icon"  src="/images/bookmark.png" alt="북마크 아이콘">
-                    </button>
-                  </form>
+                  <div class="reaction-item">
+                    <img class="post-icon"  src="/images/bookmark-fill.svg" alt="북마크 아이콘">
+                    <span th:text="${post.bookmarkCount}">0</span>
+                  </div>
                 </div>
             </article>
           </div>
@@ -129,85 +117,6 @@
     <div class="ai-chat" th:if="${user != null}">
       AI<br>챗봇
     </div>
-
-    <script>
-      // 태그 클릭 이벤트
-      const container = document.querySelector('.container');
-      const postTypePath = container.dataset.postType;
-
-      document.querySelectorAll('.tag-item').forEach(tag => {
-          tag.addEventListener('click', function() {
-            if(postTypePath === 'play') {
-                document.querySelectorAll('.tag-item').forEach(t => t.classList.remove('active'));
-            }
-            this.classList.toggle('active');
-            const activeTags= Array.from(document.querySelectorAll('.tag-item.active'))
-                                    .map(t => t.dataset.tag);
-            const query = activeTags.map(t => `tags=${encodeURIComponent(t)}`).join('&');
-            window.location.href = '/list/' + postTypePath + '/filter' + (query ? `?${query}` : '');
-          });
-      });
-
-      // 게시글 클릭 이벤트
-      document.querySelectorAll('.post-item').forEach(post => {
-          post.addEventListener('click', function() {
-              // 게시글 상세 페이지로 이동
-              console.log('게시글 클릭됨');
-          });
-      });
-
-       // More 메뉴 토글 함수
-      function toggleMoreMenu(event, menuId) {
-        event.stopPropagation();
-        const menu = document.getElementById(menuId);
-        const allMenus = document.querySelectorAll('.more-menu');
-
-        // 다른 메뉴들 닫기
-        allMenus.forEach(m => {
-          if (m.id !== menuId) {
-            m.style.display = 'none';
-          }
-        });
-
-        // 현재 메뉴 토글
-        menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
-      }
-
-        // 외부 클릭 시 메뉴 닫기
-      document.addEventListener('click', function(event) {
-        if (!event.target.closest('.more-menu-container')) {
-          const allMenus = document.querySelectorAll('.more-menu');
-          allMenus.forEach(menu => {
-            menu.style.display = 'none';
-          });
-        }
-      });
-
-      // 페이지 로드 시 스크롤 이벤트 추가 (메뉴 닫기)
-      window.addEventListener('scroll', function() {
-        const allMenus = document.querySelectorAll('.more-menu');
-        allMenus.forEach(menu => {
-          menu.style.display = 'none';
-        });
-      });
-
-        // 게시글 신고 함수
-      function reportPost(postId) {
-        if (confirm('이 게시글을 신고하시겠습니까?')) {
-          const form = document.createElement('form');
-          form.method = 'POST';
-          form.action = '/post/' + postId + '/report';
-          document.body.appendChild(form);
-          form.submit();
-        }
-        document.getElementById('post-more-menu').style.display = 'none';
-      }
-
-      // AI 챗봇 클릭 이벤트
-      document.querySelector('.ai-chat').addEventListener('click', function() {
-          // AI 챗봇 열기
-          console.log('AI 챗봇 클릭됨');
-      });
-    </script>
+  <script src="/js/post-list.js"></script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title th:text="${post.title}">게시글 상세</title>
-  <link rel="stylesheet" th:href="@{/css/post-detail.css}">
+  <link rel="stylesheet" th:href="@{/css/post/detail.css}">
 </head>
 <body>
 <header th:replace="~{fragments/header :: header}"></header>
@@ -28,10 +28,13 @@
         </div>
         <div class="post-date" th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</div>
       </div>
-      <div class="more-menu-container" th:if="${user != null and user.profile != null and user.id != post.user.id and !reactions.isReported}">
+      <div class="more-menu-container" th:if="${user != null and user.profile != null and user.id != post.user.id}">
         <img class="more-icon" src="/images/more-vertical.png" alt="더보기 아이콘" onclick="toggleMoreMenu(event, 'post-more-menu')">
         <div class="more-menu" id="post-more-menu">
-          <button type="button" class="report-btn" id="report-button">신고</button>
+          <button type="button" class="report-btn" id="report-button">
+            <span th:if="${!reactions.isReported}">신고</span>
+            <span th:if="${reactions.isReported}">신고 취소</span>
+          </button>
         </div>
       </div>
     </div>
