@@ -152,7 +152,7 @@ OutSpecs/
 
 ### 관리자 페이지
 
-<img width="400" height="900" alt="Image" src="https://github.com/user-attachments/assets/e8cf65b3-1348-40ca-b102-cf1e902ee362" />
+<img width="400" height="900" alt="Image" src="https://github.com/user-attachments/assets/b161e644-ea75-4205-af44-7198fc80496d" />
 
 <br>
 
