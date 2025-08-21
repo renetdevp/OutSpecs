@@ -140,6 +140,7 @@ public class PostQueryService {
                 }
                 postIds = postRepository.findPostsByTypeAndTags(postType, tags, tags.size());
                 break;
+            case AIPLAY:
             case PLAY:
                 if (tags == null || tags.isEmpty()) {
                     throw new IllegalArgumentException("장소가 없습니다.");

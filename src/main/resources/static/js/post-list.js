@@ -1,5 +1,67 @@
+async function fetchCityNames(){
+  const res = await fetch('/csv/cityNames.csv');
+
+  if (!res.ok) return;
+
+  return getStreamAsString(res.body);
+}
+
+async function getStreamAsString(res){
+  if (!res) return null;
+
+  const textStream = res.pipeThrough(new TextDecoderStream());
+
+  const reader = textStream.getReader();
+  let result = '';
+
+  while (1){
+    const { done, value } = await reader.read();
+
+    if (done) break;
+
+    result += value;
+  }
+
+  return result;
+}
+
+function insertCityNameTag(parent, cityName){
+  const cityNameTag = document.createElement('div');
+
+  cityNameTag.className = 'tag-item';
+  cityNameTag.setAttribute('data-tag', cityName);
+  cityNameTag.textContent = cityName;
+
+  parent.insertAdjacentElement('beforeend', cityNameTag);
+}
+
+function loadPostContent(){
+  if (!window.location.href.includes('/list/ai-play')) return;
+
+  const postContentBoxes = document.querySelectorAll('.post-content-box');
+
+  for (let box of postContentBoxes){
+      box.innerHTML = marked.parse(box.innerHTML);
+  }
+}
+
+async function loadPlaceTag(){
+  const locate = window.location.href;
+  if (!locate.includes('/list/ai-play') && !locate.includes('/list/play')) return;
+
+  const cityNames = (await fetchCityNames()).split('\r\n');console.log(cityNames);
+  const tagList = document.querySelector('.tag-list');
+
+  for (let cityName of cityNames){
+    insertCityNameTag(tagList, cityName);
+  }
+}
+
 // DOM이 로드된 후 실행
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+  loadPostContent();
+  await loadPlaceTag();
+
     // 태그 클릭 이벤트
     const container = document.querySelector('.container');
     const postTypePath = container.dataset.postType;
@@ -76,14 +138,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // AI 챗봇 클릭 이벤트
   document.querySelector('.ai-chat')?.addEventListener('click', toggleChatBotContainer);
-
-  (function loadPostContent(){
-    if (!window.location.href.includes('/list/ai-play')) return;
-
-    const postContentBoxes = document.querySelectorAll('.post-content-box');
-
-    for (let box of postContentBoxes){
-        box.innerHTML = marked.parse(box.innerHTML);
-    }
-  })();
 });
