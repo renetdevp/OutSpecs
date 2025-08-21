@@ -39,10 +39,12 @@
   ```
 OutSpecs/
 ├── 📦 com.percent99.OutSpecs/
-│   ├── ⚙️ Config/            # 설정 클래스 (Security, Web 등)
+│   ├── ⚙️ config/            # 설정 클래스 (Security, Web 등)
 │   ├── 🧭 controller/        # 웹 요청 처리 컨트롤러
 │   ├── 📨 dto/               # DTO (데이터 전송 객체)
+│   ├── ⚠️ exception/         # 정의된 예외 
 │   ├── ❌ handler/           # 예외 처리 및 service handler
+│   ├── 🛂 interceptor/       # service interceptor
 │   ├── 🧩 entity/            # JPA 엔티티 및 도메인 모델
 │   ├── 🗂️ repository/        # JPA 리포지토리
 │   ├── 🔐 security/          # 인증/인가 로직
