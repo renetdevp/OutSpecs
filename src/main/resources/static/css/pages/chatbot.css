@@ -1,3 +1,5 @@
+@import url("/css/shared/font.css");
+
 .chatbot-container {
   display: none;
   flex-direction: column;
@@ -44,7 +46,7 @@
 }
 
 .chat-message > .chat-message-timestamp {
-  font-size: .9rem;
+  font-size: 12px;
 }
 
 .chatbot-container > .question-input {
