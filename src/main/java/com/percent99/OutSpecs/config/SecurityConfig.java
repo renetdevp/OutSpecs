@@ -78,7 +78,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .ignoringRequestMatchers("/chats/**"))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/css/**", "/js/**", "/images/**", "/scripts/**", "/csv/**").permitAll()
+                        .requestMatchers("/css/**", "/js/**", "/images/**", "/scripts/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/","/users/login", "/users/signup","/list/**").permitAll()
                         .requestMatchers(new RegexRequestMatcher("^/post/\\d+$", null)).permitAll()
