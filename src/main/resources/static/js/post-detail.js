@@ -167,4 +167,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (reportButton) {
         reportButton.addEventListener('click', reportPost);
     }
+
+  (function loadPostContent(){
+    if (POST_TYPE !== 'AIPLAY') return;
+
+    const postContentBoxes = document.querySelectorAll('.post-content-box');
+
+    for (let box of postContentBoxes){
+        box.innerHTML = marked.parse(box.innerHTML);
+    }
+  })();
 });

@@ -15,7 +15,7 @@ public class PostHangoutHandler implements PostDetailHandler {
 
     @Override
     public boolean supports(PostType type) {
-        return type == PostType.PLAY;
+        return type == PostType.PLAY || PostType.AIPLAY.equals(type);
     }
 
     @Override

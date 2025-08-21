@@ -76,4 +76,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // AI 챗봇 클릭 이벤트
   document.querySelector('.ai-chat')?.addEventListener('click', toggleChatBotContainer);
+
+  (function loadPostContent(){
+    if (!window.location.href.includes('/list/ai-play')) return;
+
+    const postContentBoxes = document.querySelectorAll('.post-content-box');
+
+    for (let box of postContentBoxes){
+        box.innerHTML = marked.parse(box.innerHTML);
+    }
+  })();
 });

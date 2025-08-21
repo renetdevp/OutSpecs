@@ -231,4 +231,12 @@ public class ChatRoomService {
   public boolean isChatRoomParticipant(Long chatRoomId, Long userId){
     return chatRoomRepository.existsByIdAndUserId(chatRoomId, userId);
   }
+
+  public ChatRoom getOrCreateChatRoom(Long userId, Long targetId){
+    ChatRoom chatRoom = chatRoomRepository.findByUser1IdAndUser2Id(userId, targetId).orElse(null);
+
+    if (chatRoom != null) return chatRoom;
+
+    return this.createChatRoom(userId, targetId);
+  }
 }

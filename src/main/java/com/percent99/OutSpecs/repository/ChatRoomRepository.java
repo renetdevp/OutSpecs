@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
@@ -19,6 +20,10 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 
   @Query("SELECT cr FROM ChatRoom cr WHERE cr.user1.id = :userId OR cr.user2.id = :userId")
   List<ChatRoom> findAllByUserId(@Param("userId") Long userId);
+
+  @Query("SELECT cr FROM ChatRoom cr " +
+          "WHERE (cr.user1.id = :userId AND cr.user2.id = :targetId) OR (cr.user1.id = :targetId AND cr.user2.id = :userId)")
+  Optional<ChatRoom> findByUser1IdAndUser2Id(@Param("userId") Long userId, @Param("targetId") Long targetId);
 
   @Query("DELETE FROM ChatRoom cr WHERE cr.user1.id = :userId OR cr.user2.id = :userId")
   void deleteAllByUserId(@Param("userId") Long userId);

@@ -1,6 +1,7 @@
 package com.percent99.OutSpecs.repository;
 
 import com.percent99.OutSpecs.entity.User;
+import com.percent99.OutSpecs.entity.UserRoleType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -23,4 +24,6 @@ public interface UserRepository extends JpaRepository<User,Long> {
     Optional<User> findByProviderId(String providerId);
 
     List<User> findAllByOrderByIdDesc();
+
+    Optional<User> findByRole(UserRoleType userRoleType);
 }

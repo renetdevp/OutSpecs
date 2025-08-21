@@ -49,7 +49,7 @@ function setQuestionInputEventListener(){
 
 async function getAnswer(question){
   try {
-    const res = await fetch(`/chats/alan?question=${question}&questionType=QUESTION`);
+    const res = await fetch(`/alan?question=${question}&questionType=QUESTION`);
 
     if (!res.ok) return;
 

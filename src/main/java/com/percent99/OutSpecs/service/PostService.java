@@ -119,9 +119,9 @@ public class PostService {
                 .filter(h -> h.supports(dto.getType()))
                 .forEach(h -> h.handle(post,dto));
 
-        if(post.getType().equals(PostType.AIPLAY)) {
-            userService.decrementAiRateLimit(user.getId());
-        }
+//        if(post.getType().equals(PostType.AIPLAY)) {
+//            userService.decrementAiRateLimit(user.getId());
+//        }
         return postRepository.save(post);
     }
 
@@ -404,5 +404,23 @@ public class PostService {
                 }
             }
         }
+    }
+
+  /**
+   * 앨런 AI의 응답을 기반으로 createPostDTO를 생성하는 메소드
+   * @param placeName 앨런AI에게 명소/맛집 추천을 질의한 지역명
+   * @param response 앨런AI의 응답
+   * @param userId 앨런AI에게 질의한 사용자의 userId
+   * @return
+   */
+    public PostDTO createPostDTOByAlanResponse(String placeName, String response, Long userId){
+      PostDTO result = new PostDTO();
+
+      result.setUserId(userId);
+      result.setType(PostType.AIPLAY);
+      result.setTitle(String.format("앨런 AI를 이용해 작성한 %s 지역 명소/맛집 추천 정보", placeName));
+      result.setContent(response);
+
+      return result;
     }
 }

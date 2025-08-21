@@ -73,16 +73,6 @@ public class ChatController {
     return chatRoomService.getChatRoomResponseDTOById(chatRoomId);
   }
 
-  @GetMapping("/alan")
-  @ResponseBody
-  public Map<String, String> getAlanResponse(@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
-                                             @RequestParam("question") String question,
-                                             @RequestParam("questionType") String questionType){
-    Long userId = customUserPrincipal.getUser().getId();
-
-    return alanService.question(questionType, question, userId);
-  }
-
   @GetMapping("/{chatRoomId}/messages")
   @ResponseBody
   public List<ChatMessageDTO> getChatMessages(@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,

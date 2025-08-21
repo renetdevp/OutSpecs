@@ -6,6 +6,7 @@
   <title>outspecs - 게시판</title>
   <link rel="stylesheet" th:href="@{/css/post/list.css}">
   <link rel="stylesheet" th:href="@{/css/pages/chatbot.css}" th:if="${user != null}">
+  <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
   <script th:src="@{/js/chatbot.js}" th:if="${user != null}"></script>
 </head>
 <body>
@@ -31,19 +32,19 @@
       </section>
 
       <div class="content-wrapper">
-        <div class="tech-tags" th:if="${postType.name() == 'PLAY'}">
+        <div class="tech-tags" th:if="${postType.name() == 'PLAY' || postType.name() == 'AIPLAY' }">
           <div class="filter-title-container">
             <div class="list-title">장소</div>
             <a th:href="@{/list/{postType}(postType=${postType.pathPrefix})}">초기화</a>
           </div>
           <div th:with="opts=${T(java.util.List).of('서울특별시','강원도','경기도','충청도','전라도','경상도')}">
             <div class="tag-list">
-              <div th:if="${postType.name() == 'PLAY'}" class="tag-item" th:each="opt : ${opts}" th:text="${opt}" th:data-tag="${opt}"
+              <div th:if="${postType.name() == 'PLAY' || postType.name() == 'AIPLAY' }" class="tag-item" th:each="opt : ${opts}" th:text="${opt}" th:data-tag="${opt}"
                    th:classappend="${selectedTags != null and selectedTags.contains(opt)} ? ' active' : ''">서울특별시</div>
             </div>
           </div>
         </div>
-        <div class="tech-tags" th:if="${postType.name() != 'PLAY'}">
+        <div class="tech-tags" th:if="${postType.name() != 'PLAY' && postType.name() != 'AIPLAY' }">
           <div class="filter-title-container">
             <div class="list-title">태그</div>
             <a th:href="@{/list/{postType}(postType=${postType.pathPrefix})}">초기화</a>
@@ -93,7 +94,7 @@
                       <img th:src="${img.imageUrl}" alt="첨부 이미지">
                     </div>
                   </div>
-                  <div th:text="${post.content}">게시글 내용</div>
+                   <div th:text="${post.content}" class="post-content-box">게시글 내용</div>
                 </a>
 
                 <div class="post-reaction">

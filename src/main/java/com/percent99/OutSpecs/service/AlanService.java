@@ -2,7 +2,9 @@ package com.percent99.OutSpecs.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.percent99.OutSpecs.dto.ChatMessageDTO;
 import com.percent99.OutSpecs.entity.AlanQuestionType;
+import com.percent99.OutSpecs.entity.ChatRoom;
 import com.percent99.OutSpecs.exception.HttpResponseProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,8 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,6 +30,9 @@ public class AlanService {
   private final RestTemplate restTemplate;
   private final ObjectMapper objectMapper;
   private final UserService userService;
+  private final ChatRoomService chatRoomService;
+  private final ChatMessageService chatMessageService;
+  private final PostService postService;
 
   @Value("${alan.BASE_URL}")
   private String baseUrl;
@@ -65,13 +72,44 @@ public class AlanService {
   }
 
   private Map<String, String> getRecommend(String placeName, Long userId){
-    String content = String.format("%s 지역의 명소를 5곳, 맛집을 5곳 추천 { name: 장소 이름, description: 장소 설명 } 형태로", placeName);
+//    String content = String.format("%s 지역의 명소 5곳, 맛집 5곳을 출력해. { 'place': [{ name: 명소 이름, description: 설명 }], 'food': [{ name: 맛집 이름, description: 설명 }] }의 json 형태로 출력해", placeName);
+    String content = String.format("%s 지역의 명소 5곳, 맛집 5곳을 출력해.", placeName);
 
-    return this.sendRequest(content, userId);
+    Map<String, String> res = this.sendRequest(content, userId);
+
+    if (res == null) return null;
+
+    try {
+      postService.createPost(postService.createPostDTOByAlanResponse(placeName, res.get("response"), userId), null);
+    }catch (IOException e){
+      throw new IllegalStateException("AI 나가서놀기 게시글을 작성하던 중 오류가 발생했습니다.");
+    }
+
+    return res;
   }
 
   private Map<String, String> getAnswer(String question, Long userId){
-    return this.sendRequest(question, userId);
+    Long CHATBOT_USER_ID = userService.getOrCreateChatbotUserId();
+
+    if (CHATBOT_USER_ID == null) throw new IllegalStateException("챗봇 사용자를 읽던 중 오류가 발생했습니다.");
+
+    ChatRoom chatRoom = chatRoomService.getOrCreateChatRoom(userId, CHATBOT_USER_ID);
+
+    if (chatRoom == null) throw new IllegalStateException("챗봇 채팅방을 읽던 중 오류가 발생했습니다.");
+
+    ChatMessageDTO questionMessageDTO = new ChatMessageDTO(userId, question, LocalDateTime.now(), chatRoom.getId());
+
+    chatMessageService.createChatMessage(chatRoom.getId(), questionMessageDTO, userId);
+
+    Map<String, String> res = this.sendRequest(question, userId);
+
+    if (res == null) return null;
+
+    ChatMessageDTO answerMessageDTO = new ChatMessageDTO(CHATBOT_USER_ID, res.get("response"), LocalDateTime.now(), chatRoom.getId());
+
+    chatMessageService.createChatMessage(chatRoom.getId(), answerMessageDTO, CHATBOT_USER_ID);
+
+    return res;
   }
 
   /**
