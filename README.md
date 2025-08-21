@@ -80,8 +80,9 @@ OutSpecs/
 
 ### 메인 페이지
 
-<img width="450" height="896" alt="Image" src="https://github.com/user-attachments/assets/76a382cf-9e36-4345-a864-fd3b8c2eef63" />
+<img width="400" height="900" alt="Image" src="https://github.com/user-attachments/assets/76a382cf-9e36-4345-a864-fd3b8c2eef63" />
 
+<br>
 
 - 메인 담당자 : 최수호
 - 주요 개발 기능 : 페이지 flex 및 반응형 구성, 헤더 (공통 페이지) 구현
@@ -90,9 +91,10 @@ OutSpecs/
 
 ### 로그인 / 회원 가입 페이지
 
-<img width="402" height="373" alt="Image" src="https://github.com/user-attachments/assets/bf205667-6873-4061-af08-11e2cc06a8ea" />
-<img width="372" height="411" alt="Image" src="https://github.com/user-attachments/assets/6ada0393-1962-4e21-84db-767f909cabc6" />
+<img width="400" height="900" alt="Image" src="https://github.com/user-attachments/assets/bf205667-6873-4061-af08-11e2cc06a8ea" />
+<img width="400" height="900" alt="Image" src="https://github.com/user-attachments/assets/6ada0393-1962-4e21-84db-767f909cabc6" />
 
+<br>
 
 - 메인 담당자 : 최수호
 - 주요 개발 기능
@@ -110,10 +112,11 @@ OutSpecs/
 
 ### 오픈프로필 페이지
 
-<img width="380" height="430" alt="Image" src="https://github.com/user-attachments/assets/5e1d048e-a449-4d82-bdd1-745bbe8d9e38" />
-<img width="380" height="430" alt="Image" src="https://github.com/user-attachments/assets/698267dc-4bd4-4423-8717-c6ca9ca54397" />
-<img width="380" height="430" alt="Image" src="https://github.com/user-attachments/assets/9e57e535-abba-493b-b504-2e48a38636fc" />
+<img width="400" height="900" alt="Image" src="https://github.com/user-attachments/assets/5e1d048e-a449-4d82-bdd1-745bbe8d9e38" />
+<img width="400" height="900" alt="Image" src="https://github.com/user-attachments/assets/698267dc-4bd4-4423-8717-c6ca9ca54397" />
+<img width="400" height="900" alt="Image" src="https://github.com/user-attachments/assets/9e57e535-abba-493b-b504-2e48a38636fc" />
 
+<br>
 
 - 메인 담당자 : 최수호
 - 주요 개발 기능
@@ -135,8 +138,9 @@ OutSpecs/
 
 ### 검색 페이지
 
-<img width="400" height="450" alt="Image" src="https://github.com/user-attachments/assets/b890fec4-0522-4233-a627-499306c9f0e4" />
+<img width="400" height="900" alt="Image" src="https://github.com/user-attachments/assets/b890fec4-0522-4233-a627-499306c9f0e4" />
 
+<br>
 
 - 메인 담당자 : 최수호
 - 주요 개발 기능
