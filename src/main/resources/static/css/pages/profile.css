@@ -1,4 +1,5 @@
 @import url("/css/shared/header.css");
+@import url("/css/shared/font.css");
 
 :root{
   --brand:#2f3096;
@@ -11,13 +12,13 @@
 }
 
 *{
-  box-sizing:border-box
+  box-sizing:border-box;
+  font-size: 14px;
 }
 
 body{
   margin:0;
   background:#fff;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
   color:var(--text);
 }
 

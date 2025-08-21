@@ -1,10 +1,15 @@
 @import url("/css/shared/header.css");
 @import url("/css/post/comment.css");
+@import url("/css/shared/font.css");
 
 * {
     font-size: 14px;
     font-weight: normal;
     box-sizing: border-box;
+}
+
+html,body {
+    margin:0;padding:0;
 }
 
 a {
@@ -91,7 +96,7 @@ pre {
 }
 
 .post-title {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
     color: #222;
     margin-top: 4px;

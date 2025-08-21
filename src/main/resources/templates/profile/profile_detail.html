@@ -46,7 +46,7 @@
                 <div class="follow" th:if="${!isMine and meId != null}">
                     <form th:action="@{/chats}" method="POST" role="none">
                         <input type="hidden" th:value="${profile.userId}" name="targetId">
-                        <button type="submit" class="menu-item chat" role="menuitem">채팅하기</button>
+                        <button type="submit" class="menu-item chat btn" role="menuitem">채팅하기</button>
                     </form>
                     <form th:action="@{/users/profiles/{userId}/follow(userId=${profile.userId})}"
                           method="post"

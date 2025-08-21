@@ -1,3 +1,5 @@
+@import url("/css/shared/font.css");
+
 .header__area {
   background-color:white;
   align-items:center;
@@ -10,7 +12,12 @@
 }
 
 .header__btn--left{
-  text-decoration-line:none;
+  text-decoration: none;
+  color: #444;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 5px;
+  border-radius: 10px;
 }
 
 .header__left {
@@ -28,16 +35,15 @@
 .header__left-menu {
   display: flex;
   align-items:center;
-  /* width: 465px; */
   width: fit-content;
-  gap: 20px;
+  gap: 10px;
   font-weight: 700;
   text-decoration: none;
   color: #525359;
 }
 
 .header__btn--left:hover {
-  color: #FF6F0E;
+    background: #f3f4f6;
 }
 
 .header__right {
@@ -46,29 +52,33 @@
 }
 
 .header__btn--login {
-  width: 82px;
-  height: 37px;
-  border-radius: 20px;
-  border: 1px solid #DBDCE2;
-  text-align: center;
-  line-height: 39px;
-  text-decoration: none;
-  color: white;
-  font-size: 17px;
-  background-color: #3b38a0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 34px;
+    border-radius: 20px;
+    border: 1px solid #DBDCE2;
+    text-align: center;
+    text-decoration: none;
+    color: white;
+    font-size: 16px;
+    background-color: #3b38a0;
 }
 
 .header__btn--signup{
-  width: 82px;
-  height: 37px;
-  border-radius: 20px;
-  border: 1px solid #DBDCE2;
-  text-align: center;
-  line-height: 39px;
-  text-decoration: none;
-  color: #111;
-  font-size: 17px;
-  background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 34px;
+    border-radius: 20px;
+    border: 1px solid #DBDCE2;
+    text-align: center;
+    text-decoration: none;
+    color: #111;
+    font-size: 16px;
+    background-color: white;
 }
 
 .profile-dropdown {
@@ -135,29 +145,11 @@
     padding: 10px 24px;
     gap: 10px;
   }
-
-  .header__btn--login {
-    width: 90px;
-    font-size: 15px;
-  }
 }
 
 @media (max-width: 576px){
   .header__area {
     padding: 10px 24px;
     gap: 10px;
-  }
-
-  .header__btn--login {
-    width: 90px;
-    font-size: 15px;
-  }
-
-  .header__btn--login{
-    display: none;
-  }
-
-  .header__btn--login{
-    display: none;
   }
 }

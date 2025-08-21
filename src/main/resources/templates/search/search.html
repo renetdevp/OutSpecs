@@ -11,7 +11,7 @@
     <div class="container">
         <!-- 검색바 -->
         <section class="popular-section" style="padding-bottom:12px;">
-            <form th:action="@{/search}" method="get" style="display:flex; gap:8px; align-items:center;">
+            <form th:action="@{/search}" method="get" class="search-form">
                 <select name="type" aria-label="게시판 선택">
                     <option value="" th:selected="${type == null}">전체</option>
                     <option th:each="t : ${T(com.percent99.OutSpecs.entity.PostType).values()}"
@@ -25,7 +25,7 @@
         </section>
 
         <!-- 탭 -->
-        <nav class="content-wrapper" style="gap:8px; margin-bottom:12px;">
+        <nav class="search-tabs">
             <a th:href="@{/search(q=${q})}" class="tag-item" th:classappend="${type} == null ? ' active'">전체</a>
             <a th:href="@{/search(type='FREE', q=${q})}" class="tag-item" th:classappend="${type?.name() == 'FREE'} ? ' active'">자유</a>
             <a th:href="@{/search(type='QNA', q=${q})}" class="tag-item" th:classappend="${type?.name() == 'QNA'} ? ' active'">QnA</a>
@@ -37,7 +37,7 @@
 
         <div class="content-wrapper">
             <main class="main-content" style="width:100%;">
-                <div class="list-title">
+                <div class="search-results-title">
                     <span>검색</span>
                     <span th:if="${q}">: <b th:text="${q}"></b></span>
                     <small th:text="' (' + ${total} + '건)'"></small>
@@ -60,13 +60,6 @@
                                 </div>
                                 <div class="post-date"
                                      th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</div>
-                            </div>
-                            <div class="more-menu-container">
-                                <img class="more-icon" src="/images/post_more_vertical.svg" alt="더보기 아이콘"
-                                     th:onclick="|toggleMoreMenu(event, 'post-more-menu-${post.id}')|">
-                                <div class="more-menu" th:id="|post-more-menu-${post.id}|">
-                                    <button type="button" class="report-btn" th:onclick="|reportPost(${post.id})|">신고</button>
-                                </div>
                             </div>
                         </div>
 
@@ -103,9 +96,9 @@
                     </article>
                 </div>
                 <!-- 결과 없음 -->
-                <section th:if="${#lists.isEmpty(results)}">
+                <section class="no-results" th:if="${#lists.isEmpty(results)}">
                     <p>검색 결과가 없습니다.</p>
-                    <a class="write-btn"
+                    <a class="write-suggestion-btn"
                        th:href="@{/post/write(type=${type != null ? type.name() : 'FREE'}, title=${q})}">
                         이 제목으로 글쓰기
                     </a>
@@ -114,34 +107,5 @@
         </div>
     </div>
     <div class="ai-chat">AI<br>챗봇</div>
-
-    <script>
-        // list.html과 동일 유틸
-        function toggleMoreMenu(event, menuId) {
-          event.stopPropagation();
-          const menu = document.getElementById(menuId);
-          document.querySelectorAll('.more-menu').forEach(m => {
-            if (m.id !== menuId) m.style.display = 'none';
-          });
-          menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
-        }
-        document.addEventListener('click', function(e) {
-          if (!e.target.closest('.more-menu-container')) {
-            document.querySelectorAll('.more-menu').forEach(m => m.style.display = 'none');
-          }
-        });
-        window.addEventListener('scroll', function() {
-          document.querySelectorAll('.more-menu').forEach(m => m.style.display = 'none');
-        });
-        function reportPost(postId) {
-          if (confirm('이 게시글을 신고하시겠습니까?')) {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '/post/' + postId + '/report';
-            document.body.appendChild(form);
-            form.submit();
-          }
-        }
-    </script>
 </body>
 </html>
