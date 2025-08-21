@@ -15,8 +15,8 @@
 
 .header__left {
   display: flex;
-  align-items:center
-  margin-top:5px;
+  align-items: center;
+  margin-top: 5px;
   gap: 20px;
   height: 34px;
 }
@@ -28,7 +28,8 @@
 .header__left-menu {
   display: flex;
   align-items:center;
-  width: 465px;
+  /* width: 465px; */
+  width: fit-content;
   gap: 20px;
   font-weight: 700;
   text-decoration: none;
