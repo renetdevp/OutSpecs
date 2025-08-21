@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -31,6 +32,7 @@ public class AlanService {
   private final UserService userService;
   private final ChatRoomService chatRoomService;
   private final ChatMessageService chatMessageService;
+  private final PostService postService;
 
   @Value("${alan.BASE_URL}")
   private String baseUrl;
@@ -70,9 +72,20 @@ public class AlanService {
   }
 
   private Map<String, String> getRecommend(String placeName, Long userId){
-    String content = String.format("%s 지역의 명소 5곳, 맛집 5곳을 출력해. { 'place': [{ name: 명소 이름, description: 설명 }], 'food': [{ name: 맛집 이름, description: 설명 }] }의 json 형태로 출력해", placeName);
+//    String content = String.format("%s 지역의 명소 5곳, 맛집 5곳을 출력해. { 'place': [{ name: 명소 이름, description: 설명 }], 'food': [{ name: 맛집 이름, description: 설명 }] }의 json 형태로 출력해", placeName);
+    String content = String.format("%s 지역의 명소 5곳, 맛집 5곳을 출력해.", placeName);
 
-    return this.sendRequest(content, userId);
+    Map<String, String> res = this.sendRequest(content, userId);
+
+    if (res == null) return null;
+
+    try {
+      postService.createPost(postService.createPostDTOByAlanResponse(placeName, res.get("response"), userId), null);
+    }catch (IOException e){
+      throw new IllegalStateException("AI 나가서놀기 게시글을 작성하던 중 오류가 발생했습니다.");
+    }
+
+    return res;
   }
 
   private Map<String, String> getAnswer(String question, Long userId){
