@@ -6,6 +6,7 @@
   <title>outspecs - 게시판</title>
   <link rel="stylesheet" th:href="@{/css/post/list.css}">
   <link rel="stylesheet" th:href="@{/css/pages/chatbot.css}" th:if="${user != null}">
+  <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
   <script th:src="@{/js/chatbot.js}" th:if="${user != null}"></script>
 </head>
 <body>
@@ -93,7 +94,7 @@
                       <img th:src="${img.imageUrl}" alt="첨부 이미지">
                     </div>
                   </div>
-                  <div th:text="${post.content}">게시글 내용</div>
+                   <div th:text="${post.content}" class="post-content-box">게시글 내용</div>
                 </a>
 
                 <div class="post-reaction">
