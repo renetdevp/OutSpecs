@@ -150,6 +150,22 @@ OutSpecs/
 
 ---
 
+### 관리자 페이지
+
+<img width="400" height="900" alt="Image" src="https://github.com/user-attachments/assets/e8cf65b3-1348-40ca-b102-cf1e902ee362" />
+
+<br>
+
+- 메인 담당자 : 최수호
+- 주요 개발 기능
+    + 회원 목록/검색/정렬(이메일·권한·가입일)
+    + 권한 변경 드롭다운 적용 (USER/ADMIN/ENTUSER)
+    + 회원 상태 제어: 정지/해제/탈퇴 (세션/토큰 무효화 처리)
+    + 신고 게시글 관리: 목록 확인, 보기/삭제
+    + 접근 제어: ROLE_ADMIN, @PreAuthorize 적용, CSRF 보호
+
+---
+
 ### 채팅 페이지
 
 
