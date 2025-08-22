@@ -162,12 +162,6 @@ window.addEventListener('scroll', function() {
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
-    // 신고 버튼 이벤트 리스너 추가
-    const reportButton = document.getElementById('report-button');
-    if (reportButton) {
-        reportButton.addEventListener('click', reportPost);
-    }
-
   (function loadPostContent(){
     if (POST_TYPE !== 'AIPLAY') return;
 

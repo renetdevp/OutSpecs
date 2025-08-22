@@ -9,9 +9,12 @@ async function writeAIPlayPost(placeName){
 }
 
 async function aiPostWriteOnClick(e){
-  const input = document.querySelector('#ai-play-place').value;
+  const aiPlayPlace = document.querySelector('#ai-play-place');
+  const input = aiPlayPlace.value;
 
   if (input.trim() === '') return;
+
+  aiPlayPlace.value = '';
 
   await writeAIPlayPost(input);
 
@@ -107,5 +110,5 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   })();
 
-  document.querySelector('.ai-play-write > .write-btn').addEventListener('click', aiPostWriteOnClick);
+  document.querySelector('.ai-play-write > .write-btn')?.addEventListener('click', aiPostWriteOnClick);
 });
