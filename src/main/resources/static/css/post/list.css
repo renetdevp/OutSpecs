@@ -173,7 +173,6 @@ html,body {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    max-width: calc(100% - 168px);
 }
 
 .write-btn {
@@ -421,6 +420,11 @@ html,body {
     box-shadow: 0 4px 12px rgba(93, 95, 239, 0.3);
 }
 
+.ai-chat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6);
+}
+
 @media (max-width: 768px) {
 
     .sidebar {
@@ -616,6 +620,7 @@ html,body {
 }
 
 #ai-play-place {
-    width: 80px;
-    font-size: .9rem;
+    width: 90px;
+    font-size: 12px;
+    padding-left: 5px;
 }

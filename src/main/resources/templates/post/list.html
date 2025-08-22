@@ -32,27 +32,29 @@
       </section>
 
       <div class="content-wrapper">
-        <div class="tech-tags" th:if="${postType.name() == 'PLAY' || postType.name() == 'AIPLAY' }">
-          <div class="filter-title-container">
-            <div class="list-title">장소</div>
-            <a th:href="@{/list/{postType}(postType=${postType.pathPrefix})}">초기화</a>
-          </div>
-          <div th:with="opts=${T(java.util.List).of('서울특별시','강원도','경기도','충청도','전라도','경상도')}">
-            <div class="tag-list">
-              <div th:if="${postType.name() == 'PLAY' || postType.name() == 'AIPLAY' }" class="tag-item" th:each="opt : ${opts}" th:text="${opt}" th:data-tag="${opt}"
-                   th:classappend="${selectedTags != null and selectedTags.contains(opt)} ? ' active' : ''">서울특별시</div>
+        <div class="filter-container" th:if="${postType.name() != 'AIPLAY'}">
+          <div class="tech-tags" th:if="${postType.name() == 'PLAY'}">
+            <div class="filter-title-container">
+              <div class="list-title">장소</div>
+              <a th:href="@{/list/{postType}(postType=${postType.pathPrefix})}">초기화</a>
+            </div>
+            <div th:with="opts=${T(java.util.List).of('서울특별시','강원도','경기도','충청도','전라도','경상도')}">
+              <div class="tag-list">
+                <div th:if="${postType.name() == 'PLAY' || postType.name() == 'AIPLAY' }" class="tag-item" th:each="opt : ${opts}" th:text="${opt}" th:data-tag="${opt}"
+                     th:classappend="${selectedTags != null and selectedTags.contains(opt)} ? ' active' : ''">서울특별시</div>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="tech-tags" th:if="${postType.name() != 'PLAY' && postType.name() != 'AIPLAY' }">
-          <div class="filter-title-container">
-            <div class="list-title">태그</div>
-            <a th:href="@{/list/{postType}(postType=${postType.pathPrefix})}">초기화</a>
-          </div>
-          <div th:with="opts=${T(java.util.List).of('Java','Spring','React','Vue','Python','AI','SQL', 'C++','C','JavaScript','HTML','CSS')}">
-            <div class="tag-list">
-              <div th:if="${postType.name() != 'PLAY'}" class="tag-item" th:each="opt : ${opts}" th:text="${opt}" th:data-tag="${opt}"
-                   th:classappend="${selectedTags != null and selectedTags.contains(opt)} ? ' active' : ''">Java</div>
+          <div class="tech-tags" th:if="${postType.name() != 'PLAY'}">
+            <div class="filter-title-container">
+              <div class="list-title">태그</div>
+              <a th:href="@{/list/{postType}(postType=${postType.pathPrefix})}">초기화</a>
+            </div>
+            <div th:with="opts=${T(java.util.List).of('Java','Spring','React','Vue','Python','AI','SQL', 'C++','C','JavaScript','HTML','CSS')}">
+              <div class="tag-list">
+                <div th:if="${postType.name() != 'PLAY'}" class="tag-item" th:each="opt : ${opts}" th:text="${opt}" th:data-tag="${opt}"
+                     th:classappend="${selectedTags != null and selectedTags.contains(opt)} ? ' active' : ''">Java</div>
+              </div>
             </div>
           </div>
         </div>
