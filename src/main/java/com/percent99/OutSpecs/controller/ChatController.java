@@ -11,6 +11,7 @@ import com.percent99.OutSpecs.service.ChatRoomService;
 import com.percent99.OutSpecs.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -36,6 +37,9 @@ public class ChatController {
   private final UserService userService;
   private final ProfileRepository profileRepository;
 
+  @Value("${websocket.SERVER_URL}")
+  private String webSocketServerUrl;
+
   @GetMapping
   public String chatRoomList(@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal, Model model){
     Long userId = customUserPrincipal.getUser().getId();
@@ -49,6 +53,7 @@ public class ChatController {
     model.addAttribute("chatrooms", chatRoomResponseDTOList);
     model.addAttribute("userId", userId);
     model.addAttribute("user", user);
+    model.addAttribute("webSocketServerUrl", webSocketServerUrl);
 
     return "chat/chatrooms";
   }
