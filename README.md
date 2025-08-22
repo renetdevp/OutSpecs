@@ -170,10 +170,28 @@ OutSpecs/
 
 ### 채팅 페이지
 
+<figure>
+  <img width="800" height="400" alt="img" src="https://github.com/user-attachments/assets/bb3ba87a-559e-4506-a158-a389186d2b4d">
+  <figurecaption>채팅방 페이지</figurecaption>
+</figure>
+<figure>
+  <img width="400" height="600" alt="img" src="https://github.com/user-attachments/assets/44a4a8f8-7dbe-4c13-b407-71798592da47">
+  <figurecaption>챗봇 기능</figurecaption>
+</figure>
+<figure>
+  <img width="600" height="600" alt="img" src="https://github.com/user-attachments/assets/dae396f6-f48a-49aa-9922-dba389178990">
+  <figurecaption>명소/맛집 추천 기능</figurecaption>
+</figure>
 
-- 메인 담당자 :
-- 주요 개발 기능 :
+<br>
 
+- 메인 담당자 : 신동규
+- 주요 개발 기능
+  + 채팅방 및 채팅 메시지
+  + 챗봇을 통한 앨런AI 질의 및 채팅 메시지 생성
+  + 앨런AI를 통한 명소/맛집 추천 게시글 작성
+
+<br>
 
 # 📌 URL 명세표
 
