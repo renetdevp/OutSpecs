@@ -173,6 +173,7 @@ html,body {
     display: flex;
     flex-direction: column;
     gap: 15px;
+    max-width: calc(100% - 168px);
 }
 
 .write-btn {
@@ -606,3 +607,15 @@ html,body {
     background: linear-gradient(135deg, #218838, #1ea080);
 }
 
+.main-content > .ai-play-write {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-self: flex-end;
+    align-items: center;
+}
+
+#ai-play-place {
+    width: 80px;
+    font-size: .9rem;
+}

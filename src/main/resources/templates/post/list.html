@@ -58,7 +58,11 @@
         </div>
 
         <main class="main-content">
-          <a class="write-btn" th:if="${user != null}" th:href="@{/post/write}">글쓰기</a>
+          <a class="write-btn" th:if="${user != null && postType.name() != 'AIPLAY'}" th:href="@{/post/write}">글쓰기</a>
+          <div class="ai-play-write" th:if="${user != null && postType.name() == 'AIPLAY'}">
+            <input type="text" id="ai-play-place" maxlength="6" placeholder="지역명 입력">
+            <div class="write-btn">지역 명소 추천받기</div>
+          </div>
           <div class="post-list" th:fragment="postListFragment">
             <article class="post-item" th:each="post : ${recentPosts}">
                 <div class="post-header">

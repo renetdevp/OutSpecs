@@ -1,3 +1,23 @@
+async function writeAIPlayPost(placeName){
+  if (!placeName) return;
+
+  const res = await fetch(`/alan?question=${placeName}&questionType=RECOMMEND`);
+
+  if (!res.ok) return null;
+
+  return await res.json();
+}
+
+async function aiPostWriteOnClick(e){
+  const input = document.querySelector('#ai-play-place').value;
+
+  if (input.trim() === '') return;
+
+  await writeAIPlayPost(input);
+
+  window.location = '/list/ai-play';
+}
+
 // DOM이 로드된 후 실행
 document.addEventListener('DOMContentLoaded', function() {
     // 태그 클릭 이벤트
@@ -86,4 +106,6 @@ document.addEventListener('DOMContentLoaded', function() {
         box.innerHTML = marked.parse(box.innerHTML);
     }
   })();
+
+  document.querySelector('.ai-play-write > .write-btn').addEventListener('click', aiPostWriteOnClick);
 });
