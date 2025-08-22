@@ -171,18 +171,22 @@ OutSpecs/
 ### 채팅 페이지
 
 <figure>
-  <img width="800" height="400" alt="img" src="https://github.com/user-attachments/assets/bb3ba87a-559e-4506-a158-a389186d2b4d">
+  <img width="700" height="400" alt="img" src="https://github.com/user-attachments/assets/bb3ba87a-559e-4506-a158-a389186d2b4d">
+  <br>
   <figurecaption>채팅방 페이지</figurecaption>
 </figure>
 <figure>
   <img width="400" height="600" alt="img" src="https://github.com/user-attachments/assets/44a4a8f8-7dbe-4c13-b407-71798592da47">
+  <br>
   <figurecaption>챗봇 기능</figurecaption>
 </figure>
 <figure>
   <img width="600" height="600" alt="img" src="https://github.com/user-attachments/assets/dae396f6-f48a-49aa-9922-dba389178990">
+  <br>
   <figurecaption>명소/맛집 추천 기능</figurecaption>
 </figure>
 
+<br>
 <br>
 
 - 메인 담당자 : 신동규
