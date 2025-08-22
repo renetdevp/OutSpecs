@@ -17,7 +17,7 @@
                 <a class="header__btn--left" th:href="@{/list/recruit}">채용공고</a>
                 <a class="header__btn--left" th:href="@{/list/team}">팀모집</a>
                 <a class="header__btn--left" th:href="@{/list/play}">나가서놀기</a>
-                <a class="header__btn--left" th:href="@{/list/ai-play}">나가서놀기-ai추천</a>
+                <a class="header__btn--left" th:href="@{/list/ai-play}" th:if="${user != null}">나가서놀기-ai추천</a>
             </div>
         </div>
         <div class="header__right">

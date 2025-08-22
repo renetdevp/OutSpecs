@@ -35,7 +35,7 @@ public class PostListController {
       
         List<PostListViewDTO> popular = postQueryService.toViews(
                 postQueryService.getLikePosts(postType, 10), true, false);
-        Slice<Post> recentSlice = postQueryService.getRecentPosts(postType, page, size);
+        Slice<Post> recentSlice = postQueryService.getRecentPosts(user, postType, page, size);
         List<PostListViewDTO> recent = postQueryService.toViews(recentSlice.getContent(), true, false);
 
         model.addAttribute("user", user);

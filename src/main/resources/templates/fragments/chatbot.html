@@ -9,6 +9,10 @@
   </head>
   <body>
     <div class="chatbot-container" th:fragment="chatbot" th:if="${user != null}">
+      <div class="chatbot-header" id="chatbotHeader">
+        <h3>OutSpecs AI 챗봇</h3>
+        <div class="subtitle">무엇을 도와드릴까요?</div>
+      </div>
       <div class="chat-message-container">
       </div>
       <input type="text" name="question" class="question-input" placeholder="enter를 눌러 메시지를 입력하세요">
