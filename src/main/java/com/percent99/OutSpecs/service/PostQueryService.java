@@ -92,9 +92,17 @@ public class PostQueryService {
      * @param size 좋아요 가져올 개수
      * @return 최신글 목록
      */
-    public Slice<Post> getRecentPosts(PostType type, int page, int size) {
+    public Slice<Post> getRecentPosts(User user, PostType type, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return postRepository.findByTypeOrderByCreatedAtDesc(type, pageable);
+        if(type.equals(PostType.AIPLAY)) {
+            if(user == null) {
+                throw new EntityNotFoundException("해당 유저가 존재하지 않습니다.");
+            }
+            return postRepository.findByUserIdAndType(user.getId(), type, pageable);
+        }
+        else {
+            return postRepository.findByTypeOrderByCreatedAtDesc(type, pageable);
+        }
     }
 
     /**

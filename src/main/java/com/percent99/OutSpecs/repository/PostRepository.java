@@ -40,6 +40,14 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     List<Post> findByType(PostType type);
 
     /**
+     * 특정 유저가 작성한 AIPLAY 게시글을 조회한다.
+     * @param userId 조회할 유저 ID
+     * @param pageable 페이징 정보
+     * @return 해당 유저의 AIPLAY 게시글 Slice
+     */
+    Slice<Post> findByUserIdAndType(Long userId, PostType type, Pageable pageable);
+
+    /**
      * 게시판 타입에 따라 최신글을 조회한다.
      * @param type 조회할 게시글의 타입
      * @param pageable 조회할 게시글 개수

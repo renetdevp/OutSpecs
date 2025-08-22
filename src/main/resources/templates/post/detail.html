@@ -82,7 +82,7 @@
       <div class="chip" th:if="${post.type.name() == 'PLAY'}"
             th:text="${post.postHangout != null ? post.postHangout.placeName : ''}">태그</div>
     </div>
-    <div class="post-reaction">
+    <div class="post-reaction" th:if="${post.type.name() != 'AIPLAY'}">
       <div class="post-reaction-count">
         <div class="reaction-item">
           <form th:action="@{/post/{postId}/like(postId=${post.id})}" method="post" style="display: inline;">
@@ -110,11 +110,13 @@
       </form>
     </div>
 
-    <div th:replace="~{post/comment}"></div>
+    <div th:if="${post.type.name() != 'AIPLAY'}">
+      <div th:replace="~{post/comment}"></div>
+    </div>
   </div>
 
   <div class="post-actions" th:if="${user != null and (user.id == post.user.id or user.role.name() == 'ADMIN')}">
-    <a class="post-btn" th:if="${user.id == post.user.id}" th:href="@{|/post/${post.id}/edit|}">수정하기</a>
+    <a class="post-btn" th:if="${user.id == post.user.id && post.type.name() != 'AIPLAY'}" th:href="@{|/post/${post.id}/edit|}">수정하기</a>
     <form th:action="@{|/post/${post.id}/delete|}" method="post" style="display:inline;" th:if="${post.type.name() != 'QNA'}">
       <button class="post-btn delete-btn" type="submit" onclick="return confirm('게시글을 삭제하시겠습니까?')">삭제하기</button>
     </form>

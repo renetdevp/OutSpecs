@@ -12,7 +12,7 @@
 <body>
     <header th:replace="~{fragments/header :: header}"></header>
     <div class="container" th:data-post-type="${postType.pathPrefix}">
-      <section class="popular-section">
+      <section class="popular-section" th:if="${postType.name() != 'AIPLAY'}">
         <div class="list-title">인기게시글</div>
         <div class="popular-posts">
           <th:block th:each="post, iterStat : ${popularPosts}">
