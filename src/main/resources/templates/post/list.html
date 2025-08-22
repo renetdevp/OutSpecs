@@ -77,7 +77,7 @@
                   </a>
                   <img th:unless="${user != null and user.profile != null}"
                        class="post-user-image"
-                        th:src="${post.user.profile.imageUrl != null
+                        th:src="${post?.user?.profile?.imageUrl != null
                             ? post.user.profile.imageUrl
                             : '/images/profile_icon.svg'}" alt="프로필 이미지">
                   <div class="post-title-container">
@@ -87,7 +87,7 @@
                          class="post-user-nickname" th:text="${post.user.profile.nickname}">사용자명</a>
                       <div th:unless="${user != null and user.profile != null}"
                          th:href="@{/users/profiles/{id}(id=${post.user.id})}"
-                         class="post-user-nickname" th:text="${post.user.profile.nickname}">사용자명</div>
+                         class="post-user-nickname" th:text="${post?.user?.profile?.nickname}">사용자명</div>
                       <div class="post-title" th:text="${post.title}">게시글 제목</div>
                     </div>
                     <div class="post-date" th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</div>

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,7 +58,7 @@ public class ChatMessageService {
     chatMessage.setChatRoom(chatRoom);
     chatMessage.setContent(chatMessageDTO.getContent());
     chatMessage.setSender(user);
-    chatMessage.setCreatedAt(LocalDateTime.now());
+    chatMessage.setCreatedAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")));
 
     chatMessage = chatMessageRepository.save(chatMessage);
 
@@ -267,7 +268,7 @@ public class ChatMessageService {
     Long targetId = user1Id.equals(userId) ? user2Id : user1Id;
 
     chatMessageDTO.setSenderId(userId);
-    chatMessageDTO.setCreatedAt(LocalDateTime.now());
+    chatMessageDTO.setCreatedAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")));
 
     chatMessageDTO.setChatRoomId(chatRoomId);
 
