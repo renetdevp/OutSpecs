@@ -7,8 +7,9 @@ import com.percent99.OutSpecs.entity.AlanQuestionType;
 import com.percent99.OutSpecs.entity.ChatRoom;
 import com.percent99.OutSpecs.exception.HttpResponseProcessingException;
 import lombok.RequiredArgsConstructor;
+import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -50,13 +51,23 @@ public class AlanService {
 
     content = URLEncoder.encode(content, StandardCharsets.UTF_8);
 
-    String url = UriComponentsBuilder.fromUriString(baseUrl)
+    String url = UriComponentsBuilder.fromUriString(baseUrl+"/question")
             .queryParam("content", content)
             .queryParam("client_id", alanClientId)
             .build()
             .toUriString();
 
     ResponseEntity<String> res = restTemplate.getForEntity(url, String.class);
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+
+    JSONObject reqBody = new JSONObject();
+    reqBody.put("client_id", alanClientId);
+
+    HttpEntity<String> resetEntity = new HttpEntity<>(reqBody.toJSONString(), headers);
+
+    restTemplate.exchange(baseUrl+"/reset-state", HttpMethod.DELETE, resetEntity, String.class);
 
     try {
       Map<String, String> result = new HashMap<>();
