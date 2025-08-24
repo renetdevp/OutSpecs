@@ -98,6 +98,7 @@ public class PostQueryService {
             if(user == null) {
                 throw new EntityNotFoundException("해당 유저가 존재하지 않습니다.");
             }
+            pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
             return postRepository.findByUserIdAndType(user.getId(), type, pageable);
         }
         else {
