@@ -44,7 +44,7 @@ body {
   display: flex;
   flex-direction: row;
   width: 90%;
-  height: calc(100vh - 160px);
+  height: calc(100vh - 126px);
   background-color: #F3F3FF;
   border-radius: 20px 0 0 0;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
