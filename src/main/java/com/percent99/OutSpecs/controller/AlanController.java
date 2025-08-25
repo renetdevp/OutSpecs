@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -25,6 +26,14 @@ public class AlanController {
                                              @RequestParam("questionType") String questionType){
     Long userId = customUserPrincipal.getUser().getId();
 
-    return alanService.question(questionType, question, userId);
+    try {
+      return alanService.question(questionType, question, userId);
+    } catch (Exception e) {
+      Map<String, String> res = new HashMap<>();
+
+      res.put("error", e.getMessage());
+
+      return res;
+    }
   }
 }
