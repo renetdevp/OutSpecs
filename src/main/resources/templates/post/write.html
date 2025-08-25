@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>게시판 글쓰기</title>
+  <link rel="stylesheet" th:href="@{/css/post/write.css}">
+</head>
+<body>
+<header th:replace="~{fragments/header :: header}"></header>
+<div class="post">
+  <div class="write-container">
+    <form th:action="${isEdit} ? @{/post/{postId}/edit(postId=${postId})} : @{/post/write}"
+          th:object="${postDTO}" method="post" enctype="multipart/form-data">
+
+      <input type="hidden" th:field="*{userId}" />
+
+      <div class="form-top">
+        <div class="image-upload">
+          <div class="image-preview-container">
+            <label for="images" class="image-box" id="mainImageBox" >
+              <div class="upload-text">
+                <span>이미지 추가</span>
+                <small>(최대 5개)</small>
+              </div>
+            </label>
+            <input type="file" id="images" name="files" multiple accept="image/*" hidden/>
+
+            <div class="image-thumbnails" id="imageThumbnails"></div>
+            <div class="image-info">
+              <span id="imageCount">0</span>/5개 선택됨
+            </div>
+          </div>
+        </div>
+        <div class="title-tag">
+
+          <div class="form-group">
+            <label for="postType">게시판 타입</label>
+            <input th:if="${isEdit}" type="hidden" th:field="*{type}" />
+            <select id="postType" name="type" th:field="*{type}"
+                    th:disabled="${isEdit}" required>
+              <option value="">게시판을 선택하세요</option>
+              <option value="FREE">자유게시판</option>
+              <option value="TEAM">팀모집</option>
+              <option value="RECRUIT"
+                      th:if="${user.role.name() == 'ENTUSER'}">채용공고</option>
+              <option value="PLAY">나가서놀기</option>
+              <option value="QNA">QnA</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="title">게시글 제목</label>
+            <div class="input-wrapper">
+              <input type="text" id="title" th:field="*{title}" placeholder="제목을 입력하세요" required maxlength="70"/>
+            </div>
+          </div>
+
+          <div class="form-group" id="tagsField">
+            <label>태그</label>
+            <div class="input-wrapper">
+              <input type="hidden" id="tagsInput" th:field="*{tagsInfo.tags}"/>
+
+              <div class="chips"
+                   th:with="opts=${T(java.util.List).of('Java','Spring','React','Vue','Python','AI','SQL', 'C++','C','JavaScript','HTML','CSS')},
+                                  selectedTags=${selectedTags}">
+                <label class="chip" th:each="opt : ${opts}">
+                  <input type="checkbox"
+                         class="tag-chip"
+                         name="tagChips"
+                         th:value="${opt}"
+                         th:checked="${selectedTags.contains(opt)}">
+                  <span th:text="${opt}">Java</span>
+                </label>
+              </div>
+
+              <p id="tagsClientError" class="error" style="display:none"></p>
+              <p class="error" th:if="${#fields.hasErrors('tagsInfo.tags')}" th:errors="*{tagsInfo.tags}"></p>
+            </div>
+          </div>
+
+            <div class="form-group" id="qnaAnswerField">
+              <label>답변 완료 여부</label>
+                <input type="checkbox" th:field="*{qnaInfo.answerComplete}" />
+            </div>
+            <p class="error" th:if="${#fields.hasErrors('qnaInfo.answerComplete')}" th:errors="*{qnaInfo.answerComplete}"></p>
+
+          <div class="form-group" id="hangoutPlaceField">
+            <label>게시판 타입</label>
+            <select id="hangoutInfo" th:field="*{hangoutInfo.placeName}" required>
+              <option value="">지역을 선택하세요</option>
+              <option value="서울특별시">서울특별시</option>
+              <option value="경기도">경기도</option>
+              <option value="강원도">강원도</option>
+              <option value="충청도">충청도</option>
+              <option value="전라도">전라도</option>
+              <option value="경상도">경상도</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="teamStatusField">
+            <label>팀 모집 상태</label>
+            <div class="input-wrapper">
+              <div class="radio-group">
+                <div class="radio-item">
+                  <input type="radio" id="teamStatus1" th:field="*{teamInfo.status}" value="OPEN" required>
+                  <label for="teamStatus1">모집중</label>
+                </div>
+                <div class="radio-item">
+                  <input type="radio" id="teamStatus2" th:field="*{teamInfo.status}" value="CLOSED" required>
+                  <label for="teamStatus2">모집완료</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group" id="teamCapacityField">
+            <label>모집 인원</label>
+            <div class="input-wrapper">
+              <input type="number" th:field="*{teamInfo.capacity}" placeholder="모집할 인원수를 입력하세요" min="1" max="20" required>
+            </div>
+          </div>
+
+          <div class="form-group" id="jobCareerField">
+            <label>경력</label>
+            <div class="input-wrapper">
+              <input type="number" th:field="*{jobInfo.career}" placeholder="필요 경력(년)을 입력하세요" min="0" max="20" required>
+            </div>
+          </div>
+
+          <div class="form-group" id="jobTechField">
+            <label>기술 스택</label>
+            <div class="input-wrapper">
+              <input type="hidden" id="techInput" th:field="*{jobInfo.techniques}"/>
+              <div class="chips"
+                   th:with="opts=${T(java.util.List).of('Java','Spring','React','Vue','Python','AI','SQL', 'C++','C','JavaScript','HTML','CSS')},
+                                  selectedTags=${selectedTags}">
+                <label class="chip" th:each="opt : ${opts}">
+                  <input type="checkbox"
+                         class="tech-chip"
+                         name="techChips"
+                         th:value="${opt}"
+                         th:checked="${selectedTags != null && selectedTags.contains(opt)}">
+                  <span th:text="${opt}">Java</span>
+                </label>
+              </div>
+              <p id="techsClientError" class="error" style="display:none"></p>
+              <p class="error" th:if="${#fields.hasErrors('jobInfo.techniques')}" th:errors="*{jobInfo.techniques}"></p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="form-content">
+        <label for="content">게시글 내용</label>
+        <textarea id="content" th:field="*{content}" placeholder="내용을 입력하세요" required></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="cancel-btn" onclick="history.back()">취소</button>
+        <button type="submit" th:text="${isEdit} ? '수정하기' : '저장하기'">저장하기</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script src="/js/post-write.js"></script>
+</body>
+</html>

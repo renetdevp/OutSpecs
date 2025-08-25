@@ -131,10 +131,65 @@ OutSpecs/
 
 ---
 
-### 게시물 페이지 (리스트 / 등록 / 상세 페이지)
+### 게시물 등록 페이지
 
-- 메인 담당자 :
+<img width="400" height="900" alt="image" src="https://github.com/user-attachments/assets/9345bfed-29ab-4ce5-8ab7-8a1a2888f84d" />
+<img width="400" height="900" alt="image" src="https://github.com/user-attachments/assets/6517124b-6ccb-4cac-a19c-767500d3c0fa" />
+<img width="400" height="900" alt="image" src="https://github.com/user-attachments/assets/bf8f4f70-0a84-4c03-b788-3ee9c5ba48a8" />
+
+<br>
+
+- 메인 담당자 : 이수윤
 - 주요 개발 기능 :
+  + 게시글 등록, 수정 기능
+    + 게시글 등록 시 게시판 타입을 선택
+    + 게시판 타입별 추가 항목 변화
+    + 수정 시 게시판 타입은 수정 불가
+     
+---
+
+### 게시물 상세 페이지
+
+<img width="400" height="900" alt="image" src="https://github.com/user-attachments/assets/1a041472-6e20-4eaa-b4b0-9dafbdf24fbe" />
+<img width="400" height="900" alt="image" src="https://github.com/user-attachments/assets/4bdceda5-d958-425f-81c5-62c3faeaa6af" />
+<img width="400" height="900" alt="image" src="https://github.com/user-attachments/assets/05d36425-8b7b-4dfe-843e-933a7586a733" />
+
+<br>
+
+- 메인 담당자 : 이수윤
+- 주요 개발 기능 :
+  + 게시글 상세 보기
+      + 게시글 타입, 게시글 내용, 게시글 태그, 이미지 등 게시글 상세 내용 표출
+      + 수정, 삭제는 게시글 작성자에게만 표출
+
+  + 반응 (좋아요, 북마크, 신고)
+    + 자신의 글이 아닌 경우에 좋아요, 북마크, 신고 기능
+    + 다시 클릭시 반응 취소
+  
+  + 댓글, 대댓글, (qna 게시글) 답변
+    + 댓글, 대댓글, 답변 등록, 수정, 삭제
+    + 대댓글에 다시 댓글 불가
+    + 답변은 관리자만 삭제 가능
+
+---
+
+### 게시물 리스트 페이지
+
+<img width="400" height="900" alt="image" src="https://github.com/user-attachments/assets/1aef9b79-1cd4-4e30-955e-fef40700ae97" />
+
+<br>
+
+- 메인 담당자 : 이수윤
+- 주요 개발 기능 :
+  + 게시글 전체 리스트
+      + 게시글 최신 순으로 게시판 별로 표출
+      + 좋아요수, 댓글수, 조회수 북마크 수 표출
+      + 인기 게시글은 좋아요순으로 표출 (최대 10개)
+      + 무한스크롤로 표출
+    
+  + 필터링
+    + 게시글 태그별로 필터링
+    + 나가서 놀기 게시판은 장소별로 필터링
 
 ---
 

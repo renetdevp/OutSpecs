@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>outspecs - 게시판</title>
+  <link rel="stylesheet" th:href="@{/css/post/list.css}">
+  <link rel="stylesheet" th:href="@{/css/pages/chatbot.css}" th:if="${user != null}">
+  <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
+  <script th:src="@{/js/chatbot.js}" th:if="${user != null}"></script>
+</head>
+<body>
+    <header th:replace="~{fragments/header :: header}"></header>
+    <div class="container" th:data-post-type="${postType.pathPrefix}">
+      <section class="popular-section" th:if="${postType.name() != 'AIPLAY'}">
+        <div class="list-title">인기게시글</div>
+        <div class="popular-posts">
+          <th:block th:each="post, iterStat : ${popularPosts}">
+            <a th:href="@{/post/{id}(id=${post.id})}" class="popular-post">
+              <div class="post-info">
+                <div class="post-number" th:text="${iterStat.count}">1</div>
+                <div class="post-title" th:text="${post.title}">게시글 제목</div>
+                <div class="post-date" th:text="${#temporals.format(post.createdAt, 'yyyy.MM.dd')}">2025.08.10</div>
+              </div>
+              <div class="post-stats">
+                <img class="post-popular-icon" src="/images/post_like_fill.svg" alt="좋아요 아이콘">
+                <span class="likes" th:text="${post.likeCount}">0</span>
+              </div>
+            </a>
+          </th:block>
+        </div>
+      </section>
+
+      <div class="content-wrapper">
+        <div class="filter-container" th:if="${postType.name() != 'AIPLAY'}">
+          <div class="tech-tags" th:if="${postType.name() == 'PLAY'}">
+            <div class="filter-title-container">
+              <div class="list-title">장소</div>
+              <a th:href="@{/list/{postType}(postType=${postType.pathPrefix})}">초기화</a>
+            </div>
+            <div th:with="opts=${T(java.util.List).of('서울특별시','강원도','경기도','충청도','전라도','경상도')}">
+              <div class="tag-list">
+                <div th:if="${postType.name() == 'PLAY' || postType.name() == 'AIPLAY' }" class="tag-item" th:each="opt : ${opts}" th:text="${opt}" th:data-tag="${opt}"
+                     th:classappend="${selectedTags != null and selectedTags.contains(opt)} ? ' active' : ''">서울특별시</div>
+              </div>
+            </div>
+          </div>
+          <div class="tech-tags" th:if="${postType.name() != 'PLAY'}">
+            <div class="filter-title-container">
+              <div class="list-title">태그</div>
+              <a th:href="@{/list/{postType}(postType=${postType.pathPrefix})}">초기화</a>
+            </div>
+            <div th:with="opts=${T(java.util.List).of('Java','Spring','React','Vue','Python','AI','SQL', 'C++','C','JavaScript','HTML','CSS')}">
+              <div class="tag-list">
+                <div th:if="${postType.name() != 'PLAY'}" class="tag-item" th:each="opt : ${opts}" th:text="${opt}" th:data-tag="${opt}"
+                     th:classappend="${selectedTags != null and selectedTags.contains(opt)} ? ' active' : ''">Java</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <main class="main-content">
+          <a class="write-btn" th:if="${user != null && postType.name() != 'AIPLAY'}" th:href="@{/post/write}">글쓰기</a>
+          <div class="ai-play-write" th:if="${user != null && postType.name() == 'AIPLAY'}">
+            <input type="text" id="ai-play-place" maxlength="6" placeholder="지역명 입력">
+            <div class="write-btn">지역 명소 추천받기</div>
+          </div>
+          <div class="post-list" th:fragment="postListFragment">
+            <article class="post-item" th:each="post : ${recentPosts}">
+                <div class="post-header">
+                  <a th:if="${user != null and user.profile != null}"
+                     class="post-user-image-link" th:href="@{/users/profiles/{id}(id=${post.user.id})}">
+                    <img class="post-user-image"
+                         th:src="${post.user.profile.imageUrl != null
+                            ? post.user.profile.imageUrl
+                            : '/images/profile_icon.svg'}" alt="프로필 이미지">
+                  </a>
+                  <img th:unless="${user != null and user.profile != null}"
+                       class="post-user-image"
+                        th:src="${post?.user?.profile?.imageUrl != null
+                            ? post.user.profile.imageUrl
+                            : '/images/profile_icon.svg'}" alt="프로필 이미지">
+                  <div class="post-title-container">
+                    <div class="post-title-info">
+                      <a th:if="${user != null and user.profile != null}"
+                         th:href="@{/users/profiles/{id}(id=${post.user.id})}"
+                         class="post-user-nickname" th:text="${post.user.profile.nickname}">사용자명</a>
+                      <div th:unless="${user != null and user.profile != null}"
+                         th:href="@{/users/profiles/{id}(id=${post.user.id})}"
+                         class="post-user-nickname" th:text="${post?.user?.profile?.nickname}">사용자명</div>
+                      <div class="post-title" th:text="${post.title}">게시글 제목</div>
+                    </div>
+                    <div class="post-date" th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</div>
+                  </div>
+                </div>
+
+                <a class="post-content" th:href="@{/post/{id}(id=${post.id})}">
+                  <div th:if="${post.images}">
+                    <div th:each="img : ${post.images}">
+                      <img th:src="${img.imageUrl}" alt="첨부 이미지">
+                    </div>
+                  </div>
+                   <div th:text="${post.content}" class="post-content-box">게시글 내용</div>
+                </a>
+
+                <div class="post-reaction">
+                  <div class="post-reaction-count">
+                    <div class="reaction-item">
+                      <img class="post-icon" src="/images/post_like_fill.svg" alt="좋아요 아이콘">
+                      <span th:text="${post.likeCount}">0</span>
+                    </div>
+                    <div class="reaction-item">
+                      <img class="post-icon" src="/images/post_view_icon.svg" alt="조회수 아이콘">
+                      <span th:text="${post.viewCount}">0</span>
+                    </div>
+                    <div class="reaction-item">
+                      <img class="post-icon" src="/images/comment.svg" alt="댓글 아이콘">
+                      <span th:text="${post.commentCount}">0</span>
+                    </div>
+                  </div>
+                  <div class="reaction-item">
+                    <img class="post-icon"  src="/images/bookmark-fill.svg" alt="북마크 아이콘">
+                    <span th:text="${post.bookmarkCount}">0</span>
+                  </div>
+                </div>
+            </article>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <div class="ai-chat" th:if="${user != null}">
+      AI<br>챗봇
+    </div>
+  <script src="/js/post-list.js"></script>
+    <div class="ai-chat" th:replace="~{fragments/chatbot :: chatbot}"></div>
+</body>
+</html>

@@ -1,0 +1,87 @@
+package com.percent99.OutSpecs.service;
+
+import com.percent99.OutSpecs.entity.Post;
+import com.percent99.OutSpecs.entity.User;
+import com.percent99.OutSpecs.entity.UserRoleType;
+import com.percent99.OutSpecs.entity.UserStatus;
+import com.percent99.OutSpecs.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+/**
+ * 관리자(Admin) 전용 비즈니스 로직 처리하는 클래스
+ */
+@Service
+@RequiredArgsConstructor
+public class AdminService {
+
+    private final UserRepository userRepository;
+    private final ReactionService reactionService;
+
+    /**
+     * 특정 사용자 역할을 변경합니다.
+     * @param userId 역할을 변경할 사용자 ID
+     * @param newRole 설정할 새로운 역할 (USER,ENTUSER)
+     */
+    @Transactional
+    public void changeUserRole(Long userId, UserRoleType newRole){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
+        if(user.getRole() == newRole) return;
+
+        if (newRole == UserRoleType.ADMIN) {
+            throw new IllegalStateException("관리자 계정으로 변경할 수 없습니다.");
+        }
+        user.setRole(newRole);
+    }
+
+    /**
+     * 신고당한 게시물을 조회합니다.
+     * @return 신고 게시물 리스트
+     */
+    @Transactional(readOnly = true)
+    public List<Post> findReportedPosts(){
+        return reactionService.getReportPosts();
+    }
+
+    /**
+     * 회원가입한 전체 유저 조회합니다.
+     * @return 전체 User
+     */
+    @Transactional(readOnly = true)
+    public List<User>findAllUsers(){
+        return userRepository.findAllByOrderByIdDesc();
+    }
+
+    @Transactional
+    public void banUser(Long userId){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
+        if(user.getStatus() == UserStatus.DELETED){
+            throw new IllegalStateException("이미 탈퇴한 유저입니다.");
+        }
+        user.setStatus(UserStatus.SUSPENDED);
+    }
+
+    @Transactional
+    public void unBanUser(Long userId){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
+        if(user.getStatus() == UserStatus.DELETED){
+            throw new IllegalStateException("이미 탈퇴한 유저입니다.");
+        }
+        user.setStatus(UserStatus.ACTIVE);
+    }
+
+    @Transactional
+    public void deleteUser(Long userId){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 유저를 찾을 수 없습니다."));
+        user.setStatus(UserStatus.DELETED);
+    }
+}

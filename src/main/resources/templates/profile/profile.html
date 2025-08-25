@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title th:text="${profileDTO.userId} != null ? '프로필 수정' : '새 프로필 만들기'">프로필 폼</title>
+    <link rel="stylesheet" th:href="@{/css/pages/profile.css}">
+</head>
+<body>
+    <header th:replace="~{fragments/header :: header}"></header>
+    <main class="openprofile-wrap">
+        <section class="openprofile-card">
+
+            <!-- 상단 아바타 -->
+            <div class="profile-top" th:object="${profileDTO}">
+                <div class="avatar-wrapper">
+                    <label for="file" style="cursor:pointer;">
+                        <img id="avatarPreview"
+                             class="avatar-image"
+                             th:src="${profileDTO.imageUrl != null and !#strings.isEmpty(profileDTO.imageUrl) ?
+                             profileDTO.imageUrl : '/images/profile_icon.svg'}"
+                             alt="프로필 이미지">
+                    </label>
+                    <button type="button" id="removeImageBtn" class="remove-image-btn" style="display:none;">×</button>
+                </div>
+                <div class="user-name" th:text="*{nickname}">User1</div>
+                <div class="image-info">클릭하여 이미지 업로드 (최대 5MB)</div>
+            </div>
+
+            <!-- 메인 폼 -->
+            <form th:object="${profileDTO}"
+                  th:action="${profileDTO.userId != null}
+                              ? @{/users/profiles/{userId}(userId=${profileDTO.userId})}
+                              : @{/users/profiles}"
+                  method="post"
+                  enctype="multipart/form-data"
+                  class="op-form">
+
+                <!-- 숨김 파일 입력(아바타 클릭으로 트리거) -->
+                <input type="file" id="file" name="file" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none">
+
+                <!-- 닉네임 -->
+                <div class="field">
+                    <label for="nickname">닉네임</label>
+                    <input id="nickname" class="input" type="text" th:field="*{nickname}" placeholder="표시할 닉네임" required/>
+                    <p class="error" th:if="${#fields.hasErrors('nickname')}" th:errors="*{nickname}"></p>
+                </div>
+
+                <!-- 자기소개 -->
+                <div class="field">
+                    <label for="selfInfo">자기소개</label>
+                    <textarea id="selfInfo" th:field="*{selfInfo}" placeholder="자기소개 내용을 입력하세요." required></textarea>
+                    <p class="error" th:if="${#fields.hasErrors('selfInfo')}" th:errors="*{selfInfo}"></p>
+                </div>
+
+                <!-- 기술 스택: 칩 선택 → stacks 문자열(hidden) -->
+                <div class="field">
+                    <label>기술 스택</label>
+
+                    <!-- 서버로 보낼 쉼표 문자열 -->
+                    <input type="hidden" id="stacksInput" th:field="*{stacks}"/>
+
+                    <div class="chips"
+                         th:with="opts=${T(java.util.List).of('Java','C++','Python','C','JavaScript','Spring','SQL','HTML')}">
+                        <label class="chip" th:each="opt,stat : ${opts}">
+                            <input type="checkbox"
+                                   class="stack-chip"
+                                   name="stackChips"
+                                   th:value="${opt}">
+                            <span th:text="${opt}">Java</span>
+                        </label>
+                    </div>
+                    <p id="stacksClientError" class="error" style="display:none"></p>
+                    <p class="error" th:if="${#fields.hasErrors('stacks')}" th:errors="*{stacks}"></p>
+                </div>
+
+                <!-- 경력 -->
+                <div class="field">
+                    <label for="experience">경력</label>
+                    <textarea id="experience" th:field="*{experience}" placeholder="경력/프로젝트 등을 입력하세요." required></textarea>
+                    <p class="error" th:if="${#fields.hasErrors('experience')}" th:errors="*{experience}"></p>
+                </div>
+
+                <!-- 공개 여부 스위치 -->
+                <div class="field row">
+                    <span>기업에 <strong>오픈프로필</strong> 허용 여부</span>
+                    <label class="switch">
+                        <input type="checkbox" th:field="*{allowCompanyAccess}">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <p class="error" th:if="${#fields.hasErrors('allowCompanyAccess')}" th:errors="*{allowCompanyAccess}"></p>
+
+                <!-- 액션 -->
+                <div class="actions">
+                    <button type="submit" class="btn-primary">수정하기</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <!-- 이미지 크롭 모달 -->
+    <div id="cropModal" class="crop-modal" style="display:none;">
+        <div class="crop-modal-content">
+            <h3>이미지 크기 조정</h3>
+            <div class="crop-container">
+                <canvas id="cropCanvas"></canvas>
+            </div>
+            <div class="crop-actions">
+                <button type="button" id="cropConfirm" class="btn-primary">적용</button>
+                <button type="button" id="cropCancel" class="btn-secondary">취소</button>
+            </div>
+        </div>
+    </div>
+<script src="/js/profile.js"></script>
+</body>
+</html>

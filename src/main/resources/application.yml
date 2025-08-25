@@ -1,3 +1,57 @@
 spring:
   application:
     name: OutSpecs
+
+  security:
+    user:
+      name: sa
+      password: cc
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - profile
+              - email
+            redirect-uri: http://localhost:8080/login/oauth2/code/google
+  datasource:
+    url: jdbc:postgresql://localhost:5432/${POSTGRESQL_DATABASE}
+    driver-class-name: org.postgresql.Driver
+    username: ${POSTGRESQL_USERNAME}
+    password: ${POSTGRESQL_PASSWORD}
+
+  # JPA 설정
+  jpa:
+    hibernate:
+      ddl-auto: update     # 스키마 자동 생성/업데이트
+    show-sql: true         # SQL 로그 출력
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  logging:
+    level:
+      org.hibernate.SQL: DEBUG
+      org.springframework.security.oauth2.client: TRACE
+      org.springframework.security.oauth2.core: TRACE
+      com.percent99.OutSpecs.security: DEBUG
+aws:
+  access-key-id: ${AWS_ACCESS_KEY_ID}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY}
+  region: ${AWS_REGION}
+  s3:
+    bucket-name: ${AWS_S3_BUCKET_NAME}
+
+alan:
+  BASE_URL: ${ALAN_BASE_URL}
+  CLIENT_ID: ${ALAN_CLIENT_ID}
+
+chatbot:
+  CHATBOT_USERNAME: ${CHATBOT_USERNAME}
+  CHATBOT_PASSWORD: ${CHATBOT_PASSWORD}
+
+websocket:
+  SERVER_URL: ${WEBSOCKET_SERVER_URL}

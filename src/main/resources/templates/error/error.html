@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>에러 발생</title>
+  <link rel="stylesheet" th:href="@{/css/pages/error.css}">
+</head>
+<body>
+<div class="container">
+  <h1>에러가 발생했습니다.</h1>
+  <p th:text="${errorMessage}">에러 메시지</p>
+  <a href="/">메인으로 돌아가기</a>
+</div>
+</body>
+</html>
