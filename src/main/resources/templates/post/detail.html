@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${post.title}">게시글 상세</title>
+  <link rel="stylesheet" th:href="@{/css/post/detail.css}">
+  <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    const POST_TYPE = [[${post.type.name()}]];
+    /*]]>*/
+  </script>
+</head>
+<body>
+<header th:replace="~{fragments/header :: header}"></header>
+<div class="post" th:data-post-id="${post.id}">
+  <a class="post-list-back post-btn" th:href="@{/list/{type}(type=${post.type.pathPrefix()})}">← 목록으로</a>
+  <div class="post-container">
+    <div class="post-type" th:text="${post.type.displayName()}">포스트 타입</div>
+    <div class="post-header">
+      <a th:if="${user != null and user.profile != null}"
+         class="post-user-image-link" th:href="@{/users/profiles/{id}(id=${post.user.id})}">
+          <img th:src="${post.user.profile.imageUrl != null
+                         ? post.user.profile.imageUrl
+                         :'/images/profile_icon.svg'}"
+               alt="프로필 이미지" class="post-user-image">
+      </a>
+      <img th:unless="${user != null and user.profile != null}"
+           class="post-user-image"
+           th:src="${post?.user?.profile?.imageUrl != null
+                         ? post.user.profile.imageUrl
+                         :'/images/profile_icon.svg'}" alt="프로필 이미지">
+      <div class="post-title-container">
+        <div class="post-title-info">
+          <a th:if="${user != null and user.profile != null}" th:href="@{/users/profiles/{id}(id=${post.user.id})}"
+                  class="post-user-nickname" th:text="${post.user.profile.nickname}">사용자명</a>
+          <div th:unless="${user != null and user.profile != null}" th:href="@{/users/profiles/{id}(id=${post.user.id})}"
+             class="post-user-nickname" th:text="${post?.user?.profile?.nickname}">사용자명</div>
+          <div class="post-title" th:text="${post.title}">게시글 제목</div>
+        </div>
+        <div class="post-date" th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</div>
+      </div>
+      <div class="more-menu-container" th:if="${user != null and user.profile != null and user.id != post.user.id}">
+        <img class="more-icon" src="/images/post_more_vertical.svg" alt="더보기 아이콘" onclick="toggleMoreMenu(event, 'post-more-menu')">
+        <div class="more-menu" id="post-more-menu">
+            <form th:action="@{/post/{postId}/report(postId=${post.id})}" method="post">
+              <button type="submit" class="report-btn" id="report-button">
+                <span th:if="${!reactions.isReported}">신고</span>
+                <span th:if="${reactions.isReported}">신고 취소</span>
+              </button>
+            </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="team-content" th:if="${post.type.name() == 'TEAM'}">
+      <div class="team-capacity">현재 인원 : <span th:text="${reactions.teamCount}"></span></div>
+      <div> / </div>
+      <div class="team-capacity">모집 인원 : <span th:text="${post.teamInfo.capacity}"></span></div>
+      <form th:action="@{/post/{postId}/team(postId=${post.id})}" th:object="${participationDTO}"
+            method="post" style="display: inline;" th:if="${user != null and user.profile != null and user.id != post.user.id}">
+        <input type="hidden" name="userId" th:value="${user.id}" />
+        <input type="hidden" name="postId" th:value="${post.id}" />
+        <button type="submit" th:disabled="${reactions.isParticipation}" class="team-btn" onclick="return confirm('팀모집에 신청하시겠습니까?')">신청하기</button>
+      </form>
+    </div>
+    <div class="post-content">
+      <div th:if="${post.images}">
+        <div th:each="img : ${post.images}">
+          <img th:src="${img.imageUrl}" alt="첨부 이미지">
+        </div>
+      </div>
+      <div th:text="${post.content}" class="post-content-box">게시글 내용</div>
+    </div>
+    <div class="post-tags">
+      <div th:if="${post.type.name() == 'RECRUIT'}">
+        <div class="chip" th:each="item : ${post.postJob.techniques}" th:text="${item.tech}">태그</div>
+      </div>
+      <div th:if="${post.type.name() == 'FREE' or post.type.name() == 'QNA'}">
+        <div class="chip" th:each="item : ${post.postTags}" th:text="${item.tags}">태그</div>
+      </div>
+      <div class="chip" th:if="${post.type.name() == 'PLAY'}"
+            th:text="${post.postHangout != null ? post.postHangout.placeName : ''}">태그</div>
+    </div>
+    <div class="post-reaction" th:if="${post.type.name() != 'AIPLAY'}">
+      <div class="post-reaction-count">
+        <div class="reaction-item">
+          <form th:action="@{/post/{postId}/like(postId=${post.id})}" method="post" style="display: inline;">
+            <button type="submit" class="like-btn" th:disabled="${user == null or user.id == post.user.id or user.profile == null}">
+              <img class="post-icon" th:if="${!reactions.isLiked}" src="/images/post_like_icon.svg" alt="좋아요 아이콘">
+              <img class="post-icon" th:if="${reactions.isLiked}" src="/images/post_like_fill.svg" alt="좋아요 아이콘">
+            </button>
+          </form>
+          <span th:text="${reactions.likesCount}">0</span>
+        </div>
+        <div class="reaction-item">
+          <img class="post-icon" src="/images/post_view_icon.svg" alt="조회수 아이콘">
+          <span th:text="${post.viewCount}">0</span>
+        </div>
+        <div class="reaction-item">
+          <img class="post-icon" src="/images/comment.svg" alt="댓글 아이콘">
+          <span th:text="${reactions.commentsCount}">0</span>
+        </div>
+      </div>
+      <form th:action="@{/post/{postId}/bookmark(postId=${post.id})}" method="post" style="display: inline;">
+        <button type="submit" class="bookmark-btn" th:disabled="${user == null or user.id == post.user.id or user.profile == null}">
+          <img class="post-icon" th:if="${!reactions.isBookmarked}" src="/images/bookmark.svg" alt="북마크 아이콘">
+          <img class="post-icon" th:if="${reactions.isBookmarked}" src="/images/bookmark-fill.svg" alt="북마크 아이콘">
+        </button>
+      </form>
+    </div>
+
+    <div th:if="${post.type.name() != 'AIPLAY'}">
+      <div th:replace="~{post/comment}"></div>
+    </div>
+  </div>
+
+  <div class="post-actions" th:if="${user != null and (user.id == post.user.id or user.role.name() == 'ADMIN')}">
+    <a class="post-btn" th:if="${user.id == post.user.id && post.type.name() != 'AIPLAY'}" th:href="@{|/post/${post.id}/edit|}">수정하기</a>
+    <form th:action="@{|/post/${post.id}/delete|}" method="post" style="display:inline;" th:if="${post.type.name() != 'QNA'}">
+      <button class="post-btn delete-btn" type="submit" onclick="return confirm('게시글을 삭제하시겠습니까?')">삭제하기</button>
+    </form>
+  </div>
+
+</div>
+<script src="/js/post-detail.js"></script>
+</body>
+</html>

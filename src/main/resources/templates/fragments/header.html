@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>헤더 페이지</title>
+</head>
+<body class="font--pretendard">
+    <header th:fragment="header" class="header__area">
+        <div class="header__left">
+            <a th:href="@{/}">
+                <img class="header__left-logo"  th:src="@{/images/logo.svg}" alt="메인으로 돌아가기">
+            </a>
+            <div class="header__left-menu">
+                <a class="header__btn--left" th:href="@{/list/free}" >자유게시판</a>
+                <a class="header__btn--left" th:href="@{/list/qna}">QNA</a>
+                <a class="header__btn--left" th:href="@{/list/recruit}">채용공고</a>
+                <a class="header__btn--left" th:href="@{/list/team}">팀모집</a>
+                <a class="header__btn--left" th:href="@{/list/play}">나가서놀기</a>
+                <a class="header__btn--left" th:href="@{/list/ai-play}" th:if="${user != null}">나가서놀기-ai추천</a>
+            </div>
+        </div>
+        <div class="header__right">
+            <div class="profile-dropdown" th:if="${user != null}">
+                <button id="avatarBtn" type="button" class="avatar-btn" aria-haspopup="menu" aria-expanded="false">
+                    <img class="profile-avatar-img"
+                         th:src="${(user.profile != null and user.profile.imageUrl != null)
+                                                ? user.profile.imageUrl
+                                                : '/images/profile_icon.svg'}"
+                         alt="오픈프로필">
+                    <span class="avatar-caret" aria-hidden="true">▾</span>
+                </button>
+                <div class="profile-menu" role="menu" aria-labelledby="avatarBtn">
+                    <a role="menuitem"
+                       th:href="${Profile != null} ? @{/users/profiles/{userId}(userId=${Profile.userId})} : @{/users/profiles/new}">
+                        내 프로필
+                    </a>
+                    <form th:action="@{/chats}" method="get" role="none" th:if="${user != null}">
+                        <button type="submit" class="menu-item chat" role="menuitem">채팅하기</button>
+                    </form>
+                    <form th:action="@{/logout}" method="post" role="none">
+                        <button type="submit" class="menu-item logout" role="menuitem">로그아웃</button>
+                    </form>
+                </div>
+            </div>
+            <!-- 관리자용 -->
+            <a class="header__btn--login"
+               th:if="${user != null and user.role.name() == 'ADMIN'}"
+               th:href="@{/admin}">관리자</a>
+            <!-- 비로그인 상태-->
+            <a class="header__btn--login" th:if="${user == null}" th:href="@{/users/login}">로그인</a>
+            <a class="header__btn--signup" th:if="${user == null}" th:href="@{/users/signup}">회원가입</a>
+        </div>
+        <script defer th:src="@{/js/header.js}"></script>
+    </header>
+</body>
+</html>

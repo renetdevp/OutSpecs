@@ -1,0 +1,289 @@
+package com.percent99.OutSpecs.service;
+
+import com.percent99.OutSpecs.dto.ChatMessageDTO;
+import com.percent99.OutSpecs.dto.ChatRoomResponseDTO;
+import com.percent99.OutSpecs.entity.ChatMessage;
+import com.percent99.OutSpecs.entity.ChatRoom;
+import com.percent99.OutSpecs.entity.User;
+import com.percent99.OutSpecs.repository.ChatMessageRepository;
+import com.percent99.OutSpecs.repository.ChatRoomRepository;
+import com.percent99.OutSpecs.repository.ProfileRepository;
+import com.percent99.OutSpecs.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 사용자들이 주고받는 채팅 메시지를 관리하기 위한 service 객체.<br>
+ */
+@RequiredArgsConstructor
+@Service
+public class ChatMessageService {
+  private final ChatMessageRepository chatMessageRepository;
+  private final ChatRoomService chatRoomService;
+  private final ChatRoomRepository chatRoomRepository;
+  private final UserRepository userRepository;
+  private final ProfileRepository profileRepository;
+  private final SimpMessageSendingOperations messagingTemplate;
+
+  /**
+   * 채팅 메시지를 생성하는 메소드
+   * @param chatRoomId 사용자가 채팅 메시지를 송신한 채팅방의 id 값
+   * @param chatMessageDTO 사용자가 송신한 채팅 메시지 DTO 객체
+   * @param userId 로그인한 사용자의 id 값
+   */
+  @Transactional
+  public void createChatMessage(Long chatRoomId, ChatMessageDTO chatMessageDTO, Long userId){
+    ChatRoom chatRoom = chatRoomService.findChatRoomById(chatRoomId).orElse(null);
+    User user = userRepository.findById(userId).orElse(null);
+
+    if (chatRoom==null || user==null) return;
+
+    if (!profileRepository.existsByUserId(userId)) return;
+
+    if (!chatRoom.getUser1().equals(user) && !chatRoom.getUser2().equals(user)) return;
+
+    ChatMessage chatMessage = new ChatMessage();
+
+    chatMessage.setChatRoom(chatRoom);
+    chatMessage.setContent(chatMessageDTO.getContent());
+    chatMessage.setSender(user);
+    chatMessage.setCreatedAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")));
+
+    chatMessage = chatMessageRepository.save(chatMessage);
+
+    Long lastMessageId = chatMessage.getId();
+
+    chatRoom.setLastMessageId(lastMessageId);
+
+    chatRoomService.updateChatRoomById(chatRoom, userId);
+  }
+
+  /**
+   * chatRoomId와 userId를 parameter로 받아 채팅방에 속한 모든 메시지를 가져오는 메소드.<br>
+   * 사용자가 해당 chatRoom에 참가하고 있지 않다면 null을 반환.
+   * @param chatRoomId 메시지를 가져오고자 하는 채팅방의 id 값
+   * @param userId 메시지를 가져오려는 사용자의 id 값
+   * @return 해당 채팅방의 모든 채팅 메시지를 반환
+   */
+  @Transactional(readOnly = true)
+  public List<ChatMessage> findAllByChatRoomId(Long chatRoomId, Long userId){
+    if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return null;
+
+    return chatMessageRepository.findAllByChatRoomId(chatRoomId);
+  }
+
+  @Transactional(readOnly = true)
+  private Page<ChatMessage> findByChatRoomId(Long chatRoomId, Pageable pageable){
+    return chatMessageRepository.findByChatRoomId(chatRoomId, pageable);
+  }
+
+  /**
+   * chatRoomId와 userId, pageable을 parameter로 받아 채팅방에 속한 메시지의 일부를 가져오는 메소드.<br>
+   * 사용자가 해당 chatRoom에 참가하고 있지 않다면 null을 반환.
+   * @param chatRoomId 메시지를 가져오고자 하는 채팅방의 id 값
+   * @param userId 메시지를 가져오려는 사용자의 id 값
+   * @param pageable pagination을 위한 pageable 객체
+   * @return pagination을 적용한 해당 채팅방의 채팅 메시지를 반환
+   */
+  @Transactional(readOnly = true)
+  public Page<ChatMessage> findByChatRoomId(Long chatRoomId, Long userId, Pageable pageable){
+    if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return null;
+
+    return chatMessageRepository.findByChatRoomId(chatRoomId, pageable);
+  }
+
+  @Transactional(readOnly = true)
+  private Page<ChatMessage> findByChatRoomIdAndCreatedAtBefore(Long chatRoomId, LocalDateTime firstCreatedAt, Pageable pageable){
+    return chatMessageRepository.findByChatRoomIdAndCreatedAtBefore(chatRoomId, firstCreatedAt, pageable);
+  }
+
+  /**
+   * chatRoomId와 userId를 parameter로 받아 해당 채팅방의 최근 채팅 메시지를 최대 15개까지 반환하는 메소드.
+   * @param chatRoomId 최근 채팅 메시지를 가져오고자 하는 채팅방의 id 값
+   * @param userId 최근 채팅 메시지를 가져오고자 하는 사용자의 id 값
+   * @return 해당 채팅방의 최근 채팅 메시지를 최대 15개까지 반환
+   */
+  public List<ChatMessageDTO> getChatMessageDTOByChatRoomId(Long chatRoomId, Long userId){
+    Pageable defaultPageable = PageRequest.of(0, 15, Sort.by("createdAt").descending());
+
+    return this.getChatMessageDTOByChatRoomId(chatRoomId, userId, defaultPageable);
+  }
+
+  /**
+   * chatRoomId와 userId, pageable을 parameter로 받아 해당 채팅방의 채팅 메시지를 pageable에 따라 반환하는 메소드
+   * @param chatRoomId 채팅 메시지를 가져오고자 하는 채팅방의 id 값
+   * @param userId 채팅 메시지를 가져오고자 하는 사용자의 id 값
+   * @param pageable 채팅 메시지를 pagination하기 위한 pageable 객체
+   * @return 해당 채팅방의 채팅 메시지를 pageable 객체에 따라 pagination한 결과값
+   */
+  public List<ChatMessageDTO> getChatMessageDTOByChatRoomId(Long chatRoomId, Long userId, Pageable pageable){
+    if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return List.of();
+
+    Page<ChatMessage> chatMessagePage = this.findByChatRoomId(chatRoomId, pageable);
+
+    if (!chatMessagePage.hasContent()) return List.of();
+
+    return this.convertChatMessageListToDTOList(chatMessagePage.getContent());
+  }
+
+  /**
+   * chatRoomId, userId, firstCreatedAt, pageable을 parameter로 받아 해당 채팅방의 채팅 메시지 중 firstCreatedAt보다 먼저 생성된 채팅 메시지를 pageable에 따라 반환하는 메소드
+   * @param chatRoomId 채팅 메시지를 가져옥고자 하는 채팅방의 id 값
+   * @param userId 채팅 메시지를 가져오고자 하는 사용자의 id 값
+   * @param firstCreatedAt 어느 시점 이전의 채팅 메시지를 가져올 것인지에 대한 기준값
+   * @param pageable limit과 sorting을 위한 pageable 객체
+   * @return 해당 채팅방의 채팅 메시지 중 firstCreatedAt보다 먼저 생성된 채팅메시지를 pageable 객체에 따라 pagination한 결과값
+   */
+  public List<ChatMessageDTO> getChatMessageDTOByChatRoomId(Long chatRoomId, Long userId, LocalDateTime firstCreatedAt, Pageable pageable){
+    if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return List.of();
+
+    Page<ChatMessage> chatMessagePage = this.findByChatRoomIdAndCreatedAtBefore(chatRoomId, firstCreatedAt, pageable);
+
+    if (!chatMessagePage.hasContent()) return List.of();
+
+    return this.convertChatMessageListToDTOList(chatMessagePage.getContent());
+  }
+
+  /**
+   * ChatMessage의 List를 ChatMessageDTO 형태의 List로 변환하는 메소드
+   * @param chatMessageList ChatMessageDTO 형태로 변환할 ChatMessage의 List
+   * @return ChatMessageDTO 형태로 변환된 ChatMessage의 List
+   */
+  private List<ChatMessageDTO> convertChatMessageListToDTOList(List<ChatMessage> chatMessageList){
+    List<ChatMessageDTO> result = new ArrayList<>();
+
+    for (ChatMessage chatMessage: chatMessageList){
+      result.add(this.convertChatMessageToDTO(chatMessage));
+    }
+
+    return result;
+  }
+
+  private ChatMessageDTO convertChatMessageToDTO(ChatMessage chatMessage){
+    ChatMessageDTO result = new ChatMessageDTO();
+
+    result.setSenderId(chatMessage.getSender().getId());
+    result.setContent(chatMessage.getContent());
+    result.setCreatedAt(chatMessage.getCreatedAt());
+    result.setChatRoomId(chatMessage.getChatRoom().getId());
+
+    return result;
+  }
+
+  /**
+   * chatMessage와 userId를 parameter로 받아 해당 chatMessage를 업데이트하는 메소드. <br>
+   * @param chatMessage 덮어쓸 채팅 메시지
+   * @param userId 메시지를 업데이트하려는 사용자의 id 값
+   * @return 업데이트된 채팅 메시지
+   */
+  @Transactional
+  public ChatMessage updateChatMessage(ChatMessage chatMessage, Long userId){
+    if (!isChatMessageSender(chatMessage, userId)) return null;
+
+    return chatMessageRepository.save(chatMessage);
+  }
+
+  /**
+   * 해당 채팅방에서 사용자가 전송한 모든 메시지를 삭제하는 메소드.
+   * @param chatRoomId 사용자의 채팅 메시지를 삭제할 채팅방의 id 값
+   * @param userId 채팅 메시지를 삭제하려는 사용자의 id 값
+   */
+  @Transactional
+  public void deleteAllChatMessages(Long chatRoomId, Long userId){
+    if (!chatRoomRepository.existsByIdAndUserId(chatRoomId, userId)) return;
+
+    chatMessageRepository.deleteAllByChatRoomIdAndUserId(chatRoomId, userId);
+  }
+
+  /**
+   * Sender의 id 값과 userId 값이 일치하는 모든 chatMessage를 삭제하는 메소드
+   * @param userId 모든 메시지를 삭제할 sender의 id 값
+   */
+  @Transactional
+  public void deleteAllChatMessagesByUserId(Long userId){
+    if (userId == null) return;
+
+    chatMessageRepository.deleteAllByUserId(userId);
+  }
+
+  /**
+   * id 값이 chatMessageId 값과 일치하고, Sender의 id 값이 userId 값과 일치하는 chatMessage를 삭제하는 메소드
+   * @param userId 삭제하고자 하는 메시지의 Sender id 값
+   * @param chatMessageId 삭제하고자 하는 메시지의 id 값
+   */
+  @Transactional
+  public void deleteChatMessage(Long userId, Long chatMessageId){
+    if (!isChatMessageSender(userId, chatMessageId)) return;
+
+    chatMessageRepository.deleteById(chatMessageId);
+  }
+
+  /**
+   *
+   * @param chatMessage userId 값이 해당 ChatMessage 송신자의 id 값과 일치하는지 검증할 ChatMessage 객체
+   * @param userId 현재 로그인한 사용자의 id 값
+   * @return userId 값이 chatMessage 송신자의 id 값과 일치하는지 여부를 반환
+   */
+  public boolean isChatMessageSender(ChatMessage chatMessage, Long userId){
+    return chatMessage.getSender().getId().equals(userId);
+  }
+
+  /**
+   *
+   * @param chatMessageId userId 값이 해당 송신자의 id 값과 일치하는지 검증할 ChatMessage 객체의 id 값
+   * @param userId 현재 로그인한 사용자의 id 값
+   * @return userId 값이 chatMessage 송신자의 id 값과 일치하는지 여부를 반환
+   */
+  @Transactional(readOnly = true)
+  public boolean isChatMessageSender(Long chatMessageId, Long userId){
+    ChatMessage chatMessage = chatMessageRepository.findById(chatMessageId).orElse(null);
+
+    if (chatMessage == null) return false;
+
+    return this.isChatMessageSender(chatMessage, userId);
+  }
+
+  /**
+   * chatRoomId 채팅방에 속한 사용자에게 메시지를 전송하는 메소드
+   * @param chatRoomId 메시지를 전송할 채팅방
+   * @param userId 메시지를 전송하고자 하는 사용자의 id 값
+   * @param chatMessageDTO 전송하고자 하는 메시지
+   */
+  public void sendMessage(Long chatRoomId, Long userId, ChatMessageDTO chatMessageDTO){
+    ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElse(null);
+    if (chatRoom==null) return;
+    Long user1Id = chatRoom.getUser1().getId(), user2Id = chatRoom.getUser2().getId();
+    if (!user1Id.equals(userId) && !user2Id.equals(userId)) return;
+    Long targetId = user1Id.equals(userId) ? user2Id : user1Id;
+
+    chatMessageDTO.setSenderId(userId);
+    chatMessageDTO.setCreatedAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")));
+
+    chatMessageDTO.setChatRoomId(chatRoomId);
+
+    messagingTemplate.convertAndSend("/queue/users/"+targetId, chatMessageDTO);
+    messagingTemplate.convertAndSend("/queue/users/"+userId, chatMessageDTO);
+  }
+
+  public List<ChatRoomResponseDTO> loadChatMessagesIntoChatRoomResponseDTOList(List<ChatRoomResponseDTO> chatRoomResponseDTOList, Long userId){
+    List<ChatRoomResponseDTO> result = new ArrayList<>();
+
+    for (ChatRoomResponseDTO chatRoomResponseDTO: chatRoomResponseDTOList){
+      chatRoomResponseDTO.setChatMessageDTOList(this.getChatMessageDTOByChatRoomId(chatRoomResponseDTO.getChatRoomId(), userId));
+      result.add(chatRoomResponseDTO);
+    }
+
+    return result;
+  }
+}
