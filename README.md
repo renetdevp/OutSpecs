@@ -133,9 +133,9 @@ OutSpecs/
 
 ### 게시물 등록 페이지
 
-<img width="1253" height="1076" alt="image" src="https://github.com/user-attachments/assets/9345bfed-29ab-4ce5-8ab7-8a1a2888f84d" />
-<img width="862" height="449" alt="image" src="https://github.com/user-attachments/assets/6517124b-6ccb-4cac-a19c-767500d3c0fa" />
-<img width="844" height="482" alt="image" src="https://github.com/user-attachments/assets/bf8f4f70-0a84-4c03-b788-3ee9c5ba48a8" />
+<img width="400" height="900" alt="image" src="https://github.com/user-attachments/assets/9345bfed-29ab-4ce5-8ab7-8a1a2888f84d" />
+<img width="400" height="900" alt="image" src="https://github.com/user-attachments/assets/6517124b-6ccb-4cac-a19c-767500d3c0fa" />
+<img width="400" height="900" alt="image" src="https://github.com/user-attachments/assets/bf8f4f70-0a84-4c03-b788-3ee9c5ba48a8" />
 
 <br>
 
@@ -150,9 +150,9 @@ OutSpecs/
 
 ### 게시물 상세 페이지
 
-<img width="1059" height="1420" alt="image" src="https://github.com/user-attachments/assets/1a041472-6e20-4eaa-b4b0-9dafbdf24fbe" />
-<img width="933" height="508" alt="image" src="https://github.com/user-attachments/assets/4bdceda5-d958-425f-81c5-62c3faeaa6af" />
-<img width="836" height="919" alt="image" src="https://github.com/user-attachments/assets/05d36425-8b7b-4dfe-843e-933a7586a733" />
+<img width="400" height="900" alt="image" src="https://github.com/user-attachments/assets/1a041472-6e20-4eaa-b4b0-9dafbdf24fbe" />
+<img width="400" height="900" alt="image" src="https://github.com/user-attachments/assets/4bdceda5-d958-425f-81c5-62c3faeaa6af" />
+<img width="400" height="900" alt="image" src="https://github.com/user-attachments/assets/05d36425-8b7b-4dfe-843e-933a7586a733" />
 
 <br>
 
@@ -175,7 +175,7 @@ OutSpecs/
 
 ### 게시물 리스트 페이지
 
-<img width="1209" height="1403" alt="image" src="https://github.com/user-attachments/assets/1aef9b79-1cd4-4e30-955e-fef40700ae97" />
+<img width="400" height="900" alt="image" src="https://github.com/user-attachments/assets/1aef9b79-1cd4-4e30-955e-fef40700ae97" />
 
 <br>
 
