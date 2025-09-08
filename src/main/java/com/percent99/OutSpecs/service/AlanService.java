@@ -11,6 +11,8 @@ import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -57,17 +59,25 @@ public class AlanService {
             .build()
             .toUriString();
 
-    ResponseEntity<String> res = restTemplate.getForEntity(url, String.class);
+    ResponseEntity<String> res = null;
 
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
+    try {
+      res = restTemplate.getForEntity(url, String.class);
 
-    JSONObject reqBody = new JSONObject();
-    reqBody.put("client_id", alanClientId);
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
 
-    HttpEntity<String> resetEntity = new HttpEntity<>(reqBody.toJSONString(), headers);
+      JSONObject reqBody = new JSONObject();
+      reqBody.put("client_id", alanClientId);
 
-    restTemplate.exchange(baseUrl+"/reset-state", HttpMethod.DELETE, resetEntity, String.class);
+      HttpEntity<String> resetEntity = new HttpEntity<>(reqBody.toJSONString(), headers);
+
+      restTemplate.exchange(baseUrl + "/reset-state", HttpMethod.DELETE, resetEntity, String.class);
+    }catch (HttpClientErrorException e){
+      throw new IllegalArgumentException("앨런AI에게 요청을 보내던 중 문제가 발생했습니다.");
+    }catch (HttpServerErrorException e){
+      throw new IllegalStateException("앨런AI에게서 응답을 받아오던 중 문제가 발생했습니다.");
+    }
 
     try {
       Map<String, String> result = new HashMap<>();
@@ -132,6 +142,8 @@ public class AlanService {
    */
   public Map<String, String> question(String questionType, String question, Long userId){
     if (questionType==null || question==null || userId==null) return null;
+
+    if (question.length() > 2048) throw new IllegalArgumentException("질문이 너무 깁니다.");
 
     if (AlanQuestionType.RECOMMEND.name().equals(questionType)) return getRecommend(question, userId);
     else if (AlanQuestionType.QUESTION.name().equals(questionType)) return getAnswer(question, userId);
