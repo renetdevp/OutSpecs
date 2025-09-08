@@ -22,7 +22,7 @@ stompClient.onStompError = (frame) => {
 };
 
 const chatMessageCursors = {};
-const DEFAULT_USER_PROFILE_URL = '/images/user_default_img.svg';
+const DEFAULT_USER_PROFILE_URL = '/images/profile_icon.svg';
 
 async function onMessage(msg){
   const { chatRoomId, senderId, content, createdAt } = JSON.parse(msg.body);
