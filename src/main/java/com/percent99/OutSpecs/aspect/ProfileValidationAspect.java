@@ -8,11 +8,9 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.ExpressionParser;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 
@@ -24,8 +22,8 @@ import java.lang.reflect.Method;
 public class ProfileValidationAspect {
   private final ProfileRepository profileRepository;
 
-  private final ParameterNameDiscoverer parameterNameDiscoverer = new DefaultParameterNameDiscoverer();
-  private final ExpressionParser parser = new SpelExpressionParser();
+  private final ParameterNameDiscoverer parameterNameDiscoverer;
+  private final ExpressionParser parser;
 
   @Before("@annotation(hasProfile)")
   public void checkProfile(JoinPoint joinPoint, HasProfile hasProfile){
