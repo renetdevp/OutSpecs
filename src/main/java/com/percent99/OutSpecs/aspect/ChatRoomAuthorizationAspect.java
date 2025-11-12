@@ -7,11 +7,9 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.ExpressionParser;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
@@ -24,8 +22,8 @@ import java.lang.reflect.Method;
 public class ChatRoomAuthorizationAspect {
   private final ChatRoomRepository chatRoomRepository;
 
-  private final ParameterNameDiscoverer parameterNameDiscoverer = new DefaultParameterNameDiscoverer();
-  private final ExpressionParser parser = new SpelExpressionParser();
+  private final ParameterNameDiscoverer parameterNameDiscoverer;
+  private final ExpressionParser parser;
 
   @Before("@annotation(isParticipant)")
   public void checkParticipant(JoinPoint joinPoint, IsParticipant isParticipant){
