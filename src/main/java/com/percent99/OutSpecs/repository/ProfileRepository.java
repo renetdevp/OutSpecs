@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Repository
-public interface ProfileRepository extends JpaRepository<Profile, Long> {
+public interface ProfileRepository extends JpaRepository<Profile, Long>, ProfileRepositoryCustom {
 
     Optional<Profile> findByUserId(Long userId);
     void deleteByUserId(Long userId);
@@ -20,13 +20,6 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
      * @return
      */
     boolean existsByNickname(String nickname);
-
-    /**
-     * 프로필 존재여부 확인
-     * @param userId
-     * @return
-     */
-    boolean existsByUserId(Long userId);
 
     /**
      * 닉네임 중복체크(자기자신 제외)
