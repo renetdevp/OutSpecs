@@ -14,20 +14,5 @@ public interface ProfileRepository extends JpaRepository<Profile, Long>, Profile
     Optional<Profile> findByUserId(Long userId);
     void deleteByUserId(Long userId);
 
-    /**
-     * 닉네임 중복체크
-     * @param nickname
-     * @return
-     */
-    boolean existsByNickname(String nickname);
-
-    /**
-     * 닉네임 중복체크(자기자신 제외)
-     * @param nickname
-     * @param userId
-     * @return
-     */
-    boolean existsByNicknameAndUserIdNot(String nickname, Long userId);
-
     List<Profile> findByUserIdIn(Set<Long> userIds);
 }

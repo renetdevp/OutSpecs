@@ -17,4 +17,19 @@ public class ProfileRepositoryImpl implements ProfileRepositoryCustom {
             .where(qProfile.userId.eq(userId))
             .fetchFirst() != null;
   }
+
+  @Override
+  public boolean existsByNickname(String nickname) {
+    return queryFactory.selectFrom(qProfile)
+            .where(qProfile.nickname.eq(nickname))
+            .fetchFirst() != null;
+  }
+
+  @Override
+  public boolean nicknameAlreadyExists(String nickname, Long userId){
+    return queryFactory.selectFrom(qProfile)
+            .where(qProfile.nickname.eq(nickname),
+                    qProfile.userId.ne(userId))
+            .fetchFirst() != null;
+  }
 }
