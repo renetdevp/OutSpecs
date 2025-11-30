@@ -1,0 +1,26 @@
+package com.percent99.OutSpecs.service;
+
+import com.percent99.OutSpecs.dto.ChatRoomResponseDTO;
+import com.percent99.OutSpecs.repository.ChatRoomRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@RequiredArgsConstructor
+@Service
+public class ChatViewService {
+  private final ChatRoomRepository chatRoomRepository;
+
+  @Transactional(readOnly = true)
+  public List<ChatRoomResponseDTO> getChatRoomsWithDetails(Long userId){
+    List<ChatRoomResponseDTO> chatRoomDTOs = chatRoomRepository.findAllChatRoomWithDetails(userId);
+
+    if (chatRoomDTOs == null){
+      return List.of();
+    }
+
+    return chatRoomDTOs;
+  }
+}
