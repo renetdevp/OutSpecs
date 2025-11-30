@@ -47,7 +47,7 @@ public class ChatRoomAuthorizationAspect {
     Long userId = parser.parseExpression("#" + isParticipant.userIdArg())
             .getValue(context, Long.class);
 
-    boolean result = chatRoomRepository.existsByIdAndUserId2(chatRoomId, userId);
+    boolean result = chatRoomRepository.existsByIdAndUserId(chatRoomId, userId);
 
     if (!result){
       throw new AccessDeniedException("User is not a participant in the chatroom.");
