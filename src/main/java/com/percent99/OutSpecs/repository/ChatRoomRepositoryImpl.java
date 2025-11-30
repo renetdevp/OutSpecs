@@ -93,6 +93,33 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
             .fetch();
   }
 
+  @Override
+  public ChatRoomResponseDTO findByIdWithDetails(Long chatRoomId) {
+    QChatMessage qChatMessage = QChatMessage.chatMessage;
+    QUser user1 = new QUser("user1");
+    QUser user2 = new QUser("user2");
+    QProfile profile1 = new QProfile("profile1");
+    QProfile profile2 = new QProfile("profile2");
+
+    return queryFactory.select(
+            Projections.constructor(
+                    ChatRoomResponseDTO.class,
+                    qChatRoom,
+                    qChatMessage,
+                    profile1,
+                    profile2
+            ))
+            .from(qChatRoom)
+            .where(qChatRoom.id.eq(chatRoomId))
+            .leftJoin(qChatRoom.user1, user1).fetchJoin()
+            .leftJoin(qChatRoom.user2, user2).fetchJoin()
+            .leftJoin(qChatRoom.user1.profile, profile1).fetchJoin()
+            .leftJoin(qChatRoom.user2.profile, profile2).fetchJoin()
+            .leftJoin(qChatMessage).on(
+                    qChatMessage.id.eq(qChatRoom.lastMessageId))
+            .fetchFirst();
+  }
+
   private BooleanExpression isParticipants(Long userId, Long targetId){
     return (qChatRoom.user1.id.eq(userId)
                     .and(qChatRoom.user2.id.eq(targetId)))

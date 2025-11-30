@@ -12,4 +12,5 @@ public interface ChatRoomRepositoryCustom {
   boolean existsByUsersId(Long userId, Long targetId);
   ChatRoom findByUsersId(Long userId, Long targetId);
   List<ChatRoomResponseDTO> findAllChatRoomWithDetails(Long userId);
+  ChatRoomResponseDTO findByIdWithDetails(Long chatRoomId);
 }
