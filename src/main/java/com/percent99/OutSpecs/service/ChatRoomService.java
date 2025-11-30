@@ -1,10 +1,7 @@
 package com.percent99.OutSpecs.service;
 
 import com.percent99.OutSpecs.annotation.HasProfile;
-import com.percent99.OutSpecs.dto.ChatRoomResponseDTO;
-import com.percent99.OutSpecs.entity.ChatMessage;
 import com.percent99.OutSpecs.entity.ChatRoom;
-import com.percent99.OutSpecs.entity.Profile;
 import com.percent99.OutSpecs.entity.User;
 import com.percent99.OutSpecs.repository.ChatMessageRepository;
 import com.percent99.OutSpecs.repository.ChatRoomRepository;
