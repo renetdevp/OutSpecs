@@ -142,15 +142,13 @@ public class PostQueryService {
         List<Long> postIds = null;
 
         switch (postType) {
-            case QNA :
-            case FREE:
+            case QNA, FREE:
                 if (tags == null || tags.isEmpty()) {
                     throw new IllegalArgumentException("태그가 없습니다.");
                 }
                 postIds = postRepository.findPostsByTypeAndTags(postType, tags, tags.size());
                 break;
-            case AIPLAY:
-            case PLAY:
+            case AIPLAY, PLAY:
                 if (tags == null || tags.isEmpty()) {
                     throw new IllegalArgumentException("장소가 없습니다.");
                 }
@@ -302,17 +300,11 @@ public class PostQueryService {
         List<Long> ids = posts.stream().map(Post::getId).toList();
 
         final Map<Long, Long> likeMap = withCounts
-                ? reactionRepository.countByPostIdsAndType(ids, TargetType.POST, ReactionType.LIKE)
-                .stream()
-                .collect(Collectors.toMap(ReactionRepository.CountByPostId::getPostId,
-                        ReactionRepository.CountByPostId::getCnt))
+                ? reactionRepository.countReaction(ids, TargetType.POST, ReactionType.LIKE)
                 : Collections.emptyMap();
 
         final Map<Long, Long> bookmarkMap = withCounts
-                ? reactionRepository.countByPostIdsAndType(ids, TargetType.POST, ReactionType.BOOKMARK)
-                .stream()
-                .collect(Collectors.toMap(ReactionRepository.CountByPostId::getPostId,
-                        ReactionRepository.CountByPostId::getCnt))
+                ? reactionRepository.countReaction(ids, TargetType.POST, ReactionType.BOOKMARK)
                 : Collections.emptyMap();
 
         final Map<Long, Long> commentMap = withCounts
