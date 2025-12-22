@@ -308,18 +308,15 @@ public class PostQueryService {
                 : Collections.emptyMap();
 
         final Map<Long, Long> commentMap = withCounts
-                ? commentRepository.countCommentsInBatch(ids, CommentType.COMMENT)
-                .stream()
-                .collect(Collectors.toMap(CommentRepository.CountByPostId::getPostId,
-                        CommentRepository.CountByPostId::getCnt))
+                ? commentRepository.countComments(ids, CommentType.COMMENT)
                 : Collections.emptyMap();
 
         final Map<Long, PostTeamInformationDTO> teamInfoMap =
                 posts.stream()
-                        .filter(p -> p.getType() == PostType.TEAM && p.getTeamInfo() != null)
+                        .filter(post -> PostType.TEAM.equals(post.getType()) && post.getTeamInfo() != null)
                         .collect(Collectors.toMap(
                                 Post::getId,
-                                p -> toTeamInfoDto(p)
+                                PostTeamInformationDTO::toDTO
                         ));
 
         return posts.stream().map(p -> new PostListViewDTO(
@@ -337,12 +334,7 @@ public class PostQueryService {
                 withImages ? safeImages(p) : null
         )).toList();
     }
-    private PostTeamInformationDTO toTeamInfoDto(Post p) {
-        PostTeamInformationDTO dto = new PostTeamInformationDTO();
-        dto.setCapacity(p.getTeamInfo().getCapacity());
-        dto.setStatus(p.getTeamInfo().getStatus());
-        return dto;
-    }
+
     private String summarize(String s) {
         if (s == null) return null;
         return s.length() > 160 ? s.substring(0, 160) + "…" : s;
