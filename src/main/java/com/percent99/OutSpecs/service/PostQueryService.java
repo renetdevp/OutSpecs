@@ -53,8 +53,7 @@ public class PostQueryService {
         throw new EntityNotFoundException("게시글이 없습니다.");
       }
 
-      // Post 엔티티를 클라이언트에 전달할 PostDTO로 변환합니다.
-      return convertToDto(post);
+      return PostDTO.toDTO(post);
     }
 
     /**
@@ -201,77 +200,6 @@ public class PostQueryService {
         int teamCount = participationService.countAcceptedParticipation(postId);
 
         return new PostResponseDTO(likesCount, commentsCount, answersCount, isLiked, isBookmarked, isReported, isParticipation, teamCount);
-    }
-
-    /**
-     * Post 엔티티를 PostDTO로 변환합니다.
-     * 가독성을 위해 private 메서드로 분리했습니다.
-     *
-     * @param post 변환할 Post 엔티티
-     * @return 변환된 PostDTO
-     */
-    private PostDTO convertToDto(Post post) {
-        PostDTO dto = new PostDTO();
-        dto.setUserId(post.getUser().getId());
-        dto.setType(post.getType());
-        dto.setTitle(post.getTitle());
-        dto.setContent(post.getContent());
-
-        addTagsInfo(dto, post);
-        addHangoutInfo(dto, post);
-        addJobInfo(dto, post);
-        addTeamInfo(dto, post);
-        addQnAInfo(dto, post);
-
-        return dto;
-    }
-
-    private void addTagsInfo(PostDTO dto, Post post) {
-        if (post.getPostTags() != null && !post.getPostTags().isEmpty()) {
-            PostTagsDTO tagsDTO = new PostTagsDTO();
-            String tags = post.getPostTags().stream()
-                    .map(PostTags::getTags) // tag 객체 자체가 아닌, 태그 이름을 가져옵니다.
-                    .collect(Collectors.joining(","));
-            tagsDTO.setTags(tags);
-            dto.setTagsInfo(tagsDTO);
-        }
-    }
-
-    private void addHangoutInfo(PostDTO dto, Post post) {
-        if (post.getPostHangout() != null) {
-            PostHangoutDTO hangoutDTO = new PostHangoutDTO();
-            hangoutDTO.setPlaceName(post.getPostHangout().getPlaceName());
-            dto.setHangoutInfo(hangoutDTO);
-        }
-    }
-
-    private void addJobInfo(PostDTO dto, Post post) {
-        if (post.getPostJob() != null) {
-            PostJobDTO jobDTO = new PostJobDTO();
-            jobDTO.setCareer(post.getPostJob().getCareer());
-            List<String> techNames = post.getPostJob().getTechniques().stream()
-                    .map(Techniques::getTech)
-                    .toList();
-            jobDTO.setTechniques(techNames);
-            dto.setJobInfo(jobDTO);
-        }
-    }
-
-    private void addTeamInfo(PostDTO dto, Post post) {
-        if (post.getTeamInfo() != null) {
-            PostTeamInformationDTO teamInfoDTO = new PostTeamInformationDTO();
-            teamInfoDTO.setCapacity(post.getTeamInfo().getCapacity());
-            teamInfoDTO.setStatus(post.getTeamInfo().getStatus());
-            dto.setTeamInfo(teamInfoDTO);
-        }
-    }
-
-    private void addQnAInfo(PostDTO dto, Post post) {
-        if (post.getPostQnA() != null) {
-            PostQnADTO qnaDTO = new PostQnADTO();
-            qnaDTO.setAnswerComplete(post.getPostQnA().getAnswerComplete());
-            dto.setQnaInfo(qnaDTO);
-        }
     }
 
     public PostType resolvePostType(String category){
