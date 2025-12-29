@@ -113,7 +113,7 @@ public class AlanService {
   }
 
   private Map<String, String> getAnswer(String question, Long userId){
-    Long CHATBOT_USER_ID = userService.getOrCreateChatbotUserId();
+    final Long CHATBOT_USER_ID = userService.getOrCreateChatbotUserId();
 
     if (CHATBOT_USER_ID == null){
       throw new IllegalStateException("챗봇 사용자를 읽던 중 오류가 발생했습니다.");

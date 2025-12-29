@@ -33,20 +33,28 @@ public class PostQueryService {
 
     /**
      * ID로 게시글을 조회한다.
-     * @param id 조회할 게시글의 ID
+     * @param postId 조회할 게시글의 ID
      * @return 조회된 Post 엔티티
      */
-    public Post getPostById(Long id) {
-        return postRepository.findWithDetailsById(id)
-                .orElseThrow(() -> new EntityNotFoundException("해당 게시물은 존재하지않습니다."));
+    public Post getPostById(Long postId) {
+        Post post = postRepository.searchPostDetail(postId);
+
+        if (post == null){
+          throw new EntityNotFoundException("해당 게시물은 존재하지 않습니다.");
+        }
+
+        return post;
     }
 
     public PostDTO getPostDTOById(Long postId) {
-        Post post = postRepository.findWithDetailsById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("게시글이 없습니다."));
+      Post post = postRepository.searchPostDetail(postId);
 
-        // Post 엔티티를 클라이언트에 전달할 PostDTO로 변환합니다.
-        return convertToDto(post);
+      if (post == null){
+        throw new EntityNotFoundException("게시글이 없습니다.");
+      }
+
+      // Post 엔티티를 클라이언트에 전달할 PostDTO로 변환합니다.
+      return convertToDto(post);
     }
 
     /**
@@ -124,8 +132,7 @@ public class PostQueryService {
      * @return 좋아요 순 게시글 목록
      */
     public List<Post> getLikePosts(PostType type, int limit) {
-        Pageable pageable = PageRequest.of(0, limit);
-        return postRepository.findByTypeOrderByLike(type, pageable);
+      return postRepository.searchLikeDesc(type, limit);
     }
 
     /**
@@ -138,6 +145,7 @@ public class PostQueryService {
         if (postType == null) {
             throw new IllegalArgumentException("PostType은 null일 수 없습니다.");
         }
+
         Pageable pageable = PageRequest.of(page, size,  Sort.by(Sort.Direction.DESC, "createdAt"));
         List<Long> postIds = null;
 
@@ -152,13 +160,13 @@ public class PostQueryService {
                 if (tags == null || tags.isEmpty()) {
                     throw new IllegalArgumentException("장소가 없습니다.");
                 }
-                postIds = postRepository.findHangoutPostsByPlace(tags.get(0));
+                postIds = postRepository.searchHangoutByPlace(tags.get(0));
                 break;
             case RECRUIT:
                 if (tags == null || tags.isEmpty()) {
                     throw new IllegalArgumentException("태그가 없습니다.");
                 }
-                postIds = postRepository.findRecruitPostsByTechs(tags);
+                postIds = postRepository.searchRecruitByTech(tags);
                 break;
             default: throw new IllegalStateException("알 수 없는 PostType: " + postType);
         }
@@ -166,7 +174,9 @@ public class PostQueryService {
         if (postIds == null || postIds.isEmpty()) {
             return new SliceImpl<>(new ArrayList<>(), pageable, false); // 빈 Slice 반환
         }
-        postIds = postIds.stream().distinct().collect(Collectors.toList());
+
+        postIds = postIds.stream().distinct().toList();
+
         return postRepository.findByIdIn(postIds, pageable);
     }
 
@@ -176,7 +186,7 @@ public class PostQueryService {
      * @return 해당 장소의 게시글 리스트
      */
     public List<Post> getTeamPosts(PostStatus postStatus) {
-        return postRepository.findTeamPostsByStatus(postStatus);
+      return postRepository.searchTeamByStatus(postStatus);
     }
 
     public PostResponseDTO getPostReactionDetail(Long postId, User user) {
@@ -241,7 +251,7 @@ public class PostQueryService {
             jobDTO.setCareer(post.getPostJob().getCareer());
             List<String> techNames = post.getPostJob().getTechniques().stream()
                     .map(Techniques::getTech)
-                    .collect(Collectors.toList());
+                    .toList();
             jobDTO.setTechniques(techNames);
             dto.setJobInfo(jobDTO);
         }
