@@ -9,10 +9,12 @@ import com.percent99.OutSpecs.entity.ChatRoom;
 import com.percent99.OutSpecs.entity.User;
 import com.percent99.OutSpecs.repository.*;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,22 +35,13 @@ public class ChatMessageService {
    * @param chatMessageDTO 사용자가 송신한 채팅 메시지 DTO 객체
    * @param userId 로그인한 사용자의 id 값
    */
+  @Validated
   @IsParticipant
   @HasProfile
   @Transactional
-  public void createChatMessage(Long chatRoomId, ChatMessageDTO chatMessageDTO, Long userId){
-    if (chatRoomId == null){
-      throw new IllegalArgumentException("chatRoomId must not be null.");
-    }
-
-    if (chatMessageDTO == null){
-      throw new IllegalArgumentException("chatMessageDTO must not be null.");
-    }
-
-    if (userId == null){
-      throw new IllegalArgumentException("userId must not be null.");
-    }
-
+  public void createChatMessage(@NotNull(message = "chatRoomId must not be null.") Long chatRoomId,
+                                @NotNull(message = "chatMessageDTO must not be null.") ChatMessageDTO chatMessageDTO,
+                                @NotNull(message = "userId must not be null.") Long userId){
     ChatRoom chatRoom = chatRoomRepository.searchChatRoomWithUsers(chatRoomId, userId).orElseThrow(
             () -> new EntityNotFoundException("ChatRoom not found.")
     );
@@ -73,25 +66,13 @@ public class ChatMessageService {
     chatRoom.setLastMessageId(lastMessageId);
   }
 
+  @Validated
   @IsParticipant
   @Transactional(readOnly = true)
-  public List<ChatMessageDTO> getRecentChatMessageDTO(Long chatRoomId, Long userId, LocalDateTime cursor, Long limit){
-    if (chatRoomId == null){
-      throw new IllegalArgumentException("chatRoomId must not be null.");
-    }
-
-    if (userId == null){
-      throw new IllegalArgumentException("userId must not be null.");
-    }
-
-    if (cursor == null){
-      throw new IllegalArgumentException("cursor must not be null.");
-    }
-
-    if (limit == null){
-      throw new IllegalArgumentException("limit must not be null.");
-    }
-
+  public List<ChatMessageDTO> getRecentChatMessageDTO(@NotNull(message = "chatRoomId must not be null.") Long chatRoomId,
+                                                      @NotNull(message = "userId must not be null.") Long userId,
+                                                      @NotNull(message = "cursor must not be null.") LocalDateTime cursor,
+                                                      @NotNull(message = "limit must not be null.") Long limit) {
     return chatMessageRepository.searchChatMessageAsDTO(chatRoomId, cursor, limit);
   }
 
