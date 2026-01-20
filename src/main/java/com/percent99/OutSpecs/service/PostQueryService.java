@@ -11,10 +11,7 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -271,6 +268,30 @@ public class PostQueryService {
                 bookmarkMap.getOrDefault(p.getId(), 0L),
                 withImages ? safeImages(p) : null
         )).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Map<PostType, List<HomePostDTO>> getMostLikesPost(long limit){
+      List<PostRepository.HomePostDTOProjection> projections = postRepository.getMostLikesPost(limit);
+      Map<PostType, List<HomePostDTO>> result = new EnumMap<>(PostType.class);
+
+      // result의 기본값을 빈 ArrayList로 초기화
+      Arrays.stream(PostType.values()).forEach(
+              type -> result.put(type, new ArrayList<>())
+      );
+
+      // projections를 순회하며 projection의 postType를 키값으로, projection을 DTO로 변환한 값을 ArrayList에 add한 결과를 value로 삼아 result에 put함
+      projections.forEach(
+              p -> {
+                PostType postType = p.getPostType();
+                List<HomePostDTO> dtos = result.get(postType);
+
+                dtos.add(HomePostDTO.toDTO(p));
+                result.put(postType, dtos);
+              }
+      );
+
+      return result;
     }
 
     private String summarize(String s) {

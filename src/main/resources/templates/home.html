@@ -36,13 +36,13 @@
                     <div class="rank-list">
                         <a class="rank-item"
                            th:each="p, stat : ${free}"
-                           th:href="@{/post/{id}(id=${p.id})}">
+                           th:href="@{/post/{id}(id=${p.postId})}">
                             <span class="rank-badge" th:text="${stat.index + 1}">1</span>
                             <span class="rank-title" th:text="${p.title}">제목</span>
                             <span class="rank-date" th:text="${#temporals.format(p.createdAt, 'yyyy.MM.dd')}">2025.08.10</span>
                             <span class="rank-like">
                                 <img class="heart" src="/images/post_like_fill.svg" alt="좋아요">
-                                <span th:text="${p.likeCount}">0</span>
+                                <span th:text="${p.likes}">0</span>
                             </span>
                         </a>
                         <!-- 비어있을 때 -->
@@ -57,13 +57,13 @@
                     <div class="rank-list">
                         <a class="rank-item"
                            th:each="p, stat : ${qna}"
-                           th:href="@{/post/{id}(id=${p.id})}">
+                           th:href="@{/post/{id}(id=${p.postId})}">
                             <span class="rank-badge" th:text="${stat.index + 1}">1</span>
                             <span class="rank-title" th:text="${p.title}">제목</span>
                             <span class="rank-date" th:text="${#temporals.format(p.createdAt, 'yyyy.MM.dd')}">2025.08.10</span>
                             <span class="rank-like">
                                 <img class="heart" src="/images/post_like_fill.svg" alt="좋아요">
-                                <span th:text="${p.likeCount}">0</span>
+                                <span th:text="${p.likes}">0</span>
                             </span>
                         </a>
                         <div class="rank-empty" th:if="${#lists.isEmpty(qna)}">게시글이 없습니다.</div>
@@ -77,13 +77,13 @@
                     <div class="rank-list">
                         <a class="rank-item"
                            th:each="p, stat : ${team}"
-                           th:href="@{/post/{id}(id=${p.id})}">
+                           th:href="@{/post/{id}(id=${p.postId})}">
                             <span class="rank-badge" th:text="${stat.index + 1}">1</span>
                             <span class="rank-title" th:text="${p.title}">제목</span>
                             <span class="rank-date" th:text="${#temporals.format(p.createdAt, 'yyyy.MM.dd')}">2025.08.10</span>
                             <span class="rank-like">
                                 <img class="heart" src="/images/post_like_fill.svg" alt="좋아요">
-                                <span th:text="${p.likeCount}">0</span>
+                                <span th:text="${p.likes}">0</span>
                             </span>
                         </a>
                         <div class="rank-empty" th:if="${#lists.isEmpty(team)}">게시글이 없습니다.</div>
@@ -97,13 +97,13 @@
                     <div class="rank-list">
                         <a class="rank-item"
                            th:each="p, stat : ${play}"
-                           th:href="@{/post/{id}(id=${p.id})}">
+                           th:href="@{/post/{id}(id=${p.postId})}">
                             <span class="rank-badge" th:text="${stat.index + 1}">1</span>
                             <span class="rank-title" th:text="${p.title}">제목</span>
                             <span class="rank-date" th:text="${#temporals.format(p.createdAt, 'yyyy.MM.dd')}">2025.08.10</span>
                             <span class="rank-like">
                                 <img class="heart" src="/images/post_like_fill.svg" alt="좋아요">
-                                <span th:text="${p.likeCount}">0</span>
+                                <span th:text="${p.likes}">0</span>
                             </span>
                         </a>
                         <div class="rank-empty" th:if="${#lists.isEmpty(play)}">게시글이 없습니다.</div>

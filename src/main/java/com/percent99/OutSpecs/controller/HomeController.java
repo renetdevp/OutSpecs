@@ -1,5 +1,6 @@
 package com.percent99.OutSpecs.controller;
 
+import com.percent99.OutSpecs.dto.HomePostDTO;
 import com.percent99.OutSpecs.dto.PostListViewDTO;
 import com.percent99.OutSpecs.entity.PostType;
 import com.percent99.OutSpecs.entity.Profile;
@@ -20,6 +21,7 @@ import org.springframework.web.util.UriUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/")
@@ -33,22 +35,9 @@ public class HomeController {
     @GetMapping
     public String showHome(@AuthenticationPrincipal CustomUserPrincipal principal,
                            Model model){
+      final long postLimit = 5L;
 
-        List<PostListViewDTO> likePopularFree = postQueryService.toViews(
-                postQueryService.getLikePosts(PostType.FREE, 5), true, false
-        );
-
-        List<PostListViewDTO> likePopularTeam = postQueryService.toViews(
-                postQueryService.getLikePosts(PostType.TEAM, 5), true, false
-        );
-
-        List<PostListViewDTO> likePopularQNA = postQueryService.toViews(
-                postQueryService.getLikePosts(PostType.QNA, 5), true, false
-        );
-
-        List<PostListViewDTO> likePopularPlay = postQueryService.toViews(
-                postQueryService.getLikePosts(PostType.PLAY, 5), true, false
-        );
+      Map<PostType, List<HomePostDTO>> dtos = postQueryService.getMostLikesPost(postLimit);
 
         if(principal != null){
              userService.findByUsername(principal.getUsername())
@@ -59,11 +48,13 @@ public class HomeController {
 
             model.addAttribute("profile",profile);
         }
-        model.addAttribute("free",likePopularFree);
-        model.addAttribute("team",likePopularTeam);
-        model.addAttribute("qna",likePopularQNA);
-        model.addAttribute("play",likePopularPlay);
-        return "home";
+
+      model.addAttribute("free", dtos.get(PostType.FREE));
+      model.addAttribute("team", dtos.get(PostType.TEAM));
+      model.addAttribute("qna", dtos.get(PostType.QNA));
+      model.addAttribute("play", dtos.get(PostType.PLAY));
+
+      return "home";
     }
 
     @GetMapping("/compose/route")
