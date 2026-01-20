@@ -1,7 +1,6 @@
 package com.percent99.OutSpecs.repository;
 
 import com.percent99.OutSpecs.entity.Post;
-import com.percent99.OutSpecs.entity.PostStatus;
 import com.percent99.OutSpecs.entity.PostType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -12,8 +11,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Post 엔티티에 대한 데이터 접근 기능을 제공하느 Repository 인터페이스
@@ -106,4 +105,31 @@ public interface PostRepository extends JpaRepository<Post,Long>, PostRepository
     """)
     List<Post> searchByOptionalTypeAndTitle(@Param("type") PostType type,
                                             @Param("title") String title);
+
+  // 각 게시판별로 좋아요 갯수 상위 limit 개 게시글을 가져오는 쿼리
+  @Query(value = """
+    SELECT id, title, created_at, post_type, likes
+    FROM (
+      SELECT p.id, p.title, p.created_at, p.type AS post_type,
+        COUNT(r.id) AS likes,
+        ROW_NUMBER() OVER (PARTITION BY p.type ORDER BY COUNT(r.id) DESC) AS rn
+      FROM posts p
+      LEFT JOIN reactions r
+        ON p.id = r.target_id
+        AND r.target_type = 'POST'
+        AND r.reaction_type = 'LIKE'
+      GROUP BY p.id
+    ) AS post_with_likes
+    WHERE rn <= :limit
+    ORDER BY post_type, likes;
+  """, nativeQuery = true)
+  List<HomePostDTOProjection> getMostLikesPost(@Param("limit") long limit);
+
+  interface HomePostDTOProjection {
+    long getId();
+    String getTitle();
+    LocalDateTime getCreatedAt();
+    PostType getPostType();
+    long getLikes();
+  }
 }
