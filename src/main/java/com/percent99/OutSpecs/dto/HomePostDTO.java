@@ -2,13 +2,13 @@ package com.percent99.OutSpecs.dto;
 
 import com.percent99.OutSpecs.entity.PostType;
 import com.percent99.OutSpecs.repository.PostRepository;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
+@AllArgsConstructor
 public class HomePostDTO {
   private long postId;
   private String title;
@@ -17,14 +17,12 @@ public class HomePostDTO {
   private long likes;
 
   public static HomePostDTO toDTO(PostRepository.HomePostDTOProjection projection){
-    HomePostDTO dto = new HomePostDTO();
-
-    dto.setPostId(projection.getId());
-    dto.setTitle(projection.getTitle());
-    dto.setCreatedAt(projection.getCreatedAt());
-    dto.setPostType(projection.getPostType());
-    dto.setLikes(projection.getLikes());
-
-    return dto;
+    return new HomePostDTO(
+            projection.getId(),
+            projection.getTitle(),
+            projection.getCreatedAt(),
+            projection.getPostType(),
+            projection.getLikes()
+    );
   }
 }
