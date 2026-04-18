@@ -1,5 +1,6 @@
 package com.percent99.OutSpecs.repository;
 
+import com.percent99.OutSpecs.dto.PostResponseDTO;
 import com.percent99.OutSpecs.entity.Post;
 import com.percent99.OutSpecs.entity.PostType;
 import org.springframework.data.domain.Pageable;
@@ -106,7 +107,7 @@ public interface PostRepository extends JpaRepository<Post,Long>, PostRepository
     List<Post> searchByOptionalTypeAndTitle(@Param("type") PostType type,
                                             @Param("title") String title);
 
-  // 각 게시판별로 좋아요 갯수 상위 limit 개 게시글을 가져오는 쿼리
+  // 각 게시판별로 좋아요 갯수 상위 limit개 게시글을 가져오는 쿼리
   @Query(value = """
     SELECT id, title, created_at, post_type, likes
     FROM (
@@ -132,4 +133,39 @@ public interface PostRepository extends JpaRepository<Post,Long>, PostRepository
     PostType getPostType();
     long getLikes();
   }
+
+  @Query(value = """
+    WITH reaction_info AS (
+      SELECT
+        COALESCE(COUNT(*) FILTER (WHERE reaction_type = 'LIKE'), 0) AS likes,
+        COALESCE(BOOL_OR(reaction_type = 'LIKE' AND user_id = :userId), FALSE) AS is_liked,
+        COALESCE(BOOL_OR(reaction_type = 'BOOKMARK' AND user_id = :userId), FALSE) AS is_bookmarked,
+        COALESCE(BOOL_OR(reaction_type = 'REPORT' AND user_id = :userId), FALSE) AS is_reported
+      FROM reactions
+      WHERE target_type = 'POST'
+        AND target_id = :postId
+    ),
+    comment_info AS (
+      SELECT
+        COALESCE(COUNT(*) FILTER (WHERE type = 'COMMENT'), 0) AS comments,
+        COALESCE(COUNT(*) FILTER (WHERE type = 'ANSWER'), 0) AS answers
+      FROM comments
+      WHERE parent_id = :postId
+    ),
+    participation_info AS (
+      SELECT
+        COALESCE(BOOL_OR(user_id = :userId), FALSE) AS is_participation,
+        COALESCE(COUNT(*) FILTER (WHERE status = 'ACCEPTED'), 0) AS team_count
+      FROM participations
+      WHERE post_id = :postId
+    )
+    SELECT
+      r.likes, c.comments, c.answers,
+      r.is_liked, r.is_bookmarked, r.is_reported,
+      p.is_participation, p.team_count
+    FROM reaction_info r
+    CROSS JOIN comment_info c
+    CROSS JOIN participation_info p;
+  """, nativeQuery = true)
+  PostResponseDTO getPostReactionInfo(Long postId, Long userId);
 }
