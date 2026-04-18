@@ -142,26 +142,27 @@ public class PostQueryService {
             throw new IllegalArgumentException("PostType은 null일 수 없습니다.");
         }
 
-        Pageable pageable = PageRequest.of(page, size,  Sort.by(Sort.Direction.DESC, "createdAt"));
+        if (tags == null || tags.isEmpty()){
+          String errorParam = "태그";
+
+          if (PostType.AIPLAY.equals(postType) || PostType.PLAY.equals(postType)){
+            errorParam = "장소";
+          }
+
+          throw new IllegalArgumentException(errorParam + "가 없습니다.");
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         List<Long> postIds = null;
 
         switch (postType) {
             case QNA, FREE:
-                if (tags == null || tags.isEmpty()) {
-                    throw new IllegalArgumentException("태그가 없습니다.");
-                }
                 postIds = postRepository.findPostsByTypeAndTags(postType, tags, tags.size());
                 break;
             case AIPLAY, PLAY:
-                if (tags == null || tags.isEmpty()) {
-                    throw new IllegalArgumentException("장소가 없습니다.");
-                }
                 postIds = postRepository.searchHangoutByPlace(tags.get(0));
                 break;
             case RECRUIT:
-                if (tags == null || tags.isEmpty()) {
-                    throw new IllegalArgumentException("태그가 없습니다.");
-                }
                 postIds = postRepository.searchRecruitByTech(tags);
                 break;
             default: throw new IllegalStateException("알 수 없는 PostType: " + postType);
@@ -185,18 +186,12 @@ public class PostQueryService {
       return postRepository.searchTeamByStatus(postStatus);
     }
 
-    public PostResponseDTO getPostReactionDetail(Long postId, User user) {
-        int likesCount = (int)reactionRepository.countByTargetTypeAndTargetIdAndReactionType(TargetType.POST, postId, ReactionType.LIKE);
-        int commentsCount = (int)commentRepository.countByTypeAndParentId(CommentType.COMMENT, postId);
-        int answersCount = (int)commentRepository.countByTypeAndParentId(CommentType.ANSWER, postId);
-        boolean isLiked = reactionRepository.existsByUserAndTargetTypeAndTargetIdAndReactionType(user, TargetType.POST, postId, ReactionType.LIKE);
-        boolean isBookmarked = reactionRepository.existsByUserAndTargetTypeAndTargetIdAndReactionType(user, TargetType.POST, postId, ReactionType.BOOKMARK);
-        boolean isReported = reactionRepository.existsByUserAndTargetTypeAndTargetIdAndReactionType(user, TargetType.POST, postId, ReactionType.REPORT);
-        boolean isParticipation = false;
-        if(user != null) isParticipation = participationService.existParticipationByUserId(user.getId(),postId);
-        int teamCount = participationService.countAcceptedParticipation(postId);
+    public PostResponseDTO getPostReactionDetail(Long postId, User user){
+      Long userId = null;
 
-        return new PostResponseDTO(likesCount, commentsCount, answersCount, isLiked, isBookmarked, isReported, isParticipation, teamCount);
+      if (user != null) userId = user.getId();
+
+      return postRepository.getPostReactionInfo(postId, userId);
     }
 
     public PostType resolvePostType(String category){
