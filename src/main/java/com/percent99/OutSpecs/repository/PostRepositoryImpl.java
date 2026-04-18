@@ -15,16 +15,16 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
   private static final QReaction qReaction = QReaction.reaction;
   private final JPAQueryFactory queryFactory;
 
-  @Override
-  public List<Post> searchLikeDesc(PostType postType, int limit) {
+  public List<Post> searchLikeDesc(PostType postType, int limit){
     return queryFactory.selectFrom(qPost)
-            .where(qPost.type.eq(postType))
             .leftJoin(qReaction).on(
-                    qPost.id.eq(qReaction.targetId),
-                    isPostLike())
-            .fetchJoin()
-            .groupBy(qPost)
-            .orderBy(qReaction.count().desc())
+                    qReaction.targetId.eq(qPost.id),
+                    isPostLike()
+            )
+            .where(qPost.type.eq(postType))
+            .groupBy(qPost.id)
+            .orderBy(qReaction.count().desc().nullsLast())
+            .limit(limit)
             .fetch();
   }
 
