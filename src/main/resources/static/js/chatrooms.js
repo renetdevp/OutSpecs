@@ -22,7 +22,7 @@ stompClient.onStompError = (frame) => {
 };
 
 const chatMessageCursors = {};
-const DEFAULT_USER_PROFILE_URL = '/images/user_default_img.svg';
+const DEFAULT_USER_PROFILE_URL = '/images/profile_icon.svg';
 
 async function onMessage(msg){
   const { chatRoomId, senderId, content, createdAt } = JSON.parse(msg.body);
@@ -162,6 +162,8 @@ function chatRoomOnClick(e){
 
   const chatMessagesElem = document.querySelector(`.chat-message-container-${chatRoomId} > .chat-messages`);
   chatMessagesElem.scrollTop = chatMessagesElem.scrollHeight;
+
+  if (!chatMessageCursors[`chatRoom-${chatRoomId}`]) fetchMoreMessages(chatRoomId);
 }
 
 function getDString(format, date){
@@ -342,15 +344,5 @@ window.addEventListener('load', (e) => {
 
     const dString = getDString({ hour: 'numeric', minute: 'numeric' }, updatedAt);
     document.querySelector(`.chatroom[data-chatroom-id="${chatroom.chatRoomId}"] .chatroom-info-updated-at`).textContent = dString;
-
-    if (chatroom.chatMessageDTOList instanceof Array && chatroom.chatMessageDTOList.length !== 0){
-      for (let chatMessage of chatroom.chatMessageDTOList){
-        const { senderId, content, createdAt } = chatMessage;
-
-        insertChatMessage(chatMessagesElem, senderId, content, createdAt, 'afterbegin');
-      }
-
-      chatMessageCursors[`chatRoom-${chatroom.chatRoomId}`] = chatroom.chatMessageDTOList[chatroom.chatMessageDTOList.length-1].createdAt;
-    }
   }
 });

@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Repository
-public interface ReactionRepository extends JpaRepository<Reaction, Long> {
+public interface ReactionRepository extends JpaRepository<Reaction, Long>, ReactionRepositoryCustom {
 
     /**
      * User가 해당 target에 해당 반응 이미 했는지 체크
@@ -70,24 +70,5 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
     List<Post> findReportedPostsWithUser(
             @Param("tt") TargetType targetType,      // TargetType.POST
             @Param("rt") ReactionType reactionType   // ReactionType.REPORT
-    );
-
-    interface CountByPostId {
-        Long getPostId();
-        long getCnt();
-    }
-
-    @Query("""
-      select r.targetId as postId, count(r) as cnt
-      from Reaction r
-      where r.targetType = :tt
-        and r.reactionType = :rt
-        and r.targetId in :postIds
-      group by r.targetId
-    """)
-    List<CountByPostId> countByPostIdsAndType(
-            @Param("postIds") Collection<Long> postIds,
-            @Param("tt") TargetType targetType,     // TargetType.POST
-            @Param("rt") ReactionType reactionType  // LIKE / BOOKMARK 등
     );
 }

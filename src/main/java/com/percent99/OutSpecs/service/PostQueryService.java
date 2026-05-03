@@ -11,10 +11,7 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -33,20 +30,27 @@ public class PostQueryService {
 
     /**
      * ID로 게시글을 조회한다.
-     * @param id 조회할 게시글의 ID
+     * @param postId 조회할 게시글의 ID
      * @return 조회된 Post 엔티티
      */
-    public Post getPostById(Long id) {
-        return postRepository.findWithDetailsById(id)
-                .orElseThrow(() -> new EntityNotFoundException("해당 게시물은 존재하지않습니다."));
+    public Post getPostById(Long postId) {
+        Post post = postRepository.searchPostDetail(postId);
+
+        if (post == null){
+          throw new EntityNotFoundException("해당 게시물은 존재하지 않습니다.");
+        }
+
+        return post;
     }
 
     public PostDTO getPostDTOById(Long postId) {
-        Post post = postRepository.findWithDetailsById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("게시글이 없습니다."));
+      Post post = postRepository.searchPostDetail(postId);
 
-        // Post 엔티티를 클라이언트에 전달할 PostDTO로 변환합니다.
-        return convertToDto(post);
+      if (post == null){
+        throw new EntityNotFoundException("게시글이 없습니다.");
+      }
+
+      return PostDTO.toDTO(post);
     }
 
     /**
@@ -124,8 +128,7 @@ public class PostQueryService {
      * @return 좋아요 순 게시글 목록
      */
     public List<Post> getLikePosts(PostType type, int limit) {
-        Pageable pageable = PageRequest.of(0, limit);
-        return postRepository.findByTypeOrderByLike(type, pageable);
+      return postRepository.searchLikeDesc(type, limit);
     }
 
     /**
@@ -138,29 +141,29 @@ public class PostQueryService {
         if (postType == null) {
             throw new IllegalArgumentException("PostType은 null일 수 없습니다.");
         }
-        Pageable pageable = PageRequest.of(page, size,  Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        if (tags == null || tags.isEmpty()){
+          String errorParam = "태그";
+
+          if (PostType.AIPLAY.equals(postType) || PostType.PLAY.equals(postType)){
+            errorParam = "장소";
+          }
+
+          throw new IllegalArgumentException(errorParam + "가 없습니다.");
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         List<Long> postIds = null;
 
         switch (postType) {
-            case QNA :
-            case FREE:
-                if (tags == null || tags.isEmpty()) {
-                    throw new IllegalArgumentException("태그가 없습니다.");
-                }
+            case QNA, FREE:
                 postIds = postRepository.findPostsByTypeAndTags(postType, tags, tags.size());
                 break;
-            case AIPLAY:
-            case PLAY:
-                if (tags == null || tags.isEmpty()) {
-                    throw new IllegalArgumentException("장소가 없습니다.");
-                }
-                postIds = postRepository.findHangoutPostsByPlace(tags.get(0));
+            case AIPLAY, PLAY:
+                postIds = postRepository.searchHangoutByPlace(tags.get(0));
                 break;
             case RECRUIT:
-                if (tags == null || tags.isEmpty()) {
-                    throw new IllegalArgumentException("태그가 없습니다.");
-                }
-                postIds = postRepository.findRecruitPostsByTechs(tags);
+                postIds = postRepository.searchRecruitByTech(tags);
                 break;
             default: throw new IllegalStateException("알 수 없는 PostType: " + postType);
         }
@@ -168,7 +171,9 @@ public class PostQueryService {
         if (postIds == null || postIds.isEmpty()) {
             return new SliceImpl<>(new ArrayList<>(), pageable, false); // 빈 Slice 반환
         }
-        postIds = postIds.stream().distinct().collect(Collectors.toList());
+
+        postIds = postIds.stream().distinct().toList();
+
         return postRepository.findByIdIn(postIds, pageable);
     }
 
@@ -178,92 +183,15 @@ public class PostQueryService {
      * @return 해당 장소의 게시글 리스트
      */
     public List<Post> getTeamPosts(PostStatus postStatus) {
-        return postRepository.findTeamPostsByStatus(postStatus);
+      return postRepository.searchTeamByStatus(postStatus);
     }
 
-    public PostResponseDTO getPostReactionDetail(Long postId, User user) {
-        int likesCount = (int)reactionRepository.countByTargetTypeAndTargetIdAndReactionType(TargetType.POST, postId, ReactionType.LIKE);
-        int commentsCount = (int)commentRepository.countByTypeAndParentId(CommentType.COMMENT, postId);
-        int answersCount = (int)commentRepository.countByTypeAndParentId(CommentType.ANSWER, postId);
-        boolean isLiked = reactionRepository.existsByUserAndTargetTypeAndTargetIdAndReactionType(user, TargetType.POST, postId, ReactionType.LIKE);
-        boolean isBookmarked = reactionRepository.existsByUserAndTargetTypeAndTargetIdAndReactionType(user, TargetType.POST, postId, ReactionType.BOOKMARK);
-        boolean isReported = reactionRepository.existsByUserAndTargetTypeAndTargetIdAndReactionType(user, TargetType.POST, postId, ReactionType.REPORT);
-        boolean isParticipation = false;
-        if(user != null) isParticipation = participationService.existParticipationByUserId(user.getId(),postId);
-        int teamCount = participationService.countAcceptedParticipation(postId);
+    public PostResponseDTO getPostReactionDetail(Long postId, User user){
+      Long userId = null;
 
-        return new PostResponseDTO(likesCount, commentsCount, answersCount, isLiked, isBookmarked, isReported, isParticipation, teamCount);
-    }
+      if (user != null) userId = user.getId();
 
-    /**
-     * Post 엔티티를 PostDTO로 변환합니다.
-     * 가독성을 위해 private 메서드로 분리했습니다.
-     *
-     * @param post 변환할 Post 엔티티
-     * @return 변환된 PostDTO
-     */
-    private PostDTO convertToDto(Post post) {
-        PostDTO dto = new PostDTO();
-        dto.setUserId(post.getUser().getId());
-        dto.setType(post.getType());
-        dto.setTitle(post.getTitle());
-        dto.setContent(post.getContent());
-
-        addTagsInfo(dto, post);
-        addHangoutInfo(dto, post);
-        addJobInfo(dto, post);
-        addTeamInfo(dto, post);
-        addQnAInfo(dto, post);
-
-        return dto;
-    }
-
-    private void addTagsInfo(PostDTO dto, Post post) {
-        if (post.getPostTags() != null && !post.getPostTags().isEmpty()) {
-            PostTagsDTO tagsDTO = new PostTagsDTO();
-            String tags = post.getPostTags().stream()
-                    .map(PostTags::getTags) // tag 객체 자체가 아닌, 태그 이름을 가져옵니다.
-                    .collect(Collectors.joining(","));
-            tagsDTO.setTags(tags);
-            dto.setTagsInfo(tagsDTO);
-        }
-    }
-
-    private void addHangoutInfo(PostDTO dto, Post post) {
-        if (post.getPostHangout() != null) {
-            PostHangoutDTO hangoutDTO = new PostHangoutDTO();
-            hangoutDTO.setPlaceName(post.getPostHangout().getPlaceName());
-            dto.setHangoutInfo(hangoutDTO);
-        }
-    }
-
-    private void addJobInfo(PostDTO dto, Post post) {
-        if (post.getPostJob() != null) {
-            PostJobDTO jobDTO = new PostJobDTO();
-            jobDTO.setCareer(post.getPostJob().getCareer());
-            List<String> techNames = post.getPostJob().getTechniques().stream()
-                    .map(Techniques::getTech)
-                    .collect(Collectors.toList());
-            jobDTO.setTechniques(techNames);
-            dto.setJobInfo(jobDTO);
-        }
-    }
-
-    private void addTeamInfo(PostDTO dto, Post post) {
-        if (post.getTeamInfo() != null) {
-            PostTeamInformationDTO teamInfoDTO = new PostTeamInformationDTO();
-            teamInfoDTO.setCapacity(post.getTeamInfo().getCapacity());
-            teamInfoDTO.setStatus(post.getTeamInfo().getStatus());
-            dto.setTeamInfo(teamInfoDTO);
-        }
-    }
-
-    private void addQnAInfo(PostDTO dto, Post post) {
-        if (post.getPostQnA() != null) {
-            PostQnADTO qnaDTO = new PostQnADTO();
-            qnaDTO.setAnswerComplete(post.getPostQnA().getAnswerComplete());
-            dto.setQnaInfo(qnaDTO);
-        }
+      return postRepository.getPostReactionInfo(postId, userId);
     }
 
     public PostType resolvePostType(String category){
@@ -302,32 +230,23 @@ public class PostQueryService {
         List<Long> ids = posts.stream().map(Post::getId).toList();
 
         final Map<Long, Long> likeMap = withCounts
-                ? reactionRepository.countByPostIdsAndType(ids, TargetType.POST, ReactionType.LIKE)
-                .stream()
-                .collect(Collectors.toMap(ReactionRepository.CountByPostId::getPostId,
-                        ReactionRepository.CountByPostId::getCnt))
+                ? reactionRepository.countReaction(ids, TargetType.POST, ReactionType.LIKE)
                 : Collections.emptyMap();
 
         final Map<Long, Long> bookmarkMap = withCounts
-                ? reactionRepository.countByPostIdsAndType(ids, TargetType.POST, ReactionType.BOOKMARK)
-                .stream()
-                .collect(Collectors.toMap(ReactionRepository.CountByPostId::getPostId,
-                        ReactionRepository.CountByPostId::getCnt))
+                ? reactionRepository.countReaction(ids, TargetType.POST, ReactionType.BOOKMARK)
                 : Collections.emptyMap();
 
         final Map<Long, Long> commentMap = withCounts
-                ? commentRepository.countCommentsInBatch(ids, CommentType.COMMENT)
-                .stream()
-                .collect(Collectors.toMap(CommentRepository.CountByPostId::getPostId,
-                        CommentRepository.CountByPostId::getCnt))
+                ? commentRepository.countComments(ids, CommentType.COMMENT)
                 : Collections.emptyMap();
 
         final Map<Long, PostTeamInformationDTO> teamInfoMap =
                 posts.stream()
-                        .filter(p -> p.getType() == PostType.TEAM && p.getTeamInfo() != null)
+                        .filter(post -> PostType.TEAM.equals(post.getType()) && post.getTeamInfo() != null)
                         .collect(Collectors.toMap(
                                 Post::getId,
-                                p -> toTeamInfoDto(p)
+                                PostTeamInformationDTO::toDTO
                         ));
 
         return posts.stream().map(p -> new PostListViewDTO(
@@ -345,12 +264,31 @@ public class PostQueryService {
                 withImages ? safeImages(p) : null
         )).toList();
     }
-    private PostTeamInformationDTO toTeamInfoDto(Post p) {
-        PostTeamInformationDTO dto = new PostTeamInformationDTO();
-        dto.setCapacity(p.getTeamInfo().getCapacity());
-        dto.setStatus(p.getTeamInfo().getStatus());
-        return dto;
+
+    @Transactional(readOnly = true)
+    public Map<PostType, List<HomePostDTO>> getMostLikesPost(long limit){
+      List<PostRepository.HomePostDTOProjection> projections = postRepository.getMostLikesPost(limit);
+      Map<PostType, List<HomePostDTO>> result = new EnumMap<>(PostType.class);
+
+      // result의 기본값을 빈 ArrayList로 초기화
+      Arrays.stream(PostType.values()).forEach(
+              type -> result.put(type, new ArrayList<>())
+      );
+
+      // projections를 순회하며 projection의 postType를 키값으로, projection을 DTO로 변환한 값을 ArrayList에 add한 결과를 value로 삼아 result에 put함
+      projections.forEach(
+              p -> {
+                PostType postType = p.getPostType();
+                List<HomePostDTO> dtos = result.get(postType);
+
+                dtos.add(HomePostDTO.toDTO(p));
+                result.put(postType, dtos);
+              }
+      );
+
+      return result;
     }
+
     private String summarize(String s) {
         if (s == null) return null;
         return s.length() > 160 ? s.substring(0, 160) + "…" : s;

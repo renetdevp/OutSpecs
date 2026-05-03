@@ -322,7 +322,7 @@ public class ProfileService {
             exists = profileRepository.existsByNickname(nickname);
         }
         else{
-            exists = profileRepository.existsByNicknameAndUserIdNot(nickname,userId);
+          exists = profileRepository.nicknameAlreadyExists(nickname, userId);
         }
         if(exists){
             throw  new EntityExistsException("이미 사용 중인 닉네임입니다.");

@@ -18,7 +18,7 @@ import java.util.List;
  * </p>
  */
 @Repository
-public interface CommentRepository extends JpaRepository<Comment,Long> {
+public interface CommentRepository extends JpaRepository<Comment,Long>, CommentRepositoryCustom {
     /**
      * 부모객체에 등록된 모든 댓글을 조회한다.
      * @param parentId 조회할 부모의 ID
@@ -41,16 +41,4 @@ public interface CommentRepository extends JpaRepository<Comment,Long> {
      * @return 해당 부모에 달린 댓글 갯수
      */
     long countByTypeAndParentId(CommentType type, Long parentId);
-
-    interface CountByPostId { Long getPostId(); long getCnt(); }
-
-    @Query("""
-      select c.parentId as postId, count(c) as cnt
-      from Comment c
-      where c.type = :ct
-        and c.parentId in :postIds
-      group by c.parentId
-    """)
-    List<CountByPostId> countCommentsInBatch(@Param("postIds") Collection<Long> postIds,
-                                             @Param("ct") CommentType commentType);
 }
