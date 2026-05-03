@@ -1,5 +1,6 @@
 package com.percent99.OutSpecs.dto;
 
+import com.percent99.OutSpecs.entity.Post;
 import com.percent99.OutSpecs.entity.PostStatus;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,4 +15,13 @@ public class PostTeamInformationDTO {
 
     private PostStatus status = PostStatus.OPEN;
     private Integer capacity;
+
+    public static PostTeamInformationDTO toDTO(Post post){
+      PostTeamInformationDTO dto = new PostTeamInformationDTO();
+
+      dto.setCapacity(post.getTeamInfo().getCapacity());
+      dto.setStatus(post.getTeamInfo().getStatus());
+
+      return dto;
+    }
 }

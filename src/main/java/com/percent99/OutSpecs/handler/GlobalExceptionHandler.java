@@ -4,6 +4,7 @@ import com.percent99.OutSpecs.exception.HttpResponseProcessingException;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -88,6 +89,13 @@ public class GlobalExceptionHandler {
         log.error("요청 [{} {}] - NoResourceFoundException", request.getMethod(), request.getRequestURI(), ex);
         model.addAttribute("errorMessage", "요청하신 페이지를 찾을 수 없습니다. ");
         return "error/error";
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public String handleConstraintViolation(ConstraintViolationException exception, Model model, HttpServletRequest request) {
+      log.warn("요청 [{} {}] - ConstraintViolationException", request.getMethod(), request.getRequestURI(), exception);
+      model.addAttribute("errorMessage", "인자가 형식에 맞지 않습니다.");
+      return "error/error";
     }
 
     // 예상치 못한 모든 예외

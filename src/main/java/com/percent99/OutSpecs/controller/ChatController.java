@@ -3,18 +3,14 @@ package com.percent99.OutSpecs.controller;
 import com.percent99.OutSpecs.dto.ChatMessageDTO;
 import com.percent99.OutSpecs.dto.ChatRoomResponseDTO;
 import com.percent99.OutSpecs.entity.User;
-import com.percent99.OutSpecs.repository.ProfileRepository;
 import com.percent99.OutSpecs.security.CustomUserPrincipal;
-import com.percent99.OutSpecs.service.AlanService;
 import com.percent99.OutSpecs.service.ChatMessageService;
 import com.percent99.OutSpecs.service.ChatRoomService;
+import com.percent99.OutSpecs.service.ChatViewService;
 import com.percent99.OutSpecs.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -25,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @RequiredArgsConstructor
 @Controller
@@ -33,22 +28,20 @@ import java.util.Map;
 public class ChatController {
   private final ChatRoomService chatRoomService;
   private final ChatMessageService chatMessageService;
-  private final AlanService alanService;
+  private final ChatViewService chatViewService;
   private final UserService userService;
-  private final ProfileRepository profileRepository;
+
+  private static final Long DEFAULT_MESSAGES_LIMIT = 30L;
 
   @Value("${websocket.SERVER_URL}")
   private String webSocketServerUrl;
 
   @GetMapping
-  public String chatRoomList(@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal, Model model){
+  public String chatRoomList(@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal, Model model) {
     Long userId = customUserPrincipal.getUser().getId();
     User user = userService.getUserById(userId);
 
-    if (!profileRepository.existsByUserId(userId)) return "redirect:/users/profiles/new";
-
-    List<ChatRoomResponseDTO> chatRoomResponseDTOList = chatRoomService.getChatRoomResponseDTOListByUserId(userId);
-    chatRoomResponseDTOList = chatMessageService.loadChatMessagesIntoChatRoomResponseDTOList(chatRoomResponseDTOList, userId);
+    List<ChatRoomResponseDTO> chatRoomResponseDTOList = chatViewService.getChatRoomsWithDetails(userId);
 
     model.addAttribute("chatrooms", chatRoomResponseDTOList);
     model.addAttribute("userId", userId);
@@ -73,9 +66,11 @@ public class ChatController {
                                              @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal){
     Long userId = customUserPrincipal.getUser().getId();
 
-    if (!chatRoomService.isChatRoomParticipant(chatRoomId, userId)) return null;
+    if (!chatRoomService.isChatRoomParticipant(chatRoomId, userId)){
+      throw new IllegalStateException("채팅방 참여자가 아닙니다.");
+    }
 
-    return chatRoomService.getChatRoomResponseDTOById(chatRoomId);
+    return chatViewService.getChatRoomWithDetails(chatRoomId);
   }
 
   @GetMapping("/{chatRoomId}/messages")
@@ -87,9 +82,7 @@ public class ChatController {
 
     if (firstCreatedAt == null) firstCreatedAt = LocalDateTime.now();
 
-    Pageable pageable = PageRequest.of(0, 15, Sort.by("createdAt").descending());
-
-    return chatMessageService.getChatMessageDTOByChatRoomId(chatRoomId, userId, firstCreatedAt, pageable);
+    return chatMessageService.getRecentChatMessageDTO(chatRoomId, userId, firstCreatedAt, DEFAULT_MESSAGES_LIMIT);
   }
 
   @MessageMapping("/chats/{chatRoomId}")

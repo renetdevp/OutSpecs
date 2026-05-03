@@ -8,12 +8,12 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class PostResponseDTO {
-    private int likesCount;
-    private int commentsCount;
-    private int answersCount;
+    private Long likesCount;
+    private Long commentsCount;
+    private Long answersCount;
     private boolean isLiked;
     private boolean isBookmarked;
     private boolean isReported;
     private boolean isParticipation;
-    private int teamCount;
+    private Long teamCount;
 }
