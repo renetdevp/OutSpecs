@@ -3,6 +3,7 @@ package com.percent99.OutSpecs.repository;
 import com.percent99.OutSpecs.entity.*;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.LockModeType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -87,5 +88,15 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
   private BooleanExpression isPostLike(){
     return qReaction.targetType.eq(TargetType.POST)
             .and(qReaction.reactionType.eq(ReactionType.LIKE));
+  }
+
+  @Override
+  public Post searchPostWithTeamAndAuthorAndLock(Long postId) {
+    return queryFactory.selectFrom(qPost)
+            .leftJoin(qPost.teamInfo).fetchJoin()
+            .leftJoin(qPost.user).fetchJoin()
+            .where(qPost.id.eq(postId))
+            .setLockMode(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
+            .fetchFirst();
   }
 }

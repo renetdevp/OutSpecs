@@ -13,4 +13,5 @@ public interface PostRepositoryCustom {
   List<Long> searchHangoutByPlace(String place);
   List<Post> searchTeamByStatus(PostStatus postStatus);
   Post searchPostDetail(Long postId);
+  Post searchPostWithTeamAndAuthorAndLock(Long postId);
 }
