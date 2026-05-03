@@ -3,12 +3,17 @@ package com.percent99.OutSpecs.service;
 import com.percent99.OutSpecs.dto.ParticipationDTO;
 import com.percent99.OutSpecs.entity.*;
 import com.percent99.OutSpecs.repository.ParticipationRepository;
+import com.percent99.OutSpecs.repository.ParticipationRepositoryCustom;
 import com.percent99.OutSpecs.repository.PostRepository;
 import com.percent99.OutSpecs.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 
+import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -71,6 +76,49 @@ public class ParticipationService {
 
         return saved;
     }
+
+  @Transactional
+  public Participation participate(ParticipationDTO dto, User user){
+    long postId = dto.getPostId();
+    long userId = user.getId();
+    long additionalCapacity = 5;
+
+    Post post = postRepository.searchPostWithTeamAndAuthorAndLock(postId);
+
+    if (post == null){
+      throw new EntityNotFoundException("게시글(id=" + postId + ")이 존재하지 않거나 팀원 모집 게시글이 아닙니다.");
+    }
+
+    if (userId == post.getUser().getId()){
+      throw new IllegalStateException("자신이 생성한 팀 모집 게시글엔 신청할 수 없습니다.");
+    }
+
+    if (PostStatus.CLOSED.equals(post.getTeamInfo().getStatus())){
+      throw new IllegalStateException("모집이 완료된 게시글입니다.");
+    }
+
+    ParticipationRepositoryCustom.ParticipationCountDTO countDTO = participationRepository.getParticipationCount(postId, userId);
+
+    if (countDTO.totalCount() > post.getTeamInfo().getCapacity() + additionalCapacity){
+      throw new IllegalStateException("모집 신청 인원이 많아 참가 신청이 불가합니다.");
+    }
+
+    if (countDTO.userCount() > 0){
+      throw new IllegalStateException("이미 참가 신청한 게시글입니다.");
+    }
+
+    Participation p = new Participation();
+
+    p.setUser(user);
+    p.setPost(post);
+    p.setStatus(ParticipationStatus.PENDING);
+    p.setAppliedAt(LocalDateTime.now());
+    p = participationRepository.save(p);
+
+    notificationService.sendNotification(user, post.getUser(), NotificationType.APPLY, post.getId());
+
+    return p;
+  }
 
     /**
      * ID로 Participation 정보를 조회한다.
