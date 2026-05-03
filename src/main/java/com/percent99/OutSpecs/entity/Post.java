@@ -75,4 +75,8 @@ public class Post {
 
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private PostQnA postQnA;
+
+    @Version
+    @Column(name = "version")
+    private long version;
 }

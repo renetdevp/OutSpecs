@@ -15,7 +15,7 @@ import java.util.Optional;
  * </p>
  */
 @Repository
-public interface ParticipationRepository extends JpaRepository<Participation, Long> {
+public interface ParticipationRepository extends JpaRepository<Participation, Long>, ParticipationRepositoryCustom {
     /**
      * 특정 게시글에 등록된 모든 신청현황을 조회한다.
      * @param postId 조회할 게시글의 ID
