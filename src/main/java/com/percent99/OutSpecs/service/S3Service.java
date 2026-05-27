@@ -1,5 +1,6 @@
 package com.percent99.OutSpecs.service;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -12,8 +13,10 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 
 /**
  * 이미지 s3에 저장, 삭제를 위한 s3서비스
@@ -23,11 +26,13 @@ public class S3Service {
     private final S3Client s3Client;
     private final String bucketName;
     private final String region;
+    private final Executor executor;
 
     public S3Service(@Value("${aws.access-key-id}") String accessKey,
                             @Value("${aws.secret-access-key}") String secretKey,
                             @Value("${aws.region}") String region,
-                            @Value("${aws.s3.bucket-name}") String bucketName) {
+                            @Value("${aws.s3.bucket-name}") String bucketName,
+                     @Qualifier("s3UploadExecutor") Executor executor) {
         this.bucketName = bucketName;
         this.region = region;
         AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
@@ -35,6 +40,7 @@ public class S3Service {
                 .region(Region.of(region))
                 .credentialsProvider(StaticCredentialsProvider.create(credentials))
                 .build();
+        this.executor = executor;
     }
 
     /**
@@ -86,6 +92,68 @@ public class S3Service {
                 .build();
 
         s3Client.deleteObject(request);
+    }
+
+    public List<String> uploadSingleFile(MultipartFile file) throws IOException {
+      ArrayList<String> result = new ArrayList<>();
+      String key = generateFileName(file.getOriginalFilename());
+
+      PutObjectRequest req = PutObjectRequest.builder()
+              .bucket(bucketName)
+              .key(key)
+              .contentType(file.getContentType())
+              .build();
+
+      s3Client.putObject(req, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+
+      result.add(getFileUrl(key));
+      result.add(key);
+
+      return result;
+    }
+
+    public Map<String, ArrayList<String>> uploadMultipleFiles(List<MultipartFile> files) throws IllegalStateException {
+      Map<String, ArrayList<String>> result = new HashMap<>();
+
+      result.put("urls", new ArrayList<>());
+      result.put("keys", new ArrayList<>());
+
+      List<CompletableFuture<List<String>>> future = files.stream()
+              .filter(f -> !f.isEmpty())
+              .map(file -> CompletableFuture.supplyAsync(() -> {
+                try {
+                  return this.uploadSingleFile(file);
+                }catch (IOException e){
+                  throw new IllegalStateException(e);
+                }
+              }, executor))
+              .collect(Collectors.toList());
+
+      List<List<String>> rl = future.stream()
+              .map(CompletableFuture::join)
+              .collect(Collectors.toList());
+
+      for (List<String> r: rl){
+        result.get("urls").add(r.get(0));
+        result.get("keys").add(r.get(1));
+      }
+
+      return result;
+    }
+
+    public void deleteFiles(List<String> keys){
+      List<ObjectIdentifier> delKeys = new ArrayList<>();
+
+      for (String key: keys){
+        delKeys.add(ObjectIdentifier.builder().key(key).build());
+      }
+
+      DeleteObjectsRequest delReq = DeleteObjectsRequest.builder()
+              .bucket(bucketName)
+              .delete(d -> d.objects(delKeys))
+              .build();
+
+      s3Client.deleteObjects(delReq);
     }
 
     /**
